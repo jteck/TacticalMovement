@@ -1,0 +1,24 @@
+# macOS
+.DS_Store
+
+# VS Code / IDE
+.vscode/
+
+# Unreal generated folders
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+
+# Xcode workspace generated for local use
+TacticalMovement (Mac).xcworkspace/
+
+# Logs / temp
+*.log
+
+# Optional local database/user files
+*.VC.db
+*.VC.opendb
+*.suo
+*.opensdf
+*.sdf
