@@ -65,7 +65,7 @@ void ATacticalMovementCharacter::ApplyMovementProfileFromDataTable()
         return;
     }
 
-    FMovementProfileRow* Row = MovementProfileTable->FindRow<FMovementProfileRow>(MovementProfileRowName, TEXT(""));
+    const FMovementProfileRow* Row = MovementProfileTable->FindRow<FMovementProfileRow>(MovementProfileRowName, TEXT(""));
 
     if (!Row)
     {
@@ -95,7 +95,7 @@ void ATacticalMovementCharacter::UpdateDirectionalMovementSpeed(float Right, flo
 		return;
 	}
 
-	FMovementProfileRow* Row = MovementProfileTable->FindRow<FMovementProfileRow>(MovementProfileRowName, TEXT(""));
+	const FMovementProfileRow* Row = MovementProfileTable->FindRow<FMovementProfileRow>(MovementProfileRowName, TEXT(""));
 
 	if (!Row)
 	{
