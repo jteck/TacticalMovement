@@ -54,6 +54,7 @@ void ATacticalMovementCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	DefaultMovementProfileRowName = MovementProfileRowName;
+	UpdateMovementOrientationBehavior();
 	ApplyMovementProfileFromDataTable();
 }
 
@@ -95,7 +96,7 @@ void ATacticalMovementCharacter::UpdateDirectionalMovementSpeed(float Right, flo
 		return;
 	}
 
-	const FMovementProfileRow* Row = MovementProfileTable->FindRow<FMovementProfileRow>(MovementProfileRowName, TEXT(""));
+	FMovementProfileRow* Row = MovementProfileTable->FindRow<FMovementProfileRow>(MovementProfileRowName, TEXT(""));
 
 	if (!Row)
 	{
@@ -108,22 +109,184 @@ void ATacticalMovementCharacter::UpdateDirectionalMovementSpeed(float Right, flo
 		return;
 	}
 
+	const float ReadinessMultiplier = GetReadinessSpeedMultiplier();
+
 	// Simple dominant-direction logic:
 	// - Forward input > 0 uses forward speed
 	// - Forward input < 0 uses backward speed
 	// - No forward input but right/left input uses strafe speed
 	if (Forward > 0.0f)
 	{
-		MoveComp->MaxWalkSpeed = Row->MaxWalkSpeedForward;
+		MoveComp->MaxWalkSpeed = Row->MaxWalkSpeedForward * ReadinessMultiplier;
 	}
 	else if (Forward < 0.0f)
 	{
-		MoveComp->MaxWalkSpeed = Row->MaxWalkSpeedBack;
+		MoveComp->MaxWalkSpeed = Row->MaxWalkSpeedBack * ReadinessMultiplier;
 	}
 	else if (FMath::Abs(Right) > 0.0f)
 	{
-		MoveComp->MaxWalkSpeed = Row->MaxWalkSpeedStrafe;
+		MoveComp->MaxWalkSpeed = Row->MaxWalkSpeedStrafe * ReadinessMultiplier;
 	}
+}
+
+void ATacticalMovementCharacter::UpdateMovementOrientationBehavior()
+{
+	UCharacterMovementComponent* MoveComp = GetCharacterMovement();
+	if (!MoveComp)
+	{
+		return;
+	}
+
+	switch (CombatReadinessState)
+	{
+		case ECombatReadinessState::Sul:
+			// Sul should remain movement-oriented for now
+			bUseControllerRotationYaw = false;
+			MoveComp->bOrientRotationToMovement = true;
+			break;
+
+		case ECombatReadinessState::LowReady:
+		case ECombatReadinessState::MovementReady:
+		case ECombatReadinessState::ADS:
+			// These states should support combat-facing movement
+			bUseControllerRotationYaw = true;
+			MoveComp->bOrientRotationToMovement = false;
+			break;
+
+		default:
+			break;
+	}
+}
+
+float ATacticalMovementCharacter::GetReadinessSpeedMultiplier() const
+{
+	switch (CombatReadinessState)
+	{
+		case ECombatReadinessState::Sul:
+			return 1.00f;
+
+		case ECombatReadinessState::LowReady:
+			return 0.90f;
+
+		case ECombatReadinessState::MovementReady:
+			return 1.00f;
+
+		case ECombatReadinessState::ADS:
+			return 0.75f;
+
+		default:
+			return 1.00f;
+	}
+}
+
+bool ATacticalMovementCharacter::DoesCurrentReadinessAllowStrafe() const
+{
+	switch (CombatReadinessState)
+	{
+		case ECombatReadinessState::Sul:
+		case ECombatReadinessState::LowReady:
+		case ECombatReadinessState::MovementReady:
+		case ECombatReadinessState::ADS:
+			return true;
+
+		default:
+			return false;
+	}
+}
+
+bool ATacticalMovementCharacter::DoesCurrentReadinessAllowHipFire() const
+{
+	switch (CombatReadinessState)
+	{
+		case ECombatReadinessState::Sul:
+		case ECombatReadinessState::LowReady:
+		case ECombatReadinessState::MovementReady:
+		case ECombatReadinessState::ADS:
+			return true;
+
+		default:
+			return false;
+	}
+}
+
+bool ATacticalMovementCharacter::IsCurrentReadinessCombatFacing() const
+{
+	switch (CombatReadinessState)
+	{
+		case ECombatReadinessState::LowReady:
+		case ECombatReadinessState::MovementReady:
+		case ECombatReadinessState::ADS:
+			return true;
+
+		case ECombatReadinessState::Sul:
+		default:
+			return false;
+	}
+}
+
+int32 ATacticalMovementCharacter::GetCurrentReadinessEngagementTier() const
+{
+	switch (CombatReadinessState)
+	{
+		case ECombatReadinessState::Sul:
+			return 1;
+
+		case ECombatReadinessState::LowReady:
+			return 2;
+
+		case ECombatReadinessState::MovementReady:
+			return 3;
+
+		case ECombatReadinessState::ADS:
+			return 4;
+
+		default:
+			return 0;
+	}
+}
+
+int32 ATacticalMovementCharacter::GetCurrentHipFireResponsivenessTier() const
+{
+	switch (CombatReadinessState)
+	{
+		case ECombatReadinessState::Sul:
+			return 1;
+
+		case ECombatReadinessState::LowReady:
+			return 2;
+
+		case ECombatReadinessState::MovementReady:
+			return 3;
+
+		case ECombatReadinessState::ADS:
+			return 4;
+
+		default:
+			return 0;
+	}
+}
+
+bool ATacticalMovementCharacter::DoesCurrentReadinessAllowSprint() const
+{
+	switch (CombatReadinessState)
+	{
+		case ECombatReadinessState::ADS:
+			return false;
+
+		case ECombatReadinessState::Sul:
+		case ECombatReadinessState::LowReady:
+		case ECombatReadinessState::MovementReady:
+			return true;
+
+		default:
+			return false;
+	}
+}
+
+void ATacticalMovementCharacter::SetCombatReadinessState(ECombatReadinessState NewState)
+{
+	CombatReadinessState = NewState;
+	UpdateMovementOrientationBehavior();
 }
 
 void ATacticalMovementCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -171,7 +334,7 @@ void ATacticalMovementCharacter::DoMove(float Right, float Forward)
 	if (GetController() != nullptr)
 	{
 		UpdateDirectionalMovementSpeed(Right, Forward);
-		
+
 		// find out which way is forward
 		const FRotator Rotation = GetController()->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
@@ -210,41 +373,71 @@ void ATacticalMovementCharacter::DoJumpEnd()
 	StopJumping();
 }
 
+void ATacticalMovementCharacter::CancelSprintInternal()
+{
+	if (!bIsSprinting)
+	{
+		return;
+	}
+
+	bIsSprinting = false;
+
+	if (!MovementProfileTable || DefaultMovementProfileRowName.IsNone())
+	{
+		return;
+	}
+
+	MovementProfileRowName = DefaultMovementProfileRowName;
+	ApplyMovementProfileFromDataTable();
+}
+
 void ATacticalMovementCharacter::StartSprinting()
 {
-    if (bIsSprinting)
-    {
-        return;
-    }
+	if (bIsSprinting)
+	{
+		return;
+	}
 
-    // Must have a sprint row and a valid table
-    if (!MovementProfileTable || SprintMovementProfileRowName.IsNone())
-    {
-        return;
-    }
+	if (!DoesCurrentReadinessAllowSprint())
+	{
+		return;
+	}
 
-    bIsSprinting = true;
+	// Must have a sprint row and a valid table
+	if (!MovementProfileTable || SprintMovementProfileRowName.IsNone())
+	{
+		return;
+	}
 
-    // Switch to sprint row and re-apply profile
-    MovementProfileRowName = SprintMovementProfileRowName;
-    ApplyMovementProfileFromDataTable();
+	bIsSprinting = true;
+
+	// Switch to sprint row and re-apply profile
+	MovementProfileRowName = SprintMovementProfileRowName;
+	ApplyMovementProfileFromDataTable();
 }
 
 void ATacticalMovementCharacter::StopSprinting()
 {
-    if (!bIsSprinting)
-    {
-        return;
-    }
+	CancelSprintInternal();
+}
 
-    bIsSprinting = false;
+void ATacticalMovementCharacter::SetReadinessSul()
+{
+	SetCombatReadinessState(ECombatReadinessState::Sul);
+}
 
-    // Go back to the default (walk) row and re-apply
-    if (!MovementProfileTable || DefaultMovementProfileRowName.IsNone())
-    {
-        return;
-    }
+void ATacticalMovementCharacter::SetReadinessLowReady()
+{
+	SetCombatReadinessState(ECombatReadinessState::LowReady);
+}
 
-    MovementProfileRowName = DefaultMovementProfileRowName;
-    ApplyMovementProfileFromDataTable();
+void ATacticalMovementCharacter::SetReadinessMovementReady()
+{
+	SetCombatReadinessState(ECombatReadinessState::MovementReady);
+}
+
+void ATacticalMovementCharacter::SetReadinessADS()
+{
+	CancelSprintInternal();
+	SetCombatReadinessState(ECombatReadinessState::ADS);
 }
