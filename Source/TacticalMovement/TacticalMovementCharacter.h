@@ -105,9 +105,9 @@ protected:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Movement|State")
 	bool bIsSprinting = false;
 
-	/** Current combat readiness state */
+	/** Current combat readiness state (default: Low Ready — the practical default firearm posture) */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Movement|State")
-	ECombatReadinessState CombatReadinessState = ECombatReadinessState::MovementReady;
+	ECombatReadinessState CombatReadinessState = ECombatReadinessState::LowReady;
 
 	/** Initialize input action bindings */
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
