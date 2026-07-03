@@ -63,6 +63,24 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* SprintAction;
 
+	// --- Readiness / ADS input (Enhanced Input) ---
+
+	/** Readiness: Sul (dev key 1) */
+	UPROPERTY(EditAnywhere, Category="Input")
+	UInputAction* ReadinessSulAction;
+
+	/** Readiness: Low Ready (dev key 2) */
+	UPROPERTY(EditAnywhere, Category="Input")
+	UInputAction* ReadinessLowReadyAction;
+
+	/** Readiness: Movement Ready (dev key 3) */
+	UPROPERTY(EditAnywhere, Category="Input")
+	UInputAction* ReadinessMovementReadyAction;
+
+	/** ADS input (primary: Right Mouse Button; dev key 4). Temporary discrete-press behavior for this slice — hold-to-ADS / release-to-previous is a later design decision. */
+	UPROPERTY(EditAnywhere, Category="Input")
+	UInputAction* ADSAction;
+
 	// ---------------- Movement Profile (DataTable-driven movement) ----------------
 
 	/** DataTable holding all movement profiles */
