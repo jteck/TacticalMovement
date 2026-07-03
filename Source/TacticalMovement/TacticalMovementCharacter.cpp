@@ -293,7 +293,11 @@ void ATacticalMovementCharacter::SetupPlayerInputComponent(UInputComponent* Play
 {
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-		
+
+		// Jumping
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ATacticalMovementCharacter::DoJumpStart);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ATacticalMovementCharacter::DoJumpEnd);
+
 				// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ATacticalMovementCharacter::Move);
 
