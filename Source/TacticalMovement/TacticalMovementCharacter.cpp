@@ -304,6 +304,12 @@ void ATacticalMovementCharacter::SetupPlayerInputComponent(UInputComponent* Play
 		// Sprinting
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &ATacticalMovementCharacter::StartSprinting);
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &ATacticalMovementCharacter::StopSprinting);
+
+		// Readiness / ADS (Enhanced Input -> existing readiness functions; input plumbing only, no rule/value changes)
+		EnhancedInputComponent->BindAction(ReadinessSulAction, ETriggerEvent::Started, this, &ATacticalMovementCharacter::SetReadinessSul);
+		EnhancedInputComponent->BindAction(ReadinessLowReadyAction, ETriggerEvent::Started, this, &ATacticalMovementCharacter::SetReadinessLowReady);
+		EnhancedInputComponent->BindAction(ReadinessMovementReadyAction, ETriggerEvent::Started, this, &ATacticalMovementCharacter::SetReadinessMovementReady);
+		EnhancedInputComponent->BindAction(ADSAction, ETriggerEvent::Started, this, &ATacticalMovementCharacter::SetReadinessADS);
 	}
 	else
 	{
