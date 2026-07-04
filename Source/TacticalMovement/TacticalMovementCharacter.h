@@ -201,6 +201,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Movement|State")
 	void SetReadinessADS();
 
+	/** Read-only accessor for the current combat readiness state (test/debug; does not change behavior) */
+	FORCEINLINE ECombatReadinessState GetCombatReadinessState() const { return CombatReadinessState; }
+
+	/** Read-only accessor for the current sprint state (test/debug; does not change behavior) */
+	FORCEINLINE bool IsSprinting() const { return bIsSprinting; }
+
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 
