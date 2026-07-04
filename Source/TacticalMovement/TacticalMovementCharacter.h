@@ -77,9 +77,13 @@ protected:
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* ReadinessMovementReadyAction;
 
-	/** ADS input (primary: Right Mouse Button; dev key 4). Temporary discrete-press behavior for this slice — hold-to-ADS / release-to-previous is a later design decision. */
+	/** ADS input (primary: Right Mouse Button). Hold-to-ADS: press enters ADS, release restores the previous readiness. */
 	UPROPERTY(EditAnywhere, Category="Input")
 	UInputAction* ADSAction;
+
+	/** Dev-only discrete ADS latch (dev key 4). Calls the discrete SetReadinessADS() (enter-and-stay); exit via readiness keys 1/2/3. Kept separate from ADSAction so RMB can be true hold-to-ADS while key 4 remains a hold-independent test latch. */
+	UPROPERTY(EditAnywhere, Category="Input")
+	UInputAction* ADSDevLatchAction;
 
 	// ---------------- Movement Profile (DataTable-driven movement) ----------------
 
@@ -108,6 +112,10 @@ protected:
 	/** Current combat readiness state (default: Low Ready — the practical default firearm posture) */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Movement|State")
 	ECombatReadinessState CombatReadinessState = ECombatReadinessState::LowReady;
+
+	/** Readiness to restore when hold-to-ADS (RMB) is released. Captured only when entering ADS from a non-ADS state; seeded to Low Ready as the fallback. Transient runtime state — never serialized. */
+	UPROPERTY(Transient)
+	ECombatReadinessState PreviousReadinessBeforeADS = ECombatReadinessState::LowReady;
 
 	/** Initialize input action bindings */
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -200,6 +208,12 @@ public:
 	/** Sets the character to ADS readiness state */
 	UFUNCTION(BlueprintCallable, Category="Movement|State")
 	void SetReadinessADS();
+
+	/** Hold-to-ADS press handler (RMB down): captures the previous readiness (only when not already ADS), then enters ADS. Public for input binding + automation tests. */
+	void EnterADSHold();
+
+	/** Hold-to-ADS release handler (RMB up): if currently in ADS, restores the captured previous readiness (fallback Low Ready). No-op if not in ADS, so a manual readiness change while holding is not clobbered. Public for input binding + automation tests. */
+	void ExitADSHold();
 
 	/** Read-only accessor for the current combat readiness state (test/debug; does not change behavior) */
 	FORCEINLINE ECombatReadinessState GetCombatReadinessState() const { return CombatReadinessState; }
