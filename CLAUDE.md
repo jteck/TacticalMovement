@@ -1,149 +1,134 @@
 # CLAUDE.md — TacticalMovement (UE 5.8)
 
-Durable project context, auto-loaded every session. For the detailed point-in-time snapshot see `CURRENT_CLAUDE_CODE_HANDOFF.md` (repo root).
+Durable project context, auto-loaded every session. This file is a **self-contained handoff**: a fresh Claude Code session should be able to continue from it without prior chat history.
 
-> **Golden rule: "Borrow the rails, keep our train."** Use Epic UE 5.8 systems / tools / sample patterns for scaffolding and plumbing; keep TacticalMovement's readiness/movement identity custom. **Before any new subsystem, run the Epic-First Gate** (docs `10`) and log the decision.
+> **Golden rule: "Borrow the rails, keep our train."** Use Epic UE 5.8 systems / tools / sample patterns for scaffolding and plumbing; keep TacticalMovement's readiness/movement identity custom. **Before any new subsystem, run the Epic-First Gate** (docs `10`, Section 11) and log the decision in the Decision Log (Section 12).
 >
-> **Do not merge or push anything without the user's explicit approval.**
+> **Do not merge or push anything without the user's explicit approval.** Always verify live state with `git`/GitHub before acting — the status below is a point-in-time snapshot.
 
-## ✅ LAST SLICE — hold-to-ADS with previous-readiness restore — VALIDATED (2026-07-03)
+---
 
-**Slice: replace temporary discrete RMB ADS with proper hold-to-ADS.** On branch `feature/hold-to-ads` — implemented + fully validated; **awaiting commit approval** (not yet committed at time of writing).
+## HANDOFF — current state (2026-07-04)
 
-- **Behavior:** hold **RMB** (`IA_ADS`) → ADS; release → restore the previous non-ADS readiness (fallback **Low Ready** if invalid/unclear). Release while not in ADS is a **no-op** (a manual 1/2/3 change made while holding is not clobbered). ADS still **cancels** an active sprint and **blocks** starting one; sprint is **not** auto-resumed on ADS exit.
-- **Dev key 4:** now a **discrete ADS latch** on a **separate** action `IA_ADS_DevLatch` (calls unchanged `SetReadinessADS()`; exit via 1/2/3). RMB = hold, key 4 = latch. Key 4 is the only MCP-drivable way to park in ADS (Slate/MCP can't hold a key).
-- **Files:** `TacticalMovementCharacter.h/.cpp` (`EnterADSHold`/`ExitADSHold`, transient `PreviousReadinessBeforeADS` seeded Low Ready, new `ADSDevLatchAction` UPROPERTY, binding `IA_ADS` Started→Enter / Completed→Exit + `IA_ADS_DevLatch` Started→`SetReadinessADS`); `Tests/ReadinessRuleTests.cpp` (+8 hold tests → 12 total); `Content/Input/IA_ADS_DevLatch.uasset` (new); `Content/Input/IMC_Default.uasset` (`Four`→`IA_ADS_DevLatch`, RMB stays `IA_ADS`, all other mappings intact); `Content/ThirdPerson/Blueprints/BP_ThirdPersonCharacter.uasset` (`ADSDevLatchAction` assigned). `SetReadinessADS()` unchanged.
-- **Validation:** clean build (0 warn/err); **12/12** `TacticalMovement.Readiness` pass; live PIE via MCP — dev-latch key 4 (ADS + 1/2/3 exit) and all 6 RMB checks (restore from LowReady/MovementReady/Sul, ADS-cancels-active-sprint, ADS-blocks-sprint, no-clobber-on-release) confirmed by reading the live pawn.
-- **⚠️ Asset-edit gotcha (learned this slice):** assigning the **new** `ADSDevLatchAction` C++ UPROPERTY on the BP via ObjectTools **save-only did NOT persist** — it spawned as `None` in PIE. **`compile_blueprint` + save** was required to bake it in. When editing a BP default for a newly-added C++ property, verify on the **live PIE instance**, not just the saved asset.
-- **Docs:** Epic-First Decision Log entry added to docs `10` (hold-to-ADS).
+### 1. Current repo state
+- **Active UE project:** `~/UnrealEngine/TacticalMovement_UE58` (UE 5.8; `.uproject` EngineAssociation = 5.8).
+- **GitHub:** https://github.com/jteck/TacticalMovement
+- **`main` = `b8e706cfaf9a74e917f2f4420876a664fc2db040`** (pushed; local `main` in sync with `origin/main`).
+- **PR #5 (hold-to-ADS) MERGED** into `main` (merge commit `b8e706c`; slice commit `c5770d2`).
+- **`feature/hold-to-ads` deleted** locally and remotely.
+- **Remaining branches** — local: `main`, `checkpoint/pre-ue58-upgrade`; remote: `origin/main`, `origin/checkpoint/pre-ue58-upgrade`.
+- **Working tree clean.**
+- **No new baseline tag.** `v0.1.0-ue58-baseline` (→ `78b14f6`) remains unchanged.
 
-**Prior slice — readiness automation tests — MERGED to `main` (PR #4):** `main` = `6f55b22` (merge of slice `492e6d4`, pushed); branch `feature/readiness-automation-tests` deleted local+remote; docs commit `eb3fa2d` local-only. Baseline tag `v0.1.0-ue58-baseline` → `78b14f6` unchanged. Other remaining branch: `checkpoint/pre-ue58-upgrade`.
+### 2. Completed systems now in `main`
+- **UE 5.7 → 5.8 migration** complete.
+- **Enhanced Input** readiness/ADS/sprint mappings complete (readiness moved off the old Blueprint keyboard debug events onto real Input Actions).
+- **Low Ready is the default readiness** (C++ default + BP CDO both `LowReady`; guarded by the `BPDefaultIsLowReady` test).
+- **Sprint / readiness / ADS rules are stable.**
+- **Readiness automation tests** are in `main` (was PR #4).
+- **Hold-to-ADS** is merged into `main` (PR #5).
 
-**NEXT SLICE — not started:** per roadmap / user direction (candidates: weapon posture visuals, ADS camera, animation layering, traversal/mantle). Each pending its own Epic-First Gate + approval.
+### 3. Current readiness behavior
+Readiness enum `ECombatReadinessState` = **Sul / LowReady / MovementReady / ADS** (identity — do not replace).
+- **`1`** → Sul · **`2`** → LowReady · **`3`** → MovementReady (Enhanced Input → existing `SetReadiness*` C++ functions).
+- **RMB / `IA_ADS` = hold-to-ADS:**
+  - Press (`Started` → `EnterADSHold`) captures the previous **non-ADS** readiness, then enters ADS.
+  - Release (`Completed` → `ExitADSHold`) **restores the previous readiness**.
+  - Invalid/unclear previous state → fallback **LowReady**.
+  - A manual readiness change (1/2/3) made **while holding RMB** leaves ADS; the subsequent release is a **no-op** and must **not** clobber that choice.
+  - ADS **cancels** an active sprint and **blocks** starting one; sprint does **not** auto-resume after ADS exits.
+- **`4` / `IA_ADS_DevLatch` = discrete ADS dev latch** for testing (enters ADS and stays; exit via 1/2/3). Separate action from `IA_ADS` so RMB can be true hold while key 4 stays a hold-independent latch.
+- **`SetReadinessADS()` is unchanged** — it remains the discrete "enter ADS" path (cancel sprint + set ADS), called by both the dev latch and internally by `EnterADSHold()`.
+- Sprint = `LeftShift` / `IA_Sprint` (hold). Move/Look/Jump unchanged.
 
-## 🗄️ Prior slice — Phase H (1) default readiness = Low Ready — since MERGED to `main`
+Key C++ (in `Source/TacticalMovement/TacticalMovementCharacter.*`): `EnterADSHold()`, `ExitADSHold()`, transient `PreviousReadinessBeforeADS` (seeded `LowReady`), `UInputAction* ADSDevLatchAction`. Read-only test accessors `GetCombatReadinessState()`, `IsSprinting()`.
 
-> Details below are historical (captured when this slice was a local-only feature branch). It has since been merged and its default (`LowReady`) is in `main` and guarded by `BPDefaultIsLowReady`.
+### 4. Validation already completed (hold-to-ADS slice)
+- **Clean build** passed (0 warnings/errors).
+- **`TacticalMovement.Readiness` automation suite: 12/12 pass** (4 prior + 8 hold-to-ADS).
+- **Live PIE / MCP validation passed:** key-4 ADS latch; 1/2/3 exit from the latch; RMB hold/release restore from LowReady, MovementReady, and Sul; sprint → RMB ADS cancels sprint; ADS blocks sprint; manual readiness change during RMB hold not clobbered on release.
 
-**Slice: Phase H (1) — make readiness default = Low Ready** (reconciled: runtime was `Sul`, C++ was `MovementReady` → now `LowReady`). **DONE + committed with user approval.**
+### 5. Important Unreal asset-workflow lesson
+After adding a **new C++ `UPROPERTY`** and assigning it on `BP_ThirdPersonCharacter` (e.g. `ADSDevLatchAction`), **save-only was NOT enough** — the property spawned as `None` in PIE. The Blueprint had to be **`compile_blueprint` + saved** before the live PIE instance carried the value. **For any future newly-added C++ `UPROPERTY` assigned on a BP: compile the BP, and verify on the live PIE instance (`find_actors` → `get_properties`), not just a saved-asset read-back.**
 
-**Root cause (was):** `BP_ThirdPersonCharacter` **class default** `combatReadinessState = Sul` overrode the C++ initializer (property is `EditDefaultsOnly`); GameMode spawns from the BP class → BP CDO won.
+### 6. Docs repo state
+- **Path:** `~/Library/Mobile Documents/com~apple~CloudDocs/Coding/UE FPS project/`
+- **No remote configured**; `main` is clean.
+- **Latest local docs commit:** `c7d3ce97d3c1af370ef12409f3a5de85d46bc53c` — "Document hold-to-ADS Epic-First decision".
+- Docs remain **local-only** for now. Key docs: `10` (Epic-First Gate + Decision Log), `01` (Roadmap), `04` (code/asset state), `05` (gameplay design decisions), `03A` (chronology), `06` (open issues/risks), `08` (AI project context).
 
-**What shipped (HEAD of branch `feature/default-readiness-lowready`, NOT pushed):**
-- ✅ `Source/TacticalMovement/TacticalMovementCharacter.h` — C++ default `MovementReady` → `LowReady` (~line 110); editor target rebuilt (native CDO verified = `LowReady`).
-- ✅ `Content/ThirdPerson/Blueprints/BP_ThirdPersonCharacter.uasset` — `combatReadinessState` set to `LowReady` and saved (was `Sul`). NOTE: `ObjectTools.reset_properties` returned `true` but did NOT persist (BP reapplied its serialized value on re-read); `set_properties("LowReady")` did. So the BP carries an **explicit `LowReady` override** matching the C++ default, not a pure inherit — functionally correct; revisit if true single-source inherit is wanted.
-- ✅ This CLAUDE.md handoff.
-- Docs repo commit `e33808e` on `main`: `01_Roadmap.md` (Phase F/G → Completed, UE 5.8 baseline milestone, Phase H → Current), `04` (default readiness recorded), `03A` (Phase 17.5 baseline + Phase 18 slice), `09` (stale line refreshed).
+### 7. Next planned action — PLANNING ONLY (do not implement)
+Produce a **5–8 slice development outlook** (no code) covering: **weapon posture visualization, equipped weapon, weapon data, pickup/drop, Gameplay Tags, and future GAS adoption.**
+For each slice, map: **Epic systems to adopt · Lyra patterns to reference · systems to defer · expected output · risk level.**
+Then identify: **which slice should be next; which slices should avoid GAS; where GAS first becomes worth considering; where Gameplay Tags should enter; what must stay custom to TacticalMovement.**
+Each slice must still pass its own **Epic-First Gate (docs `10`) + explicit approval** before implementation.
 
-**Live PIE validation (MCP):** fresh spawn `combatReadinessState` = **LowReady** ✅; readiness ladder via real Enhanced Input path — `1`→Sul ✅ `2`→LowReady ✅ `3`→MovementReady ✅ `4`→ADS ✅ RMB→ADS ✅. *Technique that worked:* `Click(sp4)` (viewport region) to focus game input BEFORE `PressKey` (`One`/`Two`/`Three`/`Four`); readiness persists so read after each. **Not re-driven:** sprint / ADS-cancels-sprint / jump — **hold-to-input** transients and Slate `PressKey` is press+release only (no key-hold primitive); this slice changed only a data default (can't affect movement/input logic), already log-verified in the Enhanced Input slice.
+### 8. Standing guardrails (do not violate without explicit approval)
+- Do **not** migrate to Lyra (reference only).
+- Do **not** introduce **GAS** without explicit approval.
+- Do **not** replace `ECombatReadinessState`.
+- Do **not** replace the DataTable movement-profile system (`DT_MovementProfiles`).
+- Do **not** change movement values without approval.
+- Do **not** start weapon visuals, firing, inventory, pickup/drop, mantle, AI, or GAS until approved **as a slice**.
+- **Do** use Epic / Lyra / built-in Unreal systems when they speed up beta development (borrow the rails).
+- Keep TacticalMovement's **custom readiness/movement identity**.
+- **Never merge or push without explicit user approval.** Work on a `feature/*` branch, not `main`.
 
-**NEXT (not started):** branch `feature/default-readiness-lowready` is local-only — **push / open PR pending user decision.** Then Phase H continues (Movement Ready as deliberate choice, etc.) or next slice per roadmap. Automation tests still DEFERRED. Note this CLAUDE.md edit is a post-commit tweak = uncommitted working-tree change on the feature branch.
-
-**Editor status — BLOCKER RESOLVED (2026-07-03):** the "editor hangs on an early modal dialog" diagnosis was WRONG. Two facts corrected it:
-- **UE 5.8 logs live at `~/Library/Logs/Unreal Engine/TacticalMovementEditor/TacticalMovement.log`, NOT the project's `Saved/Logs`.** The old "no logs = stuck early in boot" conclusion came from checking the wrong path; the editor was logging + booting fine the whole time.
-- **Real root cause of MCP-down:** a stale `CrashReportClient` (from an earlier crash) was **squatting `127.0.0.1:8000`**, so the editor's MCP HTTP listener failed to bind (log: `LogHttpListener: Error: HttpListener unable to bind to 127.0.0.1:8000`) and UE does not retry. That leftover crash reporter was likely also the "modal" that was seen.
-- **Fix applied:** killed the stale `CrashReportClient` + the old editor, freed port 8000, relaunched with `-ModelContextProtocolStartServer`. Editor now fully booted (fast ~2.5 min on warm cache) and **MCP is bound on 8000** (`curl 127.0.0.1:8000/mcp` → 405, i.e. reachable/POST-only).
-- **If MCP is ever down again:** check `lsof -nP -iTCP:8000` — if something other than UnrealEditor holds it (e.g. `CrashReportClient`), kill that, then `pkill -9 -f "TacticalMovement_UE58/TacticalMovement.uproject"` and relaunch. To diagnose boot, read the `~/Library/Logs/...` log, not `Saved/Logs`. MCP client connects only if the editor is bound to 8000 **before** Claude Code starts (restart Claude Code after the bridge is up).
-
-**Git anchors (current):** `main` = `6f55b22` (pushed); baseline tag `v0.1.0-ue58-baseline` → `78b14f6`. Docs repo `main` = `eb3fa2d` (no remote, local-only). Working tree clean on `main`. _(Historical: the default-readiness slice referenced older anchors like `60dadd6`/`e33808e`; superseded by the merges above.)_
+---
 
 ## Repo / project
 
-- **UE working repo (ACTIVE):** `~/UnrealEngine/TacticalMovement_UE58` — UE 5.8, `.uproject` EngineAssociation = 5.8.
+- **UE working repo (ACTIVE):** `~/UnrealEngine/TacticalMovement_UE58` — UE 5.8.
 - **Original UE 5.7 project — UNTOUCHED:** `~/UnrealEngine/TacticalMovement` (branch `checkpoint/pre-ue58-upgrade`). 5.7 source of truth; **do not upgrade in place**.
 - **GitHub:** https://github.com/jteck/TacticalMovement
-- **Docs repo (separate git repo):** `~/Library/Mobile Documents/com~apple~CloudDocs/Coding/UE FPS project/` — branch `main`, **no remote configured**, working tree clean, latest commit `24eb740`. Key docs: `10` (Epic-First Gate + Decision Log), `04` (code/asset state), `03A` (chronology; Phase 17 = Enhanced Input), `06` (open issues; sprint/ADS bug = RESOLVED).
+- **Docs repo:** `~/Library/Mobile Documents/com~apple~CloudDocs/Coding/UE FPS project/` — branch `main`, **no remote**.
 
-## Current project state — VOLATILE (verify with `git`/GitHub before acting)
+## Enhanced Input map (`/Game/Input/`)
 
-_This block reflects 2026-07-03 and can go stale. Confirm with `git status`, `git log --oneline --decorate -10`, and the GitHub PR pages._
+- Input Actions (Boolean): `IA_ReadinessSul`, `IA_ReadinessLowReady`, `IA_ReadinessMovementReady`, `IA_ADS`, `IA_ADS_DevLatch` (+ template `IA_Move`, `IA_Look`, `IA_Jump`, `IA_Sprint`).
+- **`IMC_Default` mappings** live under `defaultKeyMappings.mappings` (UE 5.8; the legacy top-level `mappings` array is empty). Current ADS-relevant rows: `RightMouseButton → IA_ADS`, `Four → IA_ADS_DevLatch`. Readiness: `One/Two/Three → Sul/LowReady/MovementReady`. Move/Look/Jump/Sprint from the template (WASD+arrows+gamepad, LeftShift sprint, SpaceBar jump) — all intact.
+- Bindings live in `SetupPlayerInputComponent`: `IA_ADS` Started→`EnterADSHold`, Completed→`ExitADSHold`; `IA_ADS_DevLatch` Started→`SetReadinessADS`; readiness actions Started→`SetReadiness*`.
 
-> **⚠️ SUPERSEDED — the facts in this block predate the baseline merge and are OUT OF DATE.** PR #1 & PR #2 are both MERGED and their branches deleted; `main` is now `60dadd6`; UE 5.8 baseline is tagged `v0.1.0-ue58-baseline` (`78b14f6`); jump input binding was fixed. Trust the **"ACTIVE SLICE — RESUME HERE"** section at the top and live `git`, not the lines below.
+## Gameplay identity (custom — never flatten to a sample's feel)
 
-- **Active branch:** `feature/enhanced-input-readiness` (all four branches pushed to origin; nothing unpushed; working tree clean).
-- **Editor + MCP bridge:** DOWN by default; relaunch on demand (see Commands).
-- **Open PR stack (both OPEN, NOT merged):**
-  - **PR #2** — `feature/ue58-migration` → `main` — https://github.com/jteck/TacticalMovement/pull/2
-    Scope: readiness-state movement checkpoint, UE 5.8 migration, Epic MCP bridge, sprint/ADS debug-key fix.
-  - **PR #1** — `feature/enhanced-input-readiness` → `feature/ue58-migration` — https://github.com/jteck/TacticalMovement/pull/1
-    Scope: Enhanced Input readiness / ADS slice only. **Stacked on PR #2.**
-- **Merge order:** merge **PR #2 first, then PR #1**. Do NOT merge PR #1 before PR #2. After PR #2 merges, PR #1 likely needs retargeting to `main`.
+Readiness ladder = **Sul / Low Ready / Movement Ready / ADS**. Low Ready is the default firearm posture; Movement Ready is deliberate; ADS is most committed; Sul is lower-readiness but mobile. Mobility-vs-readiness tradeoff + directional movement (distinct fwd/strafe/back speeds, readiness multipliers) are the product. Epic systems express the model; they do not define it.
 
-## Important commits
-
-| Hash | Contents |
-|---|---|
-| `2b80eda` | Readiness-state movement checkpoint before UE 5.8 migration (base of migration branch; not yet in `main`) |
-| `1a1e63a` | UE 5.7 → 5.8 migration (`.uproject`, both `Target.cs` → V7 + Unreal5_8, STATETREE macro deprecation fix) |
-| `58892c6` | Epic MCP bridge enablement (`ModelContextProtocol` + `AllToolsets`) |
-| `fe27c80` | Sprint/ADS debug-key fix (Input Debug Key → normal keyboard events; modifier-chord was the bug, not the C++) |
-| `034470c` | Enhanced Input readiness / ADS C++ bindings |
-| `70c80cd` | Enhanced Input assets, IMC mappings, Blueprint cleanup |
-| docs `24eb740` | Docs updated for Enhanced Input implementation |
-
-`main` = `b376de9`; initial commit `cd52d8a`.
-
-## Enhanced Input slice (implemented, validated)
-
-- **New Input Actions** (`/Game/Input/`, Boolean): `IA_ReadinessSul`, `IA_ReadinessLowReady`, `IA_ReadinessMovementReady`, `IA_ADS`.
-- **`IMC_Default` mappings** (existing WASD/Move/Look/Sprint/Jump untouched; mappings live in `defaultKeyMappings.mappings` in 5.8): `1`→Sul, `2`→LowReady, `3`→MovementReady, `RMB`→ADS, `4`→ADS.
-- **`TacticalMovementCharacter.h`:** added `UInputAction*` properties for readiness + ADS.
-- **`TacticalMovementCharacter.cpp`:** bound them in `SetupPlayerInputComponent` (`ETriggerEvent::Started`); bindings call the **existing** `SetReadiness*` functions (no rule/logic changes).
-- **`BP_ThirdPersonCharacter`:** assigned the Input Actions in Class Defaults; **removed** the old keyboard readiness event nodes + their `SetReadiness` call nodes.
-- **Final input path:** Enhanced Input → C++ readiness functions. **Old path removed** (raw Blueprint keyboard events → readiness functions).
-
-## Validation results (Enhanced Input slice)
-
-- Clean rebuild succeeded, **zero warnings/errors**.
-- Temporary `[EIValidate]` logs were **removed before commit** (source verified clean).
-- Old Blueprint readiness keyboard path was **removed before final validation** (Enhanced Input tested in isolation).
-- Objectively verified via runtime log trace: `1/2/3/4` route through Enhanced Input; RMB → ADS; sprint works via `IA_Sprint`; pressing `4` while sprinting triggers ADS and **cancels sprint**; **ADS blocks starting sprint**; Move/Look/Jump normal.
-
-## Guardrails (do not violate without approval)
-
-- Do **not** replace `ECombatReadinessState`.
-- Do **not** change the readiness ladder/rules without approval.
-- Do **not** introduce GAS yet.
-- Do **not** migrate into Lyra (reference only).
-- Do **not** start animation work yet.
-- Do **not** replace the DataTable movement profile system.
-- Do **not** change movement values without approval.
-- ADS is **temporary discrete-press** for this slice; hold-to-ADS / release-to-previous is **deferred**.
-
-## Gameplay identity
-
-Readiness ladder = TacticalMovement identity (custom; no Epic sample provides it):
-- **Sul**, **Low Ready**, **Movement Ready**, **ADS**.
-- (Note: current C++ default is `MovementReady`; docs say **Low Ready** is the *intended* default — not yet reconciled.)
-- Epic systems are for scaffolding/plumbing only; custom tactical readiness logic stays custom.
-
-## Workflow reminder
-
-- Before any new subsystem: run the **Epic-First Gate** (docs `10`) and log it in the Decision Log.
-- Reference Epic / Lyra / Game Animation Sample **patterns and tech only** — never feel/values. Preserve identity.
-- **Do not merge or push unless the user explicitly approves.**
-- Likely next slices (each pending a gate check + approval): weapon setup / posture visual animation, ADS behavior design (hold-to-ADS), weapon sockets, animation layering, input expansion (crouch/fire/lean).
-- **Planned traversal slice (NOT started):** Mantle first, then vault/climb later. Must go through the Epic-First Gate before implementation; evaluate the Epic Game Animation Sample traversal/mantle system. Mantling should feel grounded/weighted, suspend readiness/ADS during the action, and restore the prior state afterward. (Docs: `01` Roadmap → Later/Planned, `10` §4.)
-
-## Commands (macOS, Apple Silicon; UE 5.8 at `/Users/Shared/Epic Games/UE_5.8`; Xcode 26)
+## Editor + MCP bridge (macOS, Apple Silicon; UE 5.8 at `/Users/Shared/Epic Games/UE_5.8`; Xcode 26)
 
 ```bash
 # status
 git -C ~/UnrealEngine/TacticalMovement_UE58 status
 git -C ~/UnrealEngine/TacticalMovement_UE58 log --oneline --decorate -10
 
-# relaunch editor + MCP bridge (detached; auto-starts MCP server on 127.0.0.1:8000)
+# relaunch editor + MCP bridge (detached; MCP server on 127.0.0.1:8000)
 open -n -a "/Users/Shared/Epic Games/UE_5.8/Engine/Binaries/Mac/UnrealEditor.app" \
   --args "/Users/jasonteck/UnrealEngine/TacticalMovement_UE58/TacticalMovement.uproject" \
   -ModelContextProtocolStartServer
-# wait ~20-30s until `curl 127.0.0.1:8000/mcp` returns HTTP 200, THEN start/restart Claude Code so its
-# MCP client connects (client retries only 3x at startup then marks the server `failed`).
+# wait until `curl -s -o /dev/null -w '%{http_code}' 127.0.0.1:8000/mcp` is reachable (405/200), then use MCP.
 
-# clean C++ rebuild (editor must be closed)
-cd ~/UnrealEngine/TacticalMovement_UE58 && rm -rf Binaries Intermediate
+# build (editor MUST be closed first — it locks the module dylib)
+#   incremental (fast, ~20s) — preferred for small C++ changes:
+cd ~/UnrealEngine/TacticalMovement_UE58
 "/Users/Shared/Epic Games/UE_5.8/Engine/Build/BatchFiles/Mac/Build.sh" \
   TacticalMovementEditor Mac Development -project="$PWD/TacticalMovement.uproject" -waitmutex
+#   full clean rebuild (only if needed): prepend `rm -rf Binaries Intermediate`
 ```
 
-- **`gh` CLI is NOT installed.** PRs were created/edited via the **GitHub REST API** using the token from `git credential fill` (host `github.com`).
-- Metal Toolchain already installed (`xcodebuild -downloadComponent MetalToolchain`) — required by UE 5.8 + Xcode 26.
+**MCP / editor operational notes (learned in the hold-to-ADS slice):**
+- Adding a new `UPROPERTY` needs a full editor-closed build (Live Coding won't add reflected properties); a new plain C++ method (non-`UFUNCTION`) can bind via `BindAction` without reflection.
+- After closing the editor to build and relaunching, the MCP client **may reconnect automatically**; if tools error, restart Claude Code (client retries only ~3× at startup; the editor must be bound to `:8000` first).
+- If MCP is down: check `lsof -nP -iTCP:8000`. If a stale `CrashReportClient` (not `UnrealEditor`) holds the port, kill it, then `pkill -9 -f "TacticalMovement_UE58/TacticalMovement.uproject"` and relaunch. UE 5.8 logs are at `~/Library/Logs/Unreal Engine/TacticalMovementEditor/TacticalMovement.log` (NOT the project's `Saved/Logs`).
+- **`gh` CLI is NOT installed.** Create/merge PRs via the **GitHub REST API** with the token from `git credential fill` (host `github.com`); never print the token.
+- Metal Toolchain installed (required by UE 5.8 + Xcode 26).
+
+**PIE / MCP validation techniques (how the live checks were driven):**
+- Run tests: `AutomationTestToolset` → `DiscoverTests(bForceRediscover=true)` after a rebuild, then `RunTestsByFilter("StartsWith:TacticalMovement.Readiness")`.
+- Read live pawn state: start PIE (`EditorAppToolset.StartPIE`), then `SceneTools.find_actors(name="ThirdPersonCharacter")` returns the PIE pawn (`…UEDPIE_0_…BP_ThirdPersonCharacter_C_0`); read with `ObjectTools.get_properties` (`CombatReadinessState`, `bIsSprinting`).
+- **Slate `PressKey` cannot reach the PIE game viewport** (input goes to the focused Slate widget, not the game) — synthetic keypress routing is effectively unavailable. **Use `PlayMode_InEditorFloating`** and have the **user provide real keyboard/mouse input**; the floating window captures it reliably.
+- For **hold** inputs (RMB, Shift) the user can't type while the mouse is captured: use a **timed read** — user sends "go" then holds; run a `ProgrammaticToolset.execute_tool_script` that `time.sleep(4)` then reads the pawn (sample twice, e.g. t≈4s and t≈6s, to be robust to timing). Key 4 (discrete latch) is the only ADS state settable by a single tap and is directly readable after the press.
+
+## Workflow reminders
+- Before any new subsystem: run the **Epic-First Gate** (docs `10` §11) and log it (§12).
+- Reference Epic / Lyra / Game Animation Sample **patterns and tech only** — never feel/values.
+- Vertical-slice discipline: one Epic-backed layer, prove it in runtime + tests, then the next.
+- **Do not merge or push unless the user explicitly approves.**
