@@ -6,7 +6,24 @@ Durable project context, auto-loaded every session. For the detailed point-in-ti
 >
 > **Do not merge or push anything without the user's explicit approval.**
 
-## ✅ LAST SLICE — Phase H (1) default readiness = Low Ready — COMMITTED (2026-07-03)
+## ✅ LAST SLICE — hold-to-ADS with previous-readiness restore — VALIDATED (2026-07-03)
+
+**Slice: replace temporary discrete RMB ADS with proper hold-to-ADS.** On branch `feature/hold-to-ads` — implemented + fully validated; **awaiting commit approval** (not yet committed at time of writing).
+
+- **Behavior:** hold **RMB** (`IA_ADS`) → ADS; release → restore the previous non-ADS readiness (fallback **Low Ready** if invalid/unclear). Release while not in ADS is a **no-op** (a manual 1/2/3 change made while holding is not clobbered). ADS still **cancels** an active sprint and **blocks** starting one; sprint is **not** auto-resumed on ADS exit.
+- **Dev key 4:** now a **discrete ADS latch** on a **separate** action `IA_ADS_DevLatch` (calls unchanged `SetReadinessADS()`; exit via 1/2/3). RMB = hold, key 4 = latch. Key 4 is the only MCP-drivable way to park in ADS (Slate/MCP can't hold a key).
+- **Files:** `TacticalMovementCharacter.h/.cpp` (`EnterADSHold`/`ExitADSHold`, transient `PreviousReadinessBeforeADS` seeded Low Ready, new `ADSDevLatchAction` UPROPERTY, binding `IA_ADS` Started→Enter / Completed→Exit + `IA_ADS_DevLatch` Started→`SetReadinessADS`); `Tests/ReadinessRuleTests.cpp` (+8 hold tests → 12 total); `Content/Input/IA_ADS_DevLatch.uasset` (new); `Content/Input/IMC_Default.uasset` (`Four`→`IA_ADS_DevLatch`, RMB stays `IA_ADS`, all other mappings intact); `Content/ThirdPerson/Blueprints/BP_ThirdPersonCharacter.uasset` (`ADSDevLatchAction` assigned). `SetReadinessADS()` unchanged.
+- **Validation:** clean build (0 warn/err); **12/12** `TacticalMovement.Readiness` pass; live PIE via MCP — dev-latch key 4 (ADS + 1/2/3 exit) and all 6 RMB checks (restore from LowReady/MovementReady/Sul, ADS-cancels-active-sprint, ADS-blocks-sprint, no-clobber-on-release) confirmed by reading the live pawn.
+- **⚠️ Asset-edit gotcha (learned this slice):** assigning the **new** `ADSDevLatchAction` C++ UPROPERTY on the BP via ObjectTools **save-only did NOT persist** — it spawned as `None` in PIE. **`compile_blueprint` + save** was required to bake it in. When editing a BP default for a newly-added C++ property, verify on the **live PIE instance**, not just the saved asset.
+- **Docs:** Epic-First Decision Log entry added to docs `10` (hold-to-ADS).
+
+**Prior slice — readiness automation tests — MERGED to `main` (PR #4):** `main` = `6f55b22` (merge of slice `492e6d4`, pushed); branch `feature/readiness-automation-tests` deleted local+remote; docs commit `eb3fa2d` local-only. Baseline tag `v0.1.0-ue58-baseline` → `78b14f6` unchanged. Other remaining branch: `checkpoint/pre-ue58-upgrade`.
+
+**NEXT SLICE — not started:** per roadmap / user direction (candidates: weapon posture visuals, ADS camera, animation layering, traversal/mantle). Each pending its own Epic-First Gate + approval.
+
+## 🗄️ Prior slice — Phase H (1) default readiness = Low Ready — since MERGED to `main`
+
+> Details below are historical (captured when this slice was a local-only feature branch). It has since been merged and its default (`LowReady`) is in `main` and guarded by `BPDefaultIsLowReady`.
 
 **Slice: Phase H (1) — make readiness default = Low Ready** (reconciled: runtime was `Sul`, C++ was `MovementReady` → now `LowReady`). **DONE + committed with user approval.**
 
@@ -28,7 +45,7 @@ Durable project context, auto-loaded every session. For the detailed point-in-ti
 - **Fix applied:** killed the stale `CrashReportClient` + the old editor, freed port 8000, relaunched with `-ModelContextProtocolStartServer`. Editor now fully booted (fast ~2.5 min on warm cache) and **MCP is bound on 8000** (`curl 127.0.0.1:8000/mcp` → 405, i.e. reachable/POST-only).
 - **If MCP is ever down again:** check `lsof -nP -iTCP:8000` — if something other than UnrealEditor holds it (e.g. `CrashReportClient`), kill that, then `pkill -9 -f "TacticalMovement_UE58/TacticalMovement.uproject"` and relaunch. To diagnose boot, read the `~/Library/Logs/...` log, not `Saved/Logs`. MCP client connects only if the editor is bound to 8000 **before** Claude Code starts (restart Claude Code after the bridge is up).
 
-**Git anchors:** `main` = `60dadd6` (pushed); baseline tag `v0.1.0-ue58-baseline` → `78b14f6`. Default-readiness slice = HEAD of branch `feature/default-readiness-lowready` (local only, NOT pushed). Docs repo `main` = `e33808e` (no remote). Working tree: this CLAUDE.md tweak is the only uncommitted change (on the feature branch).
+**Git anchors (current):** `main` = `6f55b22` (pushed); baseline tag `v0.1.0-ue58-baseline` → `78b14f6`. Docs repo `main` = `eb3fa2d` (no remote, local-only). Working tree clean on `main`. _(Historical: the default-readiness slice referenced older anchors like `60dadd6`/`e33808e`; superseded by the merges above.)_
 
 ## Repo / project
 

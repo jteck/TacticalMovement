@@ -313,7 +313,13 @@ void ATacticalMovementCharacter::SetupPlayerInputComponent(UInputComponent* Play
 		EnhancedInputComponent->BindAction(ReadinessSulAction, ETriggerEvent::Started, this, &ATacticalMovementCharacter::SetReadinessSul);
 		EnhancedInputComponent->BindAction(ReadinessLowReadyAction, ETriggerEvent::Started, this, &ATacticalMovementCharacter::SetReadinessLowReady);
 		EnhancedInputComponent->BindAction(ReadinessMovementReadyAction, ETriggerEvent::Started, this, &ATacticalMovementCharacter::SetReadinessMovementReady);
-		EnhancedInputComponent->BindAction(ADSAction, ETriggerEvent::Started, this, &ATacticalMovementCharacter::SetReadinessADS);
+
+		// ADS (RMB): hold-to-ADS. Press enters ADS (capturing previous readiness); release restores it.
+		EnhancedInputComponent->BindAction(ADSAction, ETriggerEvent::Started, this, &ATacticalMovementCharacter::EnterADSHold);
+		EnhancedInputComponent->BindAction(ADSAction, ETriggerEvent::Completed, this, &ATacticalMovementCharacter::ExitADSHold);
+
+		// Dev-only discrete ADS latch (dev key 4): enters ADS and stays (exit via readiness keys 1/2/3).
+		EnhancedInputComponent->BindAction(ADSDevLatchAction, ETriggerEvent::Started, this, &ATacticalMovementCharacter::SetReadinessADS);
 	}
 	else
 	{
@@ -450,4 +456,40 @@ void ATacticalMovementCharacter::SetReadinessADS()
 {
 	CancelSprintInternal();
 	SetCombatReadinessState(ECombatReadinessState::ADS);
+}
+
+void ATacticalMovementCharacter::EnterADSHold()
+{
+	// Capture the readiness to return to on release, but only when coming from a
+	// non-ADS state. This prevents a re-entrant press (e.g. already latched into ADS
+	// via the dev key) from overwriting the stored previous readiness with ADS.
+	if (CombatReadinessState != ECombatReadinessState::ADS)
+	{
+		PreviousReadinessBeforeADS = CombatReadinessState;
+	}
+
+	// Enter ADS via the existing discrete path (cancels any active sprint + sets ADS).
+	SetReadinessADS();
+}
+
+void ATacticalMovementCharacter::ExitADSHold()
+{
+	// Only act if we are actually in ADS. If the player manually changed readiness
+	// (keys 1/2/3) while still holding RMB, we are no longer in ADS and release must be
+	// a no-op so it does not clobber that explicit choice.
+	if (CombatReadinessState != ECombatReadinessState::ADS)
+	{
+		return;
+	}
+
+	// Restore the captured previous readiness. If it is invalid/unclear (somehow ADS),
+	// fall back to Low Ready — the default firearm posture. Sprint is intentionally not
+	// auto-resumed here (it was cancelled on ADS entry).
+	ECombatReadinessState RestoreState = PreviousReadinessBeforeADS;
+	if (RestoreState == ECombatReadinessState::ADS)
+	{
+		RestoreState = ECombatReadinessState::LowReady;
+	}
+
+	SetCombatReadinessState(RestoreState);
 }
