@@ -15,11 +15,11 @@ Durable project context, auto-loaded every session. This file is a **self-contai
 - **Active UE project:** `~/UnrealEngine/TacticalMovement_UE58` (UE 5.8; `.uproject` EngineAssociation = 5.8).
 - **GitHub:** https://github.com/jteck/TacticalMovement
 - **`main` = `origin/main` = `8ecd2e8`** — "Reconcile Claude handoff with six-slice outlook state" (in sync, pushed).
-- **ACTIVE BRANCH: `feature/equipped-weapon-static-attach`** (branched from `main` `8ecd2e8`) — **Slice 1 work in progress, UNCOMMITTED** (see §7). Do not merge/push without approval.
+- **ACTIVE BRANCH: `feature/equipped-weapon-static-attach`** (branched from `main` `8ecd2e8`) — **Slice 1 COMPLETE & committed, NOT pushed, NOT merged** (see §7). 3 commits ahead of `origin/main`: `a70091c` (handoff), `b8cf2a1` (rifle baseline), `67e1880` (test-floor QoL). Do not merge/push without approval.
 - **PR #5 (hold-to-ADS) MERGED** into `main` (merge commit `b8e706c`; slice commit `c5770d2`).
 - **`feature/hold-to-ads` deleted** locally and remotely.
 - **Branches** — local: `main`, `feature/equipped-weapon-static-attach`, `checkpoint/pre-ue58-upgrade`; remote: `origin/main`, `origin/checkpoint/pre-ue58-upgrade`.
-- **`main` working tree clean; the feature branch has uncommitted Slice 1 changes** (§7).
+- **`main` working tree clean; feature branch working tree clean (Slice 1 committed).**
 - **No new baseline tag.** `v0.1.0-ue58-baseline` (→ `78b14f6`) remains unchanged.
 
 ### 2. Completed systems now in `main`
@@ -59,30 +59,27 @@ After adding a **new C++ `UPROPERTY`** and assigning it on `BP_ThirdPersonCharac
 - **Latest local docs commit:** `786a902` — "Correct Slice 1 equipped rifle gate after static attach failure" (docs `10` Slice 1 Gate; see §7).
 - Docs remain **local-only** for now. Key docs: `10` (Epic-First Gate + Decision Log), `01` (Roadmap), `04` (code/asset state), `05` (gameplay design decisions), `03A` (chronology), `06` (open issues/risks), `08` (AI project context).
 
-### 7. Slice 1 — IN PROGRESS (paused mid-implementation, 2026-07-04)
-**Branch `feature/equipped-weapon-static-attach`. Uncommitted. Corrected goal: "Externally reviewable equipped rifle baseline" — the character must VISIBLY and BELIEVABLY hold one rifle.** Full Gate + history in docs `10` (commit `786a902`).
+### 7. Slice 1 — Externally reviewable equipped rifle baseline — COMPLETE (2026-07-04)
+**Committed on branch `feature/equipped-weapon-static-attach` (NOT pushed, NOT merged).** Commits: `b8cf2a1` (rifle baseline) + `67e1880` (test-floor QoL). Full Gate + history in docs `10`. Character visibly and believably holds one rifle; validated + tests green.
 
-**Six-slice outlook** (`01_Roadmap.md`): 1) equipped weapon → 2) weapon posture → 3) weapon data → 4) Gameplay Tags → 5) pickup/drop → 6) GAS eval. Slices 1–5 GAS-free; Tags enter at Slice 4; GAS first considered at Slice 6. Each slice needs its own Gate + explicit approval.
+**Six-slice outlook** (`01_Roadmap.md`): 1) equipped weapon ✅ → 2) weapon posture → 3) weapon data → 4) Gameplay Tags → 5) pickup/drop → 6) GAS eval. Slices 1–5 GAS-free; Tags enter at Slice 4; GAS first considered at Slice 6. Each slice needs its own Gate + explicit approval.
 
-**KEY LESSON that reshaped Slice 1:** a **static** rifle mesh bolted to a hand socket **FAILS the alpha visual bar** — with the character in its unarmed animation the arms hang and the rifle dangles/clips. **A believable hold is an ANIMATION POSE, not a mesh transform.** New project-wide **alpha standard: a slice is not complete if it looks broken to an external reviewer.** (The first static-attach attempt + `HandGrip_R` socket + rotation guessing was reverted.)
+**What Slice 1 delivered:**
+- **`ABP_TacticalRifle`** (`/Game/Characters/Mannequins/Anims/Rifle/ABP_TacticalRifle`) — created by **adapting Epic's `ABP_TP_Rifle`** pattern (duplicated, template copy deleted; self-contained — only Mannequins anims: `MF_Rifle_Idle_ADS` + `AIM/AO_Rifle` + the unarmed `BS_Idle_Walk_Run`/`MM_Idle`/jump base; no shooter-state/GAS/Lyra/C++ deps).
+- **`ABP_Unarmed` remains intact** as rollback (only the character mesh `AnimClass` was repointed).
+- **`BP_ThirdPersonCharacter`** now uses `ABP_TacticalRifle` for its mesh (`CharacterMesh0` = `SKM_Quinn_Simple`, skeleton `SK_Mannequin`) and carries a `WeaponMesh` StaticMeshComponent.
+- **`WeaponMesh` = `SM_Rifle`** (`/Game/Weapons/Rifle/Meshes/SM_Rifle`, imported bundle: mesh + `M_Rifle`/`M_Weapon` + `T_Rifle_BC`/`T_Rifle_N`), **identity transform** (the pose does the placement).
+- **Final attach target = `HandGrip_R` socket** (on `hand_r`), identity.
 
-**Approved corrected approach (adapt Epic's rifle Anim Blueprint):**
-- Epic's `ABP_TP_Rifle` (UE 5.8 FirstPerson → `Variant_Shooter`) depends ONLY on assets this project already owns (`MF_Rifle_Idle_ADS`, `AIM/AO_Rifle`, and the same `BS_Idle_Walk_Run`/`MM_Idle`/jump base as `ABP_Unarmed`). No shooter-state/GAS/Lyra/C++ deps. It = `ABP_Unarmed` + a rifle upper-body pose.
-- Duplicated it into project as **`ABP_TacticalRifle`** (`/Game/Characters/Mannequins/Anims/Rifle/ABP_TacticalRifle`); the template copy was deleted (clean, self-contained).
-- Character mesh (`CharacterMesh0` = `SKM_Quinn_Simple`, skeleton `SK_Mannequin`) `AnimClass` set to `ABP_TacticalRifle`. (`ABP_Unarmed` kept intact as rollback.)
-- Attach target = the **`weapon_r` bone** (evidence: rifle anims drive `weapon_r_CONTROL`). **NOT** `HandGrip_R` (that's on `hand_r`), **NOT** `weapon_r_muzzle` (muzzle tip). Rifle mesh = **`SM_Rifle`** (`/Game/Weapons/Rifle/Meshes/SM_Rifle`), attached with **identity** transform (the pose does the placement).
+**KEY LESSONS (do not relitigate):**
+- A **static** rifle bolted to a socket with **no holding pose FAILS the alpha bar** (arms hang → rifle dangles/clips). A believable hold is an **ANIMATION POSE**, not a mesh transform. Project-wide **alpha standard: a slice is not complete if it looks broken to an external reviewer.**
+- **`weapon_r` / a `weapon_r_hold` socket was tested and REJECTED:** on this skeleton `weapon_r` does not follow the posed hand at runtime (not parented under `hand_r`), so the rifle stayed at the mesh/root/**ground** instead of the hands. `HandGrip_R` (on `hand_r`, which the pose drives) is correct. The temporary `weapon_r_hold` socket was removed; `SK_Mannequin` is clean.
+- **`weapon_r_muzzle` must NOT be used** — it is a muzzle marker (~45 cm downrange), not the grip/hold socket.
+- MCP tool limits encountered (for future slices): MCP has **no skeleton-socket API** and cannot write a component's SCS **Parent Socket** — those steps are done by the user in-editor.
 
-**DONE so far (uncommitted on the branch):**
-- `?? Content/Weapons/Rifle/…` — imported `SM_Rifle` + `M_Rifle` + `M_Weapon` + `T_Rifle_BC`/`T_Rifle_N` (license-safe UE 5.8 template resource).
-- `?? Content/Characters/Mannequins/Anims/Rifle/ABP_TacticalRifle.uasset` — the adapted Anim BP.
-- `M  Content/ThirdPerson/Blueprints/BP_ThirdPersonCharacter.uasset` — mesh `AnimClass`→`ABP_TacticalRifle`; `WeaponMesh` (StaticMeshComponent, `SM_Rifle`, identity, parented to `CharacterMesh0`) added — **Parent Socket still UNSET.**
+**Validation (passed):** live PIE + user front-view visual — rifle held believably in both hands, barrel forward/upright, no dangling, no major clipping, holds through walk/strafe/sprint/jump and all readiness states (1/2/3/4/RMB). **`TacticalMovement.Readiness` = 12/12** after cleanup. A **separate QoL commit** (`67e1880`) enlarged the test floor (Cube actor → 120 m × 120 m, top Z=260) for movement validation.
 
-**BLOCKER / NEXT STEP (needs the two in-editor user actions below):**
-The `weapon_r` socket + the SCS "Parent Socket" **cannot be set via the MCP tools** — two known limitations: (a) MCP has no skeleton-socket API and `add_socket` on the reduced `SKM_Quinn_Simple` mesh falls back to `root` for `weapon_r` (it works for `hand_r`/`ik_hand_gun`); `weapon_r` sockets must live on the **skeleton** `SK_Mannequin` (where `weapon_r_muzzle` already is). (b) MCP cannot write a component's SCS **Parent Socket**. So the user must, in-editor:
-1. Open `SKM_Quinn_Simple`/`SK_Mannequin` → Skeleton Tree → right-click **`weapon_r`** → Add Socket → rename **`weapon_r_hold`** (identity transform) → Save.
-2. `BP_ThirdPersonCharacter` → select `WeaponMesh` → **Parent Socket = `weapon_r_hold`** (leave component transform identity) → Compile + Save.
-
-**THEN (Claude resumes):** relaunch floating PIE (`PlayMode_InEditorFloating`) for the user's alpha-bar visual check (rifle believably held, no clipping, no dangling, barrel believable, through move + all readiness states 1/2/3/4/RMB); re-run `TacticalMovement.Readiness` → expect **12/12**. **If the rifle is held-but-rotated, fix with a PRINCIPLED rotation on the `weapon_r_hold` SOCKET (derived from the axis mismatch), NOT component-offset guessing** (`SM_Rifle` barrel is local +Y). Then report changed files/attach target/mesh/PIE result/tests/git status and await commit approval. **Nothing may be committed without explicit user approval.**
+**NEXT ACTION — Slice 2 (weapon posture visualization) — PLANNING/APPROVAL PENDING, DO NOT START.** Slice 2 makes the four readiness states **visually distinct** — Sul / LowReady / MovementReady / ADS each get a distinct weapon/upper-body posture (today all four share the one baseline rifle-hold pose). Run its own Epic-First Gate (docs `10`) + get explicit approval before building. Likely approach: readiness-driven pose/aim-offset selection layered in `ABP_TacticalRifle` (per-state poses from the existing Rifle anim set). Still GAS-free; no firing/reload/ammo/pickup/tags.
 
 ### 8. Standing guardrails (do not violate without explicit approval)
 - Do **not** migrate to Lyra (reference only).
