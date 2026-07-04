@@ -11,10 +11,14 @@ Durable project context, auto-loaded every session. This file is a **self-contai
 ## HANDOFF — current state (2026-07-04)
 
 ### 1. Current repo state
+> **Verify live git state before acting** (`git status`, `git log --oneline --decorate`); the hashes below are a point-in-time snapshot and may be stale.
 - **Active UE project:** `~/UnrealEngine/TacticalMovement_UE58` (UE 5.8; `.uproject` EngineAssociation = 5.8).
 - **GitHub:** https://github.com/jteck/TacticalMovement
-- **`main` = `b8e706cfaf9a74e917f2f4420876a664fc2db040`** (pushed; local `main` in sync with `origin/main`).
-- **PR #5 (hold-to-ADS) MERGED** into `main` (merge commit `b8e706c`; slice commit `c5770d2`).
+- **Local `main` = `bda03c8`** — ahead of `origin/main` by **1 unpushed commit**:
+  - `bda03c8` — "Point CLAUDE.md to six-slice outlook; next action Slice 1 gate" (local only).
+- **`origin/main` = `2e30d8b`** — "Update Claude handoff after hold-to-ADS merge".
+- **Do NOT assume `main` is in sync with `origin/main`** — it is ahead by 1 until `bda03c8` is pushed. Re-verify after any push.
+- **PR #5 (hold-to-ADS) MERGED** into `main` (merge commit `b8e706c`; slice commit `c5770d2`) — now two commits back from local HEAD.
 - **`feature/hold-to-ads` deleted** locally and remotely.
 - **Remaining branches** — local: `main`, `checkpoint/pre-ue58-upgrade`; remote: `origin/main`, `origin/checkpoint/pre-ue58-upgrade`.
 - **Working tree clean.**
@@ -53,12 +57,14 @@ After adding a **new C++ `UPROPERTY`** and assigning it on `BP_ThirdPersonCharac
 
 ### 6. Docs repo state
 - **Path:** `~/Library/Mobile Documents/com~apple~CloudDocs/Coding/UE FPS project/`
-- **No remote configured**; `main` is clean.
-- **Latest local docs commit:** `c7d3ce97d3c1af370ef12409f3a5de85d46bc53c` — "Document hold-to-ADS Epic-First decision".
+- **No remote configured**; `main` is clean (local-only).
+- **Latest local docs commit:** `78c0790` — "Document next six-slice development outlook".
 - Docs remain **local-only** for now. Key docs: `10` (Epic-First Gate + Decision Log), `01` (Roadmap), `04` (code/asset state), `05` (gameplay design decisions), `03A` (chronology), `06` (open issues/risks), `08` (AI project context).
 
 ### 7. Next planned action — PLANNING ONLY (do not implement)
-**6-slice outlook captured in docs `01_Roadmap.md`** ("Next 6-Slice Development Outlook", 2026-07-04): 1) equipped weapon (static attach) → 2) weapon posture visualization → 3) weapon data → 4) Gameplay Tags → 5) pickup/drop → 6) GAS adoption evaluation. **Next action = Slice 1 Epic-First Gate planning** (docs `10`); Slices 1–5 stay GAS-free, Gameplay Tags enter at Slice 4, GAS is first considered at Slice 6 (firing/reload/ammo/stamina/injury/networked). Each slice needs its own Epic-First Gate + explicit approval before build.
+**Verify live git state before acting. Last known planning state: six-slice outlook captured; Slice 1 gate is next.** Next slice has **not** started (no Slice 1 code exists; local HEAD is a docs/handoff pointer commit only).
+
+The outlook detail lives in docs `01_Roadmap.md` ("Next 6-Slice Development Outlook", 2026-07-04): 1) equipped weapon (static attach) → 2) weapon posture visualization → 3) weapon data → 4) Gameplay Tags → 5) pickup/drop → 6) GAS adoption evaluation. **Next action = Slice 1 Epic-First Gate planning ONLY** (docs `10`); Slices 1–5 stay GAS-free, Gameplay Tags enter at Slice 4, GAS is first considered at Slice 6 (firing/reload/ammo/stamina/injury/networked). Each slice needs its own Epic-First Gate + explicit approval before build.
 
 ### 8. Standing guardrails (do not violate without explicit approval)
 - Do **not** migrate to Lyra (reference only).
