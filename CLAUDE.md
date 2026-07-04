@@ -58,10 +58,7 @@ After adding a **new C++ `UPROPERTY`** and assigning it on `BP_ThirdPersonCharac
 - Docs remain **local-only** for now. Key docs: `10` (Epic-First Gate + Decision Log), `01` (Roadmap), `04` (code/asset state), `05` (gameplay design decisions), `03A` (chronology), `06` (open issues/risks), `08` (AI project context).
 
 ### 7. Next planned action — PLANNING ONLY (do not implement)
-Produce a **5–8 slice development outlook** (no code) covering: **weapon posture visualization, equipped weapon, weapon data, pickup/drop, Gameplay Tags, and future GAS adoption.**
-For each slice, map: **Epic systems to adopt · Lyra patterns to reference · systems to defer · expected output · risk level.**
-Then identify: **which slice should be next; which slices should avoid GAS; where GAS first becomes worth considering; where Gameplay Tags should enter; what must stay custom to TacticalMovement.**
-Each slice must still pass its own **Epic-First Gate (docs `10`) + explicit approval** before implementation.
+**6-slice outlook captured in docs `01_Roadmap.md`** ("Next 6-Slice Development Outlook", 2026-07-04): 1) equipped weapon (static attach) → 2) weapon posture visualization → 3) weapon data → 4) Gameplay Tags → 5) pickup/drop → 6) GAS adoption evaluation. **Next action = Slice 1 Epic-First Gate planning** (docs `10`); Slices 1–5 stay GAS-free, Gameplay Tags enter at Slice 4, GAS is first considered at Slice 6 (firing/reload/ammo/stamina/injury/networked). Each slice needs its own Epic-First Gate + explicit approval before build.
 
 ### 8. Standing guardrails (do not violate without explicit approval)
 - Do **not** migrate to Lyra (reference only).
