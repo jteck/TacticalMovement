@@ -2,161 +2,127 @@
 
 Durable project context, auto-loaded every session. This file is a **self-contained handoff**: a fresh Claude Code session should be able to continue from it without prior chat history.
 
-> **Golden rule: "Borrow the rails, keep our train."** Use Epic UE 5.8 systems / tools / sample patterns for scaffolding and plumbing; keep TacticalMovement's readiness/movement identity custom. **Before any new subsystem, run the Epic-First Gate** (docs `10`, Section 11) and log the decision in the Decision Log (Section 12).
+> **Golden rule: "Borrow the rails, keep our train."** Use Epic UE 5.8 systems / tools / sample patterns (and Infima FP animation assets) for scaffolding and plumbing; keep TacticalMovement's readiness/movement identity custom. **Before any new subsystem, run the Epic-First Gate** (docs `10`, Section 11) and log the decision in the Decision Log.
 >
-> **Do not merge or push anything without the user's explicit approval.** Always verify live state with `git`/GitHub before acting — the status below is a point-in-time snapshot.
+> **Do not merge or push anything without the user's explicit approval.** Commit and push are **separate** approval gates, per slice. Always verify live state with `git`/GitHub before acting — the status below is a point-in-time snapshot.
 
 ---
 
-## HANDOFF — current state (2026-07-04)
+## HANDOFF — current state (2026-07-11)
 
-### 1. Current repo state
-> **Verify live git state before acting** (`git status`, `git log --oneline --decorate`); the hashes below are a point-in-time snapshot and may be stale.
+> **Verify live git state before acting** (`git status`, `git log --oneline --decorate`). Hashes below were verified on 2026-07-11 but re-check.
+
+### 1. Current repo state (verified 2026-07-11)
 - **Active UE project:** `~/UnrealEngine/TacticalMovement_UE58` (UE 5.8; `.uproject` EngineAssociation = 5.8).
-- **GitHub:** https://github.com/jteck/TacticalMovement
-- **`main` = `origin/main` = `8ecd2e8`** — "Reconcile Claude handoff with six-slice outlook state" (in sync, pushed).
-- **ACTIVE BRANCH: `feature/equipped-weapon-static-attach`** (branched from `main` `8ecd2e8`) — **Slice 1 COMPLETE & committed, NOT pushed, NOT merged** (see §7). 3 commits ahead of `origin/main`: `a70091c` (handoff), `b8cf2a1` (rifle baseline), `67e1880` (test-floor QoL). Do not merge/push without approval.
-- **PR #5 (hold-to-ADS) MERGED** into `main` (merge commit `b8e706c`; slice commit `c5770d2`).
-- **`feature/hold-to-ads` deleted** locally and remotely.
-- **Branches** — local: `main`, `feature/equipped-weapon-static-attach`, `checkpoint/pre-ue58-upgrade`; remote: `origin/main`, `origin/checkpoint/pre-ue58-upgrade`.
-- **`main` working tree clean; feature branch working tree clean (Slice 1 committed).**
-- **No new baseline tag.** `v0.1.0-ue58-baseline` (→ `78b14f6`) remains unchanged.
+- **GitHub:** https://github.com/jteck/TacticalMovement (remote `origin`).
+- **ACTIVE BRANCH:** `feature/fp3-tactical-fp-ads-blend` @ **`6910085d655a246df56abc2d0e07a5a52a4810fa`** ("Add Tactical FP ADS pose blend", FP-3).
+  - **Pushed; local == `origin/feature/fp3-tactical-fp-ads-blend`** (upstream set).
+- **`origin/main` = `acae9cb`** — unchanged this session (FP work never touched `main`).
+- **FP commit chain (newest first):** `6910085` FP-3 → `2314dbf` FP-2 (`origin/feature/fp2-tactical-fp-idle-animbp`, pushed) → `df2367e` FP-1 → `deed772` FP-0 → `cebdf56` (Slice-2 handoff) → …
+- **Local branches:** `main`, `checkpoint/pre-ue58-upgrade`, `feature/fp0-infima-viewmodel-assets`, `feature/fp1-first-person-viewmodel-component`, `feature/fp2-tactical-fp-idle-animbp`, `feature/fp3-tactical-fp-ads-blend` (current), `feature/weapon-posture-visualization`.
+- **Working tree clean.** Readiness suite **12/12**.
 
-### 2. Completed systems now in `main`
-- **UE 5.7 → 5.8 migration** complete.
-- **Enhanced Input** readiness/ADS/sprint mappings complete (readiness moved off the old Blueprint keyboard debug events onto real Input Actions).
-- **Low Ready is the default readiness** (C++ default + BP CDO both `LowReady`; guarded by the `BPDefaultIsLowReady` test).
-- **Sprint / readiness / ADS rules are stable.**
-- **Readiness automation tests** are in `main` (was PR #4).
-- **Hold-to-ADS** is merged into `main` (PR #5).
+### 2. First-person (Infima) slices — FP-0 … FP-3 COMPLETE
+TacticalMovement is a **first-person (FPS)** game. The **Infima "Tactical FPS Animation Pack – Assault Rifle"** is used **only** as an authored FP arms/weapon animation source — **not Lyra, no MoCap, no GAS, no Gameplay Tags.**
+- **FP-0 (`deed772`)** — copied the minimal Infima FP viewmodel asset closure (13 `.uasset`) into `/Game/InfimaGames/TacticalFPSAnimations/…`: 2 poses (`A_TFA_FP_AR_Idle_Pose_Standing`, `A_TFA_FP_AR_Aim_Pose`), skeleton `SKEL_TFA_Mannequin`, mesh `SKM_FP_Manny_Simple`, `M_Mannequin` + `MI_Manny_01/02` + 6 `T_Manny` textures. Excluded full-body preview meshes. No demo/TP/Lyra deps.
+- **FP-1 (`df2367e`)** — added to `BP_ThirdPersonCharacter` (Blueprint-only): `FirstPersonCamera` (`UCameraComponent`, `bAutoActivate=FALSE` — NOT the gameplay view) on the capsule; `FirstPersonArms` (`USkeletalMeshComponent`) under it, mesh `SKM_FP_Manny_Simple`, `bOnlyOwnerSee=true`. `FollowCamera`/`CameraBoom` remain the active TP gameplay view.
+- **FP-2 (`2314dbf`)** — created `/Game/FirstPerson/Animations/ABP_TacticalFP` (skeleton `SKEL_TFA_Mannequin`, AnimGraph = idle pose Sequence Player → Output). `FirstPersonArms.animClass = ABP_TacticalFP_C`.
+- **FP-3 (`6910085`)** — MovementReady↔ADS pose blend on `ABP_TacticalFP`. Verified: **compile 0/0**; EventGraph logic confirmed via DSL read (`bIsADS = OwningCharacter.CombatReadinessState == ADS`, cast to the **C++ class** `TacticalMovementCharacter` — not `BP_ThirdPersonCharacter`; resilient owner reacquire; `bIsADS` set only when owner valid); AnimGraph `Blend Poses by Bool` (Active=`bIsADS`, True=Aim pose, False=Idle pose, **0.2s** both blend times); **deps clean** (no `BP_ThirdPersonCharacter`/demo/TP/Lyra); **12/12**; git scope = only `ABP_TacticalFP.uasset`; **user visual verification passed** (RMB-hold→aim, release→idle; key `4` latch, `1/2/3` exit; smooth 0.2s blend).
 
-### 3. Current readiness behavior
-Readiness enum `ECombatReadinessState` = **Sul / LowReady / MovementReady / ADS** (identity — do not replace).
-- **`1`** → Sul · **`2`** → LowReady · **`3`** → MovementReady (Enhanced Input → existing `SetReadiness*` C++ functions).
-- **RMB / `IA_ADS` = hold-to-ADS:**
-  - Press (`Started` → `EnterADSHold`) captures the previous **non-ADS** readiness, then enters ADS.
-  - Release (`Completed` → `ExitADSHold`) **restores the previous readiness**.
-  - Invalid/unclear previous state → fallback **LowReady**.
-  - A manual readiness change (1/2/3) made **while holding RMB** leaves ADS; the subsequent release is a **no-op** and must **not** clobber that choice.
-  - ADS **cancels** an active sprint and **blocks** starting one; sprint does **not** auto-resume after ADS exits.
-- **`4` / `IA_ADS_DevLatch` = discrete ADS dev latch** for testing (enters ADS and stays; exit via 1/2/3). Separate action from `IA_ADS` so RMB can be true hold while key 4 stays a hold-independent latch.
-- **`SetReadinessADS()` is unchanged** — it remains the discrete "enter ADS" path (cancel sprint + set ADS), called by both the dev latch and internally by `EnterADSHold()`.
-- Sprint = `LeftShift` / `IA_Sprint` (hold). Move/Look/Jump unchanged.
+**Expected visual caveat (normal, not a bug):** from the TP view the FP arms look wrong (posed for a rifle, no FP weapon attached, TP body still visible). The FP arms only "make sense" through `FirstPersonCamera` with the TP body hidden + an FP weapon — all deferred.
 
-Key C++ (in `Source/TacticalMovement/TacticalMovementCharacter.*`): `EnterADSHold()`, `ExitADSHold()`, transient `PreviousReadinessBeforeADS` (seeded `LowReady`), `UInputAction* ADSDevLatchAction`. Read-only test accessors `GetCombatReadinessState()`, `IsSprinting()`.
+### 3. FP-4 — PROPOSAL / PREFLIGHT ONLY (NOT implemented, NOT approved)
+Scope: add `DefaultSlot` + `Aiming` **montage slot plumbing** to `ABP_TacticalFP` — **no montage created or played**, FP-3 behavior unchanged.
+- **Provisional topology (two parallel empty Slot branches — NOT yet approved):**
+  - `Idle Sequence Player → Slot 'DefaultSlot' → Blend Poses by Bool [False]`
+  - `Aim Sequence Player  → Slot 'Aiming'      → Blend Poses by Bool [True]`
+  - Existing `bIsADS` Boolean blend → Output Pose. Empty slots pass base poses through unchanged.
+- **Not approved** because direct read-only inspection of the **Infima reference** (`ABP_TFA_FP_BaseCharacter` AnimGraph, Infima `SKEL_TFA_Mannequin` slot groups, `AM_TFA_FP_AR_Reload` slot tracks) is **incomplete**.
+- **Pivotal open question:** whether the **`Aiming`** slot survived FP-0 on the TacticalMovement copy of `SKEL_TFA_Mannequin`, and its group. `DefaultSlot`/`DefaultGroup` is a UE default; `Aiming` is Infima-custom. If `Aiming` is missing, registering it would edit an FP-0 Infima asset (guardrail) → FP-4 must halt/re-scope.
 
-### 4. Validation already completed (hold-to-ADS slice)
-- **Clean build** passed (0 warnings/errors).
-- **`TacticalMovement.Readiness` automation suite: 12/12 pass** (4 prior + 8 hold-to-ADS).
-- **Live PIE / MCP validation passed:** key-4 ADS latch; 1/2/3 exit from the latch; RMB hold/release restore from LowReady, MovementReady, and Sul; sprint → RMB ADS cancels sprint; ADS blocks sprint; manual readiness change during RMB hold not clobbered on release.
+### 4. NEXT ACTION tomorrow (resume here)
+1. Reopen TacticalMovement (detached launch + MCP bridge; see Editor section).
+2. Open the TacticalMovement copy of `SKEL_TFA_Mannequin` → **Window → Anim Slot Manager**.
+3. **User provides an OS screenshot** showing every expanded group/slot pair (MCP/Slate could not see the docked panel — see lessons).
+4. Discard any in-memory skeleton dirtiness and shut TacticalMovement down (SIGTERM discards; **do not save**).
+5. Launch the **Infima evaluation project alone** with the MCP bridge (one editor at a time; TM must be down first — port 8000 conflict).
+6. Inspect (read-only) `ABP_TFA_FP_BaseCharacter` AnimGraph, the Infima skeleton's slot groups, and `AM_TFA_FP_AR_Reload` (its `SlotAnimTracks` ARE MCP-readable).
+7. Confirm or revise the FP-4 topology from direct observation; then **wait for explicit FP-4 implementation approval.**
 
-### 5. Important Unreal asset-workflow lesson
-After adding a **new C++ `UPROPERTY`** and assigning it on `BP_ThirdPersonCharacter` (e.g. `ADSDevLatchAction`), **save-only was NOT enough** — the property spawned as `None` in PIE. The Blueprint had to be **`compile_blueprint` + saved** before the live PIE instance carried the value. **For any future newly-added C++ `UPROPERTY` assigned on a BP: compile the BP, and verify on the live PIE instance (`find_actors` → `get_properties`), not just a saved-asset read-back.**
+### 5. Guardrails in force for FP work (unchanged)
+- FP slices touch **only** the presentation layer. Do **not**: activate `FirstPersonCamera`, hide the TP body, attach an FP weapon, add ADS/montages/firing/recoil/ammo/inventory/pickup/drop, Gameplay Tags, or GAS — unless the approved slice says so.
+- Do **not** edit imported FP-0 Infima assets, or the **Infima source project** (`~/UnrealEngine/Infima_TacticalFPS_Test/Infima_TacticalFPS/` — **read-only**).
+- Do **not** change C++, Enhanced Input, movement DataTables, readiness logic (`ECombatReadinessState`), `ABP_TacticalRifle`, or `ABP_Unarmed`.
+- Only `Content/FirstPerson/Animations/ABP_TacticalFP.uasset` should change when an approved FP slice is implemented.
 
-### 6. Docs repo state
-- **Path:** `~/Library/Mobile Documents/com~apple~CloudDocs/Coding/UE FPS project/`
-- **No remote configured**; `main` is local-only.
-- **Latest local docs commit:** `786a902` — "Correct Slice 1 equipped rifle gate after static attach failure" (docs `10` Slice 1 Gate; see §7).
-- Docs remain **local-only** for now. Key docs: `10` (Epic-First Gate + Decision Log), `01` (Roadmap), `04` (code/asset state), `05` (gameplay design decisions), `03A` (chronology), `06` (open issues/risks), `08` (AI project context).
-
-### 7. Slice 1 — Externally reviewable equipped rifle baseline — COMPLETE (2026-07-04)
-**Committed on branch `feature/equipped-weapon-static-attach` (NOT pushed, NOT merged).** Commits: `b8cf2a1` (rifle baseline) + `67e1880` (test-floor QoL). Full Gate + history in docs `10`. Character visibly and believably holds one rifle; validated + tests green.
-
-**Six-slice outlook** (`01_Roadmap.md`): 1) equipped weapon ✅ → 2) weapon posture → 3) weapon data → 4) Gameplay Tags → 5) pickup/drop → 6) GAS eval. Slices 1–5 GAS-free; Tags enter at Slice 4; GAS first considered at Slice 6. Each slice needs its own Gate + explicit approval.
-
-**What Slice 1 delivered:**
-- **`ABP_TacticalRifle`** (`/Game/Characters/Mannequins/Anims/Rifle/ABP_TacticalRifle`) — created by **adapting Epic's `ABP_TP_Rifle`** pattern (duplicated, template copy deleted; self-contained — only Mannequins anims: `MF_Rifle_Idle_ADS` + `AIM/AO_Rifle` + the unarmed `BS_Idle_Walk_Run`/`MM_Idle`/jump base; no shooter-state/GAS/Lyra/C++ deps).
-- **`ABP_Unarmed` remains intact** as rollback (only the character mesh `AnimClass` was repointed).
-- **`BP_ThirdPersonCharacter`** now uses `ABP_TacticalRifle` for its mesh (`CharacterMesh0` = `SKM_Quinn_Simple`, skeleton `SK_Mannequin`) and carries a `WeaponMesh` StaticMeshComponent.
-- **`WeaponMesh` = `SM_Rifle`** (`/Game/Weapons/Rifle/Meshes/SM_Rifle`, imported bundle: mesh + `M_Rifle`/`M_Weapon` + `T_Rifle_BC`/`T_Rifle_N`), **identity transform** (the pose does the placement).
-- **Final attach target = `HandGrip_R` socket** (on `hand_r`), identity.
-
-**KEY LESSONS (do not relitigate):**
-- A **static** rifle bolted to a socket with **no holding pose FAILS the alpha bar** (arms hang → rifle dangles/clips). A believable hold is an **ANIMATION POSE**, not a mesh transform. Project-wide **alpha standard: a slice is not complete if it looks broken to an external reviewer.**
-- **`weapon_r` / a `weapon_r_hold` socket was tested and REJECTED:** on this skeleton `weapon_r` does not follow the posed hand at runtime (not parented under `hand_r`), so the rifle stayed at the mesh/root/**ground** instead of the hands. `HandGrip_R` (on `hand_r`, which the pose drives) is correct. The temporary `weapon_r_hold` socket was removed; `SK_Mannequin` is clean.
-- **`weapon_r_muzzle` must NOT be used** — it is a muzzle marker (~45 cm downrange), not the grip/hold socket.
-- MCP tool limits encountered (for future slices): MCP has **no skeleton-socket API** and cannot write a component's SCS **Parent Socket** — those steps are done by the user in-editor.
-
-**Validation (passed):** live PIE + user front-view visual — rifle held believably in both hands, barrel forward/upright, no dangling, no major clipping, holds through walk/strafe/sprint/jump and all readiness states (1/2/3/4/RMB). **`TacticalMovement.Readiness` = 12/12** after cleanup. A **separate QoL commit** (`67e1880`) enlarged the test floor (Cube actor → 120 m × 120 m, top Z=260) for movement validation.
-
-**CURRENT WORK — Slice 2 (weapon posture visualization) — RE-PLANNING (spine approach rejected, 2026-07-04).** Goal: make readiness states **visually distinct** (Sul / LowReady / MovementReady / ADS). On branch `feature/weapon-posture-visualization` (from `main` `acae9cb`). Committed prep = `e9a5b42` (EventGraph `PosturePitch` only). Full Gate + posture taxonomy in docs `10`.
-
-- **❌ REJECTED & REVERTED — spine `spine_03` Modify Bone (torso bow).** A Component-Space additive Roll on `spine_03` driven by `PosturePitch` was built + previewed; it **bows the whole soldier forward** ("looking at the floor"), which is wrong and fails the alpha bar. It was **reverted** — `ABP_TacticalRifle.uasset` is back to the committed EventGraph-only state (`e9a5b42`). **Do not reintroduce it.**
-- **🔒 LOCKED DESIGN RULE:** TacticalMovement posture changes keep the soldier **mostly UPRIGHT / balanced**; the **weapon / arms / hands / shoulders** change position — **the torso must NOT bow** to fake LowReady/Sul.
-- **✅ KEPT (committed `e9a5b42`) — EventGraph `PosturePitch`, now REPURPOSED** as a generic readiness-driven posture driver (smoothed 0→N per readiness), **not** a spine pitch: `Cast ATacticalMovementCharacter → CombatReadinessState → Select(per-state) → FInterpTo(PosturePitch, target, DeltaTimeX, 8) → Set PosturePitch`. **`PitchN` / `AO_Rifle` never modified** (still pure aiming).
-- **Corrected posture taxonomy (full list in docs `10`):** 1 Checked Up (gun up, future) · 2 **Sul/Patrol** (muzzle down, close, upright) · 3 Framing (weapon up to reload/inspect, future) · 4 **Low Ready** (shooting stance, muzzle down at ground) · 5 High Ready (muzzle up >45°, future) · 6 **Movement Ready** (ready to fire, no adjust needed) · 7 Hip Fire (gamey, later). **Active ladder unchanged:** `1=Sul · 2=LowReady · 3=MovementReady · RMB/4=ADS`.
-- **Revised Slice 2 direction (PLAN/APPROVE — not started):** differentiate by **weapon/muzzle pitch, torso upright** — investigate/use the existing **`AO_Rifle` aim-down pose `AIM/MM_Rifle_Idle_ADS_AO_CD`** or a **derived additive** (arms/weapon lower), driven by the repurposed `PosturePitch`. **`CR_Mannequin` Control Rig** (in-project) may be **investigated** as the Epic-prebuilt arm-posing alternative — do not implement yet. Keep `AO_Rifle`/`PitchN` for aiming unless a clean separation is explicitly approved.
-- **Guardrails (unchanged):** no C++, input, DataTables, readiness rules, `BP_ThirdPersonCharacter`, `ABP_Unarmed` (rollback), tags/GAS/firing/etc. Only `ABP_TacticalRifle.uasset` should change when implementation resumes. **After the spine revert, `ABP_TacticalRifle` == `e9a5b42` (EventGraph-only); nothing new to commit there.**
-- **AnimGraph Modify Bone step — NOT started, do NOT start until EventGraph is verified.** Spec (approved, for later): Transform (Modify) Bone on **`spine_03`** (confirmed to exist), Rotation Mode = Add to Existing, Space = Component Space, Pitch driven by `PosturePitch`, Translation/Scale ignored, Alpha 1.0, placed after the aim offset (`RotationOffsetBlendSpace_0`) → Root; invert sign once if positive pitch raises instead of lowers (no random tuning).
-- **Expected changed implementation file remains ONLY** `Content/Characters/Mannequins/Anims/Rifle/ABP_TacticalRifle.uasset`. **Do NOT touch** C++, input, movement DataTables, readiness rules, `BP_ThirdPersonCharacter`, `ABP_Unarmed` (rollback), Gameplay Tags, GAS, firing/reload/ammo/recoil/pickup/drop/inventory.
-- **Uncommitted WIP:** `ABP_TacticalRifle.uasset` (the `PosturePitch` var add) is intentionally **left uncommitted** on the branch — do not commit it without explicit user approval. **Rollback if needed:** `git checkout -- Content/Characters/Mannequins/Anims/Rifle/ABP_TacticalRifle.uasset` (restores the `main` version; `ABP_Unarmed` untouched).
-
-### 8. Standing guardrails (do not violate without explicit approval)
-- Do **not** migrate to Lyra (reference only).
-- Do **not** introduce **GAS** without explicit approval.
-- Do **not** replace `ECombatReadinessState`.
-- Do **not** replace the DataTable movement-profile system (`DT_MovementProfiles`).
-- Do **not** change movement values without approval.
-- Do **not** start weapon visuals, firing, inventory, pickup/drop, mantle, AI, or GAS until approved **as a slice**.
-- **Do** use Epic / Lyra / built-in Unreal systems when they speed up beta development (borrow the rails).
-- Keep TacticalMovement's **custom readiness/movement identity**.
-- **Never merge or push without explicit user approval.** Work on a `feature/*` branch, not `main`.
+### 6. Prior work still in the tree (durable lessons; not current focus)
+- **Equipped-rifle baseline** (branch `feature/equipped-weapon-static-attach`, not merged): character holds `SM_Rifle` via `ABP_TacticalRifle` attached at the **`HandGrip_R`** socket. **Durable lesson:** a believable hold is an **animation pose**, not a static transform; `weapon_r`/`weapon_r_hold`/`weapon_r_muzzle` were rejected on this skeleton. **Alpha standard: a slice isn't complete if it looks broken to an external reviewer.**
+- **Weapon-posture Slice 2** (branch `feature/weapon-posture-visualization`): **spine-bow / Modify Bone on `spine_03` REJECTED** ("looking at the floor"). **LOCKED RULE:** posture keeps the soldier upright; the **weapon/arms/hands/shoulders** carry the posture — the torso must NOT bow. (This branch's `ABP_TacticalRifle` `PosturePitch` work is committed on that branch; it is **not** part of the FP track and is not current WIP.)
 
 ---
 
-## Repo / project
-
-- **UE working repo (ACTIVE):** `~/UnrealEngine/TacticalMovement_UE58` — UE 5.8.
-- **Original UE 5.7 project — UNTOUCHED:** `~/UnrealEngine/TacticalMovement` (branch `checkpoint/pre-ue58-upgrade`). 5.7 source of truth; **do not upgrade in place**.
-- **GitHub:** https://github.com/jteck/TacticalMovement
-- **Docs repo:** `~/Library/Mobile Documents/com~apple~CloudDocs/Coding/UE FPS project/` — branch `main`, **no remote**.
-
-## Enhanced Input map (`/Game/Input/`)
-
-- Input Actions (Boolean): `IA_ReadinessSul`, `IA_ReadinessLowReady`, `IA_ReadinessMovementReady`, `IA_ADS`, `IA_ADS_DevLatch` (+ template `IA_Move`, `IA_Look`, `IA_Jump`, `IA_Sprint`).
-- **`IMC_Default` mappings** live under `defaultKeyMappings.mappings` (UE 5.8; the legacy top-level `mappings` array is empty). Current ADS-relevant rows: `RightMouseButton → IA_ADS`, `Four → IA_ADS_DevLatch`. Readiness: `One/Two/Three → Sul/LowReady/MovementReady`. Move/Look/Jump/Sprint from the template (WASD+arrows+gamepad, LeftShift sprint, SpaceBar jump) — all intact.
-- Bindings live in `SetupPlayerInputComponent`: `IA_ADS` Started→`EnterADSHold`, Completed→`ExitADSHold`; `IA_ADS_DevLatch` Started→`SetReadinessADS`; readiness actions Started→`SetReadiness*`.
+## Standing guardrails (do not violate without explicit approval)
+- Do **not** migrate to Lyra (reference only). Do **not** introduce **GAS** without explicit approval.
+- Do **not** replace `ECombatReadinessState` or the DataTable movement-profile system (`DT_MovementProfiles`); do **not** change movement values without approval.
+- Do **not** start weapon firing, inventory, pickup/drop, mantle, AI, GAS, or (for FP) camera activation / body hiding / FP weapon until approved **as a slice**.
+- **Do** use Epic / built-in Unreal systems and Infima FP animation assets to speed up beta dev (borrow the rails). Keep TacticalMovement's **custom readiness/movement identity**.
+- **Never merge or push without explicit user approval.** Commit and push are **separate** gates. Work on a `feature/*` branch, not `main`. **Completed, verified feature branches may be pushed after explicit push approval.** **No merge or PR without separate approval.**
 
 ## Gameplay identity (custom — never flatten to a sample's feel)
+Readiness ladder = **Sul / Low Ready / Movement Ready / ADS** (`ECombatReadinessState`; identity — do not replace). Low Ready is the default firearm posture; Movement Ready is deliberate; ADS is most committed; Sul is lower-readiness but mobile. Mobility-vs-readiness tradeoff + directional movement (distinct fwd/strafe/back speeds, readiness multipliers) are the product. Epic/Infima assets express the model; they do not define it.
 
-Readiness ladder = **Sul / Low Ready / Movement Ready / ADS**. Low Ready is the default firearm posture; Movement Ready is deliberate; ADS is most committed; Sul is lower-readiness but mobile. Mobility-vs-readiness tradeoff + directional movement (distinct fwd/strafe/back speeds, readiness multipliers) are the product. Epic systems express the model; they do not define it.
+## Readiness behavior (current)
+- **`1/2/3`** → Sul/LowReady/MovementReady (Enhanced Input → `SetReadiness*` C++).
+- **RMB / `IA_ADS` = hold-to-ADS:** Press (`EnterADSHold`) captures previous non-ADS readiness then enters ADS; Release (`ExitADSHold`) restores it; invalid → fallback LowReady; a 1/2/3 change while holding RMB is not clobbered on release. ADS cancels an active sprint and blocks starting one.
+- **`4` / `IA_ADS_DevLatch`** = discrete ADS latch (enter and stay; exit via 1/2/3). `SetReadinessADS()` is the shared discrete "enter ADS" path.
+- Key C++ in `Source/TacticalMovement/TacticalMovementCharacter.*`: `EnterADSHold()`, `ExitADSHold()`, `PreviousReadinessBeforeADS` (seeded LowReady), `ADSDevLatchAction`. `CombatReadinessState` is `UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)` → readable in Blueprints via a Get node; the inline `GetCombatReadinessState()` accessor is **not** a `UFUNCTION` (not a BP node). `ECombatReadinessState` is `UENUM(BlueprintType)` with `Sul/LowReady/MovementReady/ADS`.
+
+## Repo / project
+- **UE working repo (ACTIVE):** `~/UnrealEngine/TacticalMovement_UE58` — UE 5.8. Remote `origin` = https://github.com/jteck/TacticalMovement.
+- **Original UE 5.7 project — UNTOUCHED:** `~/UnrealEngine/TacticalMovement` (branch `checkpoint/pre-ue58-upgrade`). Do not upgrade in place.
+- **Infima eval project (READ-ONLY, do not modify/save):** `~/UnrealEngine/Infima_TacticalFPS_Test/Infima_TacticalFPS/`.
+- **Docs repo:** `~/Library/Mobile Documents/com~apple~CloudDocs/Coding/UE FPS project/` — branch `main`, **NO remote configured (local-only, verified 2026-07-11)**. Primary fresh-session handoff file: `CONSOLIDATED_FOR_CHATGPT_2026-07-11.md`. Numbered docs: `01` roadmap, `03A` chronology, `04` code/asset state, `09` change log, `10` Epic-First Gate + Decision Log, `13` Infima FP integration map, `14` FP AnimBP layer design.
+
+## Enhanced Input map (`/Game/Input/`)
+- Input Actions (Boolean): `IA_ReadinessSul/LowReady/MovementReady`, `IA_ADS`, `IA_ADS_DevLatch` (+ template `IA_Move/Look/Jump/Sprint`).
+- **`IMC_Default` mappings** live under `defaultKeyMappings.mappings` (UE 5.8; legacy top-level `mappings` empty). `RightMouseButton → IA_ADS`, `Four → IA_ADS_DevLatch`, `One/Two/Three → readiness`. Move/Look/Jump/Sprint from template (WASD+arrows+gamepad, LeftShift sprint, SpaceBar jump).
+- Bindings in `SetupPlayerInputComponent`: `IA_ADS` Started→`EnterADSHold`, Completed→`ExitADSHold`; `IA_ADS_DevLatch` Started→`SetReadinessADS`; readiness Started→`SetReadiness*`.
 
 ## Editor + MCP bridge (macOS, Apple Silicon; UE 5.8 at `/Users/Shared/Epic Games/UE_5.8`; Xcode 26)
-
 ```bash
 # status
 git -C ~/UnrealEngine/TacticalMovement_UE58 status
 git -C ~/UnrealEngine/TacticalMovement_UE58 log --oneline --decorate -10
 
-# relaunch editor + MCP bridge (detached; MCP server on 127.0.0.1:8000)
-open -n -a "/Users/Shared/Epic Games/UE_5.8/Engine/Binaries/Mac/UnrealEditor.app" \
-  --args "/Users/jasonteck/UnrealEngine/TacticalMovement_UE58/TacticalMovement.uproject" \
-  -ModelContextProtocolStartServer
-# wait until `curl -s -o /dev/null -w '%{http_code}' 127.0.0.1:8000/mcp` is reachable (405/200), then use MCP.
+# relaunch editor + MCP bridge — DETACHED so it survives a Claude session restart (see lessons):
+nohup "/Users/Shared/Epic Games/UE_5.8/Engine/Binaries/Mac/UnrealEditor.app/Contents/MacOS/UnrealEditor" \
+  ~/UnrealEngine/TacticalMovement_UE58/TacticalMovement.uproject -ModelContextProtocolStartServer \
+  > /tmp/ue_editor_launch_$(date +%s).log 2>&1 & disown
+# Poll until `lsof -nP -iTCP:8000 -sTCP:LISTEN` shows LISTEN AND the editor finished loading
+# (log line "LogModelContextProtocol: Tool search enabled"); GET 127.0.0.1:8000/mcp returns 405 = alive.
 
-# build (editor MUST be closed first — it locks the module dylib)
-#   incremental (fast, ~20s) — preferred for small C++ changes:
+# build (editor MUST be closed first — it locks the module dylib):
 cd ~/UnrealEngine/TacticalMovement_UE58
 "/Users/Shared/Epic Games/UE_5.8/Engine/Build/BatchFiles/Mac/Build.sh" \
   TacticalMovementEditor Mac Development -project="$PWD/TacticalMovement.uproject" -waitmutex
-#   full clean rebuild (only if needed): prepend `rm -rf Binaries Intermediate`
 ```
 
-**MCP / editor operational notes (learned in the hold-to-ADS slice):**
-- Adding a new `UPROPERTY` needs a full editor-closed build (Live Coding won't add reflected properties); a new plain C++ method (non-`UFUNCTION`) can bind via `BindAction` without reflection.
-- After closing the editor to build and relaunching, the MCP client **may reconnect automatically**; if tools error, restart Claude Code (client retries only ~3× at startup; the editor must be bound to `:8000` first).
-- If MCP is down: check `lsof -nP -iTCP:8000`. If a stale `CrashReportClient` (not `UnrealEditor`) holds the port, kill it, then `pkill -9 -f "TacticalMovement_UE58/TacticalMovement.uproject"` and relaunch. UE 5.8 logs are at `~/Library/Logs/Unreal Engine/TacticalMovementEditor/TacticalMovement.log` (NOT the project's `Saved/Logs`).
-- **`gh` CLI is NOT installed.** Create/merge PRs via the **GitHub REST API** with the token from `git credential fill` (host `github.com`); never print the token.
-- Metal Toolchain installed (required by UE 5.8 + Xcode 26).
+## MCP / editor operational lessons
+- **Launch the editor DETACHED** (`nohup … & disown`), NOT via a harness-tracked background job: a `run_in_background` launch dies when the Claude session exits (learned when the editor died on `claude --continue`). Detached survives.
+- **MCP client binds at Claude-startup.** If the editor bridge isn't up when the session starts, `unreal-mcp` tools won't register. Fix: launch the editor first, then start/continue Claude; or run **`/mcp` to reconnect** once the bridge is up. `unreal-mcp` exposes 3 meta-tools (`list_toolsets`, `describe_toolset`, `call_tool`) fronting ~53 toolsets.
+- **On UE crash → "reopen" gets stuck / `CrashReportClient` squats on port 8000:** `kill` the specific `CrashReportClient` PID (SIGKILL if SIGTERM is ignored), confirm port 8000 free, then relaunch detached. Editor cold-start opens the port early but is unresponsive (HTTP 000) until fully loaded.
+- **On the "Restore Packages" auto-save prompt after a crash: choose "Skip Restore"** to keep the manually-saved, verified asset (do not overwrite it with an unknown auto-save).
+- **Skeletons open dirty in-memory** on load (asterisk) without any edit; **SIGTERM discards dirty packages** (does not save) — safe for read-only inspection. `git status` on disk is the source of truth for whether anything actually changed.
+- **MCP cannot read or author AnimGraph pose nodes** (`BlueprintTools.read_graph_dsl` returns empty for the AnimGraph). **EventGraph DSL is readable.** AnimGraph authoring is MANUAL in-editor by the user; MCP verifies indirectly (compile + `get_dependencies` + the user's visual check).
+- **MCP/Slate could NOT see the docked Anim Slot Manager** (`CaptureEditorImage` didn't show it; `WaitFor("DefaultSlot")`/`WaitFor("Anim Slot Manager")` false; no floating window) — for skeleton slot groups, **require an OS screenshot from the user.**
+- `USkeleton` slot groups (`SlotGroups`) are **not exposed** via `ObjectTools` property reflection.
+- `EditorAppToolset.CaptureEditorImage` / `SlateInspectorToolset.Screenshot` return large base64 → decode to a PNG file and Read it.
+- `gh` CLI is **not** installed. Use the GitHub REST API with the token from `git credential fill` (host `github.com`); never print the token. Metal Toolchain installed (UE 5.8 + Xcode 26). UE 5.8 logs: `~/Library/Logs/Unreal Engine/TacticalMovementEditor/TacticalMovement.log`.
 
-**PIE / MCP validation techniques (how the live checks were driven):**
-- Run tests: `AutomationTestToolset` → `DiscoverTests(bForceRediscover=true)` after a rebuild, then `RunTestsByFilter("StartsWith:TacticalMovement.Readiness")`.
-- Read live pawn state: start PIE (`EditorAppToolset.StartPIE`), then `SceneTools.find_actors(name="ThirdPersonCharacter")` returns the PIE pawn (`…UEDPIE_0_…BP_ThirdPersonCharacter_C_0`); read with `ObjectTools.get_properties` (`CombatReadinessState`, `bIsSprinting`).
-- **Slate `PressKey` cannot reach the PIE game viewport** (input goes to the focused Slate widget, not the game) — synthetic keypress routing is effectively unavailable. **Use `PlayMode_InEditorFloating`** and have the **user provide real keyboard/mouse input**; the floating window captures it reliably.
-- For **hold** inputs (RMB, Shift) the user can't type while the mouse is captured: use a **timed read** — user sends "go" then holds; run a `ProgrammaticToolset.execute_tool_script` that `time.sleep(4)` then reads the pawn (sample twice, e.g. t≈4s and t≈6s, to be robust to timing). Key 4 (discrete latch) is the only ADS state settable by a single tap and is directly readable after the press.
+## PIE / MCP validation techniques
+- Tests: `AutomationTestToolset.DiscoverTests` then `RunTestsByFilter("StartsWith:TacticalMovement.Readiness")`.
+- The **PIE player pawn is not reachable** via `EditorAppToolset.GetVisibleActors` (returns editor-world actors). Live-instance reads may need `SceneTools.find_actors` or user-driven checks; `Slate PressKey` cannot reach the PIE game viewport → for input-driven checks use `PlayMode_InEditorFloating` + real user input.
 
 ## Workflow reminders
-- Before any new subsystem: run the **Epic-First Gate** (docs `10` §11) and log it (§12).
-- Reference Epic / Lyra / Game Animation Sample **patterns and tech only** — never feel/values.
-- Vertical-slice discipline: one Epic-backed layer, prove it in runtime + tests, then the next.
-- **Do not merge or push unless the user explicitly approves.**
+- Before any new subsystem: run the **Epic-First Gate** (docs `10`) and log it. Reference Epic / Lyra / Infima **patterns/tech/assets only** — never their feel/values.
+- Per-slice: propose → approve → implement on a new `feature/*` branch → verify (compile + 12/12 + deps + git scope) → report → **commit only named files on explicit approval** → **push on separate explicit approval** (report remote/branch/hash + match). No merge/PR without separate approval.
