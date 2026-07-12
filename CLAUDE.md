@@ -73,7 +73,7 @@ Readiness ladder = **Sul / Low Ready / Movement Ready / ADS** (`ECombatReadiness
 - **UE working repo (ACTIVE):** `~/UnrealEngine/TacticalMovement_UE58` — UE 5.8. Remote `origin` = https://github.com/jteck/TacticalMovement.
 - **Original UE 5.7 project — UNTOUCHED:** `~/UnrealEngine/TacticalMovement` (branch `checkpoint/pre-ue58-upgrade`). Do not upgrade in place.
 - **Infima eval project (READ-ONLY, do not modify/save):** `~/UnrealEngine/Infima_TacticalFPS_Test/Infima_TacticalFPS/`.
-- **Docs repo:** `~/Library/Mobile Documents/com~apple~CloudDocs/Coding/UE FPS project/` — branch `main`, **NO remote configured (local-only, verified 2026-07-11)**. Primary fresh-session handoff file: `CONSOLIDATED_FOR_CHATGPT_2026-07-11.md`. Numbered docs: `01` roadmap, `03A` chronology, `04` code/asset state, `09` change log, `10` Epic-First Gate + Decision Log, `13` Infima FP integration map, `14` FP AnimBP layer design.
+- **Docs repo:** `~/Library/Mobile Documents/com~apple~CloudDocs/Coding/UE FPS project/` — branch `main`, **private GitHub mirror `origin` = https://github.com/jteck/TacticalMovement-Docs (upstream `origin/main`; added 2026-07-12)**. Local-only reference dirs (`FPS shooter UE ideas/`, `tactical positions/`) are excluded via `.gitignore`. Commit hashes here are point-in-time snapshots — **verify live** with `git`. Primary fresh-session handoff file: `CONSOLIDATED_FOR_CHATGPT_2026-07-11.md`. Numbered docs: `01` roadmap, `03A` chronology, `04` code/asset state, `09` change log, `10` Epic-First Gate + Decision Log, `13` Infima FP integration map, `14` FP AnimBP layer design.
 
 ## Enhanced Input map (`/Game/Input/`)
 - Input Actions (Boolean): `IA_ReadinessSul/LowReady/MovementReady`, `IA_ADS`, `IA_ADS_DevLatch` (+ template `IA_Move/Look/Jump/Sprint`).
