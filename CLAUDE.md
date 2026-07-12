@@ -8,46 +8,38 @@ Durable project context, auto-loaded every session. This file is a **self-contai
 
 ---
 
-## HANDOFF — current state (2026-07-11)
+## HANDOFF — current state (2026-07-12)
 
-> **Verify live git state before acting** (`git status`, `git log --oneline --decorate`). Hashes below were verified on 2026-07-11 but re-check.
+> **Verify live git state before acting** (`git status`, `git log --oneline --decorate`). Hashes below were verified on 2026-07-12 but re-check.
 
-### 1. Current repo state (verified 2026-07-11)
+### 1. Current repo state (verified 2026-07-12)
 - **Active UE project:** `~/UnrealEngine/TacticalMovement_UE58` (UE 5.8; `.uproject` EngineAssociation = 5.8).
 - **GitHub:** https://github.com/jteck/TacticalMovement (remote `origin`).
-- **ACTIVE BRANCH:** `feature/fp3-tactical-fp-ads-blend` @ **`6910085d655a246df56abc2d0e07a5a52a4810fa`** ("Add Tactical FP ADS pose blend", FP-3).
-  - **Pushed; local == `origin/feature/fp3-tactical-fp-ads-blend`** (upstream set).
-- **`origin/main` = `acae9cb`** — unchanged this session (FP work never touched `main`).
-- **FP commit chain (newest first):** `6910085` FP-3 → `2314dbf` FP-2 (`origin/feature/fp2-tactical-fp-idle-animbp`, pushed) → `df2367e` FP-1 → `deed772` FP-0 → `cebdf56` (Slice-2 handoff) → …
-- **Local branches:** `main`, `checkpoint/pre-ue58-upgrade`, `feature/fp0-infima-viewmodel-assets`, `feature/fp1-first-person-viewmodel-component`, `feature/fp2-tactical-fp-idle-animbp`, `feature/fp3-tactical-fp-ads-blend` (current), `feature/weapon-posture-visualization`.
+- **ACTIVE BRANCH:** `feature/fp4-tactical-fp-montage-slots` @ **`e9bac570c18998e637418872ecd579cc1ffef51f`** ("Add Tactical FP montage slot plumbing", FP-4). Parent = **`c27d2ce`** (FP-3 branch tip: a CLAUDE.md refresh atop FP-3 impl `6910085`).
+  - **Pushed; local == `origin/feature/fp4-tactical-fp-montage-slots`** (upstream set, verified 2026-07-12).
+- **`origin/main` = `acae9cb`** — unchanged (FP work never touched `main`).
+- **FP commit chain (newest first):** `e9bac57` FP-4 → `c27d2ce` (CLAUDE.md refresh) → `6910085` FP-3 → `2314dbf` FP-2 (`origin/feature/fp2-tactical-fp-idle-animbp`, pushed) → `df2367e` FP-1 → `deed772` FP-0 → `cebdf56` (Slice-2 handoff) → …
+- **Local branches:** `main`, `checkpoint/pre-ue58-upgrade`, `feature/fp0-infima-viewmodel-assets`, `feature/fp1-first-person-viewmodel-component`, `feature/fp2-tactical-fp-idle-animbp`, `feature/fp3-tactical-fp-ads-blend`, `feature/fp4-tactical-fp-montage-slots` (current), `feature/weapon-posture-visualization`.
 - **Working tree clean.** Readiness suite **12/12**.
 
-### 2. First-person (Infima) slices — FP-0 … FP-3 COMPLETE
+### 2. First-person (Infima) slices — FP-0 … FP-4 COMPLETE
 TacticalMovement is a **first-person (FPS)** game. The **Infima "Tactical FPS Animation Pack – Assault Rifle"** is used **only** as an authored FP arms/weapon animation source — **not Lyra, no MoCap, no GAS, no Gameplay Tags.**
 - **FP-0 (`deed772`)** — copied the minimal Infima FP viewmodel asset closure (13 `.uasset`) into `/Game/InfimaGames/TacticalFPSAnimations/…`: 2 poses (`A_TFA_FP_AR_Idle_Pose_Standing`, `A_TFA_FP_AR_Aim_Pose`), skeleton `SKEL_TFA_Mannequin`, mesh `SKM_FP_Manny_Simple`, `M_Mannequin` + `MI_Manny_01/02` + 6 `T_Manny` textures. Excluded full-body preview meshes. No demo/TP/Lyra deps.
 - **FP-1 (`df2367e`)** — added to `BP_ThirdPersonCharacter` (Blueprint-only): `FirstPersonCamera` (`UCameraComponent`, `bAutoActivate=FALSE` — NOT the gameplay view) on the capsule; `FirstPersonArms` (`USkeletalMeshComponent`) under it, mesh `SKM_FP_Manny_Simple`, `bOnlyOwnerSee=true`. `FollowCamera`/`CameraBoom` remain the active TP gameplay view.
 - **FP-2 (`2314dbf`)** — created `/Game/FirstPerson/Animations/ABP_TacticalFP` (skeleton `SKEL_TFA_Mannequin`, AnimGraph = idle pose Sequence Player → Output). `FirstPersonArms.animClass = ABP_TacticalFP_C`.
 - **FP-3 (`6910085`)** — MovementReady↔ADS pose blend on `ABP_TacticalFP`. Verified: **compile 0/0**; EventGraph logic confirmed via DSL read (`bIsADS = OwningCharacter.CombatReadinessState == ADS`, cast to the **C++ class** `TacticalMovementCharacter` — not `BP_ThirdPersonCharacter`; resilient owner reacquire; `bIsADS` set only when owner valid); AnimGraph `Blend Poses by Bool` (Active=`bIsADS`, True=Aim pose, False=Idle pose, **0.2s** both blend times); **deps clean** (no `BP_ThirdPersonCharacter`/demo/TP/Lyra); **12/12**; git scope = only `ABP_TacticalFP.uasset`; **user visual verification passed** (RMB-hold→aim, release→idle; key `4` latch, `1/2/3` exit; smooth 0.2s blend).
+- **FP-4 (`e9bac57`)** — `DefaultSlot` + `Aiming` **montage slot plumbing** spliced into `ABP_TacticalFP` AnimGraph: `Idle Sequence Player → Slot 'DefaultSlot' (DefaultGroup) → Blend Poses by Bool [False]`; `Aim Sequence Player → Slot 'Aiming' (DefaultGroup) → Blend [True]`. Existing `bIsADS` Active Value, **0.2s** blend times, EventGraph, and Output Pose all preserved; empty slots pass base poses through → **FP-3 behavior unchanged**. **No montage created or played.** Authored **entirely via MCP** `BlueprintTools` (`create_node` + `set_properties` `Node.slotName` + `break_pins`/`connect_pins`) — no manual editing. Verified: **compile 0/0**; both slots resolve `DefaultSlot`/`Aiming` in `DefaultGroup`; **deps clean** (no montage/`BP_ThirdPersonCharacter`/demo/TP/Lyra — Slot nodes add zero content deps); **12/12**; PIE smoke clean; git scope = only `ABP_TacticalFP.uasset`; **user visual regression passed** (RMB hold/release + `4` then `1/2/3` → same smooth idle↔aim as FP-3). Preflight confirmed against the Infima reference (read-only): `AM_TFA_FP_AR_Reload` targets **both** slots (`DefaultSlot`=hip reload `A_TFA_FP_AR_Reload`, `Aiming`=aimed reload `A_TFA_FP_AR_Reload_Aimed`); `ABP_TFA_FP_BaseCharacter` wires `Aiming`→True / `DefaultSlot`→False into a bool blend, both slots in `DefaultGroup`.
 
 **Expected visual caveat (normal, not a bug):** from the TP view the FP arms look wrong (posed for a rifle, no FP weapon attached, TP body still visible). The FP arms only "make sense" through `FirstPersonCamera` with the TP body hidden + an FP weapon — all deferred.
 
-### 3. FP-4 — PROPOSAL / PREFLIGHT ONLY (NOT implemented, NOT approved)
-Scope: add `DefaultSlot` + `Aiming` **montage slot plumbing** to `ABP_TacticalFP` — **no montage created or played**, FP-3 behavior unchanged.
-- **Provisional topology (two parallel empty Slot branches — NOT yet approved):**
-  - `Idle Sequence Player → Slot 'DefaultSlot' → Blend Poses by Bool [False]`
-  - `Aim Sequence Player  → Slot 'Aiming'      → Blend Poses by Bool [True]`
-  - Existing `bIsADS` Boolean blend → Output Pose. Empty slots pass base poses through unchanged.
-- **Not approved** because direct read-only inspection of the **Infima reference** (`ABP_TFA_FP_BaseCharacter` AnimGraph, Infima `SKEL_TFA_Mannequin` slot groups, `AM_TFA_FP_AR_Reload` slot tracks) is **incomplete**.
-- **Pivotal open question:** whether the **`Aiming`** slot survived FP-0 on the TacticalMovement copy of `SKEL_TFA_Mannequin`, and its group. `DefaultSlot`/`DefaultGroup` is a UE default; `Aiming` is Infima-custom. If `Aiming` is missing, registering it would edit an FP-0 Infima asset (guardrail) → FP-4 must halt/re-scope.
+### 3. FP-5 — NOT YET SCOPED
+FP-4 (montage slot plumbing) is complete/pushed (see §2). The `DefaultSlot`/`Aiming` slots on `ABP_TacticalFP` are now in place and pass base poses through until a montage drives them. **FP-5 is the next presentation-layer slice but has no defined scope yet — await user direction.** (Resolved during FP-4 preflight: the `Aiming` slot DID survive FP-0 on the TacticalMovement `SKEL_TFA_Mannequin`, sitting in `DefaultGroup` — so no FP-0 Infima-asset edit was ever needed.) Same gated pattern: propose → approve → implement on a new `feature/*` branch → verify → commit gate → push gate.
 
-### 4. NEXT ACTION tomorrow (resume here)
-1. Reopen TacticalMovement (detached launch + MCP bridge; see Editor section).
-2. Open the TacticalMovement copy of `SKEL_TFA_Mannequin` → **Window → Anim Slot Manager**.
-3. **User provides an OS screenshot** showing every expanded group/slot pair (MCP/Slate could not see the docked panel — see lessons).
-4. Discard any in-memory skeleton dirtiness and shut TacticalMovement down (SIGTERM discards; **do not save**).
-5. Launch the **Infima evaluation project alone** with the MCP bridge (one editor at a time; TM must be down first — port 8000 conflict).
-6. Inspect (read-only) `ABP_TFA_FP_BaseCharacter` AnimGraph, the Infima skeleton's slot groups, and `AM_TFA_FP_AR_Reload` (its `SlotAnimTracks` ARE MCP-readable).
-7. Confirm or revise the FP-4 topology from direct observation; then **wait for explicit FP-4 implementation approval.**
+### 4. NEXT ACTION (resume here)
+FP-4 is complete, committed (`e9bac57`), and pushed; **no FP work is in flight** and the working tree is clean. To continue: verify live git state, then pick a direction —
+1. **Scope/approve FP-5** (§3) — next presentation-layer slice, same gated pattern; or
+2. **Integrate** the pushed FP branch(es) toward `main` (PR / merge) — needs separate explicit approval (**no merge/PR without it**).
+Reopen the editor (detached launch + MCP bridge) per the Editor section when hands-on work resumes.
 
 ### 5. Guardrails in force for FP work (unchanged)
 - FP slices touch **only** the presentation layer. Do **not**: activate `FirstPersonCamera`, hide the TP body, attach an FP weapon, add ADS/montages/firing/recoil/ammo/inventory/pickup/drop, Gameplay Tags, or GAS — unless the approved slice says so.
@@ -113,7 +105,9 @@ cd ~/UnrealEngine/TacticalMovement_UE58
 - **On UE crash → "reopen" gets stuck / `CrashReportClient` squats on port 8000:** `kill` the specific `CrashReportClient` PID (SIGKILL if SIGTERM is ignored), confirm port 8000 free, then relaunch detached. Editor cold-start opens the port early but is unresponsive (HTTP 000) until fully loaded.
 - **On the "Restore Packages" auto-save prompt after a crash: choose "Skip Restore"** to keep the manually-saved, verified asset (do not overwrite it with an unknown auto-save).
 - **Skeletons open dirty in-memory** on load (asterisk) without any edit; **SIGTERM discards dirty packages** (does not save) — safe for read-only inspection. `git status` on disk is the source of truth for whether anything actually changed.
-- **MCP cannot read or author AnimGraph pose nodes** (`BlueprintTools.read_graph_dsl` returns empty for the AnimGraph). **EventGraph DSL is readable.** AnimGraph authoring is MANUAL in-editor by the user; MCP verifies indirectly (compile + `get_dependencies` + the user's visual check).
+- **MCP CAN read AND author AnimGraph pose nodes** (corrected in FP-4 — the earlier "manual only" belief was wrong for UE 5.8 `BlueprintTools`). `read_graph_dsl` returns **empty** for an AnimGraph, BUT `find_nodes(graph, title="")` enumerates the pose nodes and `get_node_infos` returns full pin/link detail; `create_node` + `ObjectTools.set_properties` (SlotName is `Node.slotName`) + `break_pins`/`connect_pins` + `compile_blueprint` author and compile them. Slot node `type_id` = `Animation|Montage|Slot'DefaultSlot'` (only the DefaultSlot spawn exists — create it, then set `Node.slotName` for other slot names). **FP-4 added both Slot nodes entirely via MCP, zero manual editing.** EventGraph DSL is also readable. Still verify with compile 0/0 + `get_dependencies` + the user's visual check.
+- **Editor shutdown/relaunch — use `kill -9` (SIGKILL), not SIGTERM, then wait ~8s before relaunching.** The MCP HTTP server does a **one-shot** bind of port 8000 at startup; if the port isn't fully released it logs `LogHttpListener: Error: HttpListener unable to bind to 127.0.0.1:8000`, gives up, and runs with **no bridge** (tools never register). SIGTERM makes it worse — it spawns a `CrashReportClient` that re-grabs port 8000. So: SIGKILL the editor, confirm `lsof -nP -iTCP:8000` shows nothing, wait for the socket to release, then relaunch detached. Readiness = port 8000 LISTEN **and** `GET 127.0.0.1:8000/mcp` → 405.
+- **Never call MCP `OpenEditorForAsset` on macOS** — opening an asset-editor window from the HTTP-server tick deadlocks the game+UI thread in `FSlateApplication::MakeWindow` (editor freezes, dock "not responding", MCP HTTP → 000). Have the **user double-click** assets to open them (normal UI path is safe). `sample <pid>` diagnoses: MakeWindow/semaphore = deadlock; `UpdateTimeAndHandleMaxTickRate → nanosleep` = healthy idle; high CPU + `LogShaderCompilers` = benign first-launch shader compile (intermittent spinners — wait it out).
 - **MCP/Slate could NOT see the docked Anim Slot Manager** (`CaptureEditorImage` didn't show it; `WaitFor("DefaultSlot")`/`WaitFor("Anim Slot Manager")` false; no floating window) — for skeleton slot groups, **require an OS screenshot from the user.**
 - `USkeleton` slot groups (`SlotGroups`) are **not exposed** via `ObjectTools` property reflection.
 - `EditorAppToolset.CaptureEditorImage` / `SlateInspectorToolset.Screenshot` return large base64 → decode to a PNG file and Read it.
