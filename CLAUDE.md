@@ -8,19 +8,19 @@ Durable project context, auto-loaded every session. This file is a **self-contai
 
 ---
 
-## HANDOFF — current state (2026-07-12)
+## HANDOFF — current state (2026-07-13)
 
-> **Verify live git state before acting** (`git status`, `git log --oneline --decorate`). Hashes below were verified on 2026-07-12 but re-check.
+> **Verify live git state before acting** (`git status`, `git log --oneline --decorate`). Hashes below were verified on 2026-07-13 but re-check.
 
-### 1. Current repo state (verified 2026-07-12)
+### 1. Current repo state (verified 2026-07-13)
 - **Active UE project:** `~/UnrealEngine/TacticalMovement_UE58` (UE 5.8; `.uproject` EngineAssociation = 5.8).
 - **GitHub:** https://github.com/jteck/TacticalMovement (remote `origin`).
-- **`main` = `origin/main` = `be92d7bafc92768b90484ae1a907e68f08456db8`** — **FP-0…FP-4 are MERGED into `main`** via **PR #7** (standard merge commit `be92d7b`, merged 2026-07-12 by `jteck`). `main` previously sat at pre-FP `acae9cb`; this is the **first FP landing on the mainline**. PR #7 is **MERGED, not pending**.
-- **WORKING BRANCH (this handoff):** `feature/post-fp4-merge-handoff` — a **docs-only** refresh off `main`; it has its own PR to `main` (a **separate** merge gate). **No FP/asset/code work is in flight.**
+- **`main` = `origin/main` = `cb1910ce33cd7925e01c626012ee78de5b9c0067`** — **FP-5 is MERGED into `main`** via **PR #9** (standard merge commit `cb1910c`, merged 2026-07-13T01:06Z by `jteck`; parents = prior main `8cd8d8b` + FP-5 head `62ffaf0`). Mainline chronology: pre-FP `acae9cb` → **PR #7** merge `be92d7b` (FP-0…FP-4, first FP landing) → **PR #8** merge `8cd8d8b` (docs-only post-FP-4 handoff) → **PR #9** merge `cb1910c` (FP-5). PR #9 is **MERGED, not pending**.
+- **CURRENT BRANCH:** `main` — synchronized with `origin/main` at `cb1910c`; no feature work is in flight. (The FP-5 feature branch `feature/fp5-tactical-fp-reload-montage` @ `62ffaf0` is kept intact post-merge; not deleted.)
 - **Clean integration branch → merge mapping** (the merged source, kept intact): `feature/fp0-fp4-clean-integration` @ `1130f5d` (pushed) was cut from `acae9cb` and cherry-picked FP-0…FP-4 — `deed772`→`2af219a` (FP-0), `df2367e`→`c59585a` (FP-1), `2314dbf`→`e797258` (FP-2), `6910085`→`1a7cf6a` (FP-3), `e9bac57`→`11f9146` (FP-4) — plus handoff commits `281f023`, `1130f5d`. It **excluded** the paused Slice-2 weapon-posture commits (`74ccae6`/`239a338`/`e9a5b42`/`cebdf56`) and the `feature/fp4-tactical-fp-montage-slots` handoff commits, so **`ABP_TacticalRifle.uasset` on `main` is byte-identical to pre-FP `acae9cb`** (no posture / Slice-2 work landed).
-- **`origin/main` = `be92d7b`** (was `acae9cb` until the PR #7 merge).
-- **All FP feature branches remain intact — none deleted:** `feature/fp4-tactical-fp-montage-slots` @ `8f27298` (pushed) and `feature/fp0-fp4-clean-integration` @ `1130f5d` (pushed) are untouched; likewise `feature/fp0/fp1/fp2/fp3-*` and `feature/weapon-posture-visualization`.
-- **Local branches:** `main`, `checkpoint/pre-ue58-upgrade`, `feature/fp0-infima-viewmodel-assets`, `feature/fp1-first-person-viewmodel-component`, `feature/fp2-tactical-fp-idle-animbp`, `feature/fp3-tactical-fp-ads-blend`, `feature/fp4-tactical-fp-montage-slots`, `feature/fp0-fp4-clean-integration`, `feature/post-fp4-merge-handoff` (current), `feature/weapon-posture-visualization`.
+- **`origin/main` = `cb1910c`** (was `8cd8d8b` until the PR #9 merge; earlier `acae9cb` → `be92d7b` via PR #7 → `8cd8d8b` via PR #8).
+- **All FP feature branches remain intact — none deleted:** `feature/fp5-tactical-fp-reload-montage` @ `62ffaf0` (pushed), `feature/fp4-tactical-fp-montage-slots` @ `8f27298` (pushed), `feature/fp0-fp4-clean-integration` @ `1130f5d` (pushed), and `feature/post-fp4-merge-handoff` @ `e658c82` (pushed) are untouched; likewise `feature/fp0/fp1/fp2/fp3-*` and `feature/weapon-posture-visualization`.
+- **Local branches:** `main` (current), `checkpoint/pre-ue58-upgrade`, `feature/fp0-infima-viewmodel-assets`, `feature/fp1-first-person-viewmodel-component`, `feature/fp2-tactical-fp-idle-animbp`, `feature/fp3-tactical-fp-ads-blend`, `feature/fp4-tactical-fp-montage-slots`, `feature/fp5-tactical-fp-reload-montage`, `feature/fp0-fp4-clean-integration`, `feature/post-fp4-merge-handoff`, `feature/weapon-posture-visualization`.
 - **Working tree clean; no FP work in flight.** Readiness suite **12/12**. *All hashes/branches/PR states above are a point-in-time snapshot — always re-verify live (`git status`, `git log --oneline --decorate`, `gh pr view`) before acting; do not assume a branch's state.*
 
 ### 2. First-person (Infima) slices — FP-0 … FP-4 COMPLETE & MERGED to `main` (PR #7, merge `be92d7b`)
@@ -33,19 +33,31 @@ TacticalMovement is a **first-person (FPS)** game. The **Infima "Tactical FPS An
 
 **Expected visual caveat (normal, not a bug):** from the TP view the FP arms look wrong (posed for a rifle, no FP weapon attached, TP body still visible). The FP arms only "make sense" through `FirstPersonCamera` with the TP body hidden + an FP weapon — all deferred.
 
-### 3. FP-5 — NOT YET SCOPED
-FP-4 (montage slot plumbing) is complete and **merged into `main`** (PR #7, merge `be92d7b`; landed as `11f9146` via the clean integration branch; original impl `e9bac57` on `feature/fp4-tactical-fp-montage-slots`). The `DefaultSlot`/`Aiming` slots on `ABP_TacticalFP` (now on `main`) are in place and pass base poses through until a montage drives them. **FP-5 is the next presentation-layer slice but has no defined scope yet — await user direction.** (Resolved during FP-4 preflight: the `Aiming` slot DID survive FP-0 on the TacticalMovement `SKEL_TFA_Mannequin`, sitting in `DefaultGroup` — so no FP-0 Infima-asset edit was ever needed.) Same gated pattern: propose → approve → implement on a new `feature/*` branch → verify → commit gate → push gate.
+### 3. FP-5 — COMPLETE, VERIFIED, MERGED to `main` (PR #9, merge `cb1910c`)
+FP-5 adds a **first-person reload montage** driven through the existing FP-4 `DefaultSlot`/`Aiming` slots — **no AnimGraph change**, and no C++/character-BP/input/Infima-source/docs changes. Implemented on `feature/fp5-tactical-fp-reload-montage` (impl commit `62ffaf0`), merged to `main` via **PR #9** (merge `cb1910c`).
+- **Permanent scope = exactly 3 new `.uasset` (no redirectors, nothing else touched):**
+  1. `Content/FirstPerson/Animations/Montages/AM_TacticalFP_Reload.uasset` — TacticalMovement-owned montage on `SKEL_TFA_Mannequin`. Topology/settings: `DefaultSlot` → `A_TFA_FP_AR_Reload` (hip), `Aiming` → `A_TFA_FP_AR_Reload_Aimed` (aimed); **rateScale 1.1**; blend in/out **0.0** (Sinusoidal in / Standard out); **one Default section**; one-shot auto blend-out; **no notifies, no sync group**. Deps = skeleton + the two sequences only.
+  2. `Content/InfimaGames/TacticalFPSAnimations/Weapons/AssaultRifle/Animations/Character/FP/Combat/A_TFA_FP_AR_Reload.uasset`
+  3. `…/Combat/A_TFA_FP_AR_Reload_Aimed.uasset`
+  Both sequences are **ADDITIVE** (`AAT_LocalSpaceBase`) based on the FP-0 idle/aim poses; they compose correctly through the FP-4 `DefaultSlot`/`Aiming` slots with **no Apply-Additive / AnimGraph change** (proven in PIE).
+- **`ABP_TacticalFP` is UNCHANGED** (blob `5d7f5cb`, byte-identical on `main` before and after FP-5). A temporary R-key montage trigger was used **only** for PIE verification and was fully discarded (SIGKILL + `git restore`); identity re-proven. *(That R-key trigger is throwaway test scaffolding — NOT permanent game architecture; reload gameplay input is out of scope until an approved slice.)*
+- **Verification (all passed):** montage structure/settings; **clean deps**; PIE hip reload non-ADS (`DefaultSlot`) + aimed reload ADS (`Aiming`); AnimBP compile **0/0** (warnings-as-errors); readiness **12/12** (`TacticalMovement.Readiness`); final git scope = exactly the 3 files, no redirectors.
+- **Expected visual caveat (normal):** TP body still visible under the FP arms — no FP-camera activation / body-hide / FP weapon yet.
+- **FP-5 tooling lessons (durable):** MCP **can** author a montage's `slotAnimTracks` + blend/rate settings via `ObjectTools.set_properties` (nested struct-array write works), but **cannot create the montage asset itself** (no montage factory) — the **user creates the empty/base montage, MCP configures it**. MCP can author EventGraph nodes for a temporary PIE trigger (`create_node`/`add_node_pin`/`connect_pins`/`set_pin_value`/`compile_blueprint`); `EditorAppToolset.SetContentBrowserPath`/`SelectAssets` syncs the Content Browser to freshly filesystem-copied assets.
+
+### 3b. FP-6 — NOT YET SCOPED
+FP-6 is the next presentation-layer slice and has **no defined scope yet — await user direction.** Roadmap after FP-5: **weapon-mesh sync → reload gameplay → Sul → LowReady/HighReady.** **Weapon synchronization and reload gameplay have NOT been started** and remain out of scope until approved as a slice. Same gated pattern: propose → approve → implement on a new `feature/*` branch → verify → commit gate → push gate.
 
 ### 4. NEXT ACTION (resume here)
-**FP-0…FP-4 are complete, verified, and MERGED into `main`** (PR #7, merge `be92d7b`). Working tree is clean and **no FP work is in flight**. This handoff refresh is committed on `feature/post-fp4-merge-handoff` and submitted as its own **docs PR to `main`** (a **separate** merge gate — do not merge without approval; verify its state live).
-**Next gated step: the FP-5 proposal** (§3) — read-only preflight → propose scope → await explicit approval → implement on a new `feature/*` branch → verify → commit gate → push gate. Re-verify live git + PR state (`git`, `gh pr view`) first.
+**FP-0…FP-5 are complete, verified, and MERGED into `main`** (FP-0…FP-4 via PR #7 `be92d7b`; docs via PR #8 `8cd8d8b`; FP-5 via PR #9 `cb1910c`). Working tree is clean, `main` is in sync with `origin/main` at `cb1910c`, and **no FP work is in flight**.
+**Next gated step: the FP-6 proposal** (§3b) — read-only preflight → propose scope → await explicit approval → implement on a new `feature/*` branch → verify → commit gate → push gate. Re-verify live git + PR state (`git`, `gh pr view`) first.
 Reopen the editor (detached launch + MCP bridge) per the Editor section when hands-on work resumes.
 
 ### 5. Guardrails in force for FP work (unchanged)
 - FP slices touch **only** the presentation layer. Do **not**: activate `FirstPersonCamera`, hide the TP body, attach an FP weapon, add ADS/montages/firing/recoil/ammo/inventory/pickup/drop, Gameplay Tags, or GAS — unless the approved slice says so.
 - Do **not** edit imported FP-0 Infima assets, or the **Infima source project** (`~/UnrealEngine/Infima_TacticalFPS_Test/Infima_TacticalFPS/` — **read-only**).
 - Do **not** change C++, Enhanced Input, movement DataTables, readiness logic (`ECombatReadinessState`), `ABP_TacticalRifle`, or `ABP_Unarmed`.
-- Only `Content/FirstPerson/Animations/ABP_TacticalFP.uasset` should change when an approved FP slice is implemented.
+- An approved FP slice changes **only its explicitly scoped assets** — e.g. FP-4 touched only `Content/FirstPerson/Animations/ABP_TacticalFP.uasset`; FP-5 added only its 3 new `.uasset` (montage + 2 additive sequences) and left `ABP_TacticalFP` unchanged. No file outside the approved scope may change.
 
 ### 6. Prior work still in the tree (durable lessons; not current focus)
 - **Equipped-rifle baseline** (branch `feature/equipped-weapon-static-attach`, not merged): character holds `SM_Rifle` via `ABP_TacticalRifle` attached at the **`HandGrip_R`** socket. **Durable lesson:** a believable hold is an **animation pose**, not a static transform; `weapon_r`/`weapon_r_hold`/`weapon_r_muzzle` were rejected on this skeleton. **Alpha standard: a slice isn't complete if it looks broken to an external reviewer.**
