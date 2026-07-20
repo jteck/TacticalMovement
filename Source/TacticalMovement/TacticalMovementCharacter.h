@@ -12,6 +12,7 @@
 class USpringArmComponent;
 class UCameraComponent;
 class UInputAction;
+class UTacticalCharacterMovementComponent;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
@@ -105,13 +106,24 @@ protected:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Movement|Data")
 	FName DefaultMovementProfileRowName;
 
-	/** Current sprint state */
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Movement|State")
+	/** Current sprint state — presentation/API mirror of the CMC sprint intent.
+	 *  Replicated to simulated proxies only (the owning client predicts it locally). */
+	UPROPERTY(ReplicatedUsing=OnRep_IsSprinting, VisibleInstanceOnly, BlueprintReadOnly, Category="Movement|State")
 	bool bIsSprinting = false;
 
-	/** Current combat readiness state (default: Low Ready — the practical default firearm posture) */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Movement|State")
+	/** Current combat readiness state (default: Low Ready — the practical default firearm posture).
+	 *  Presentation/API mirror of the CMC readiness intent; NOT an independent movement source.
+	 *  Replicated to simulated proxies only (the owning client predicts it locally). */
+	UPROPERTY(ReplicatedUsing=OnRep_CombatReadinessState, EditDefaultsOnly, BlueprintReadOnly, Category="Movement|State")
 	ECombatReadinessState CombatReadinessState = ECombatReadinessState::LowReady;
+
+	/** OnRep for the readiness mirror on simulated proxies — refreshes orientation presentation. */
+	UFUNCTION()
+	void OnRep_CombatReadinessState();
+
+	/** OnRep for the sprint mirror on simulated proxies (presentation hook). */
+	UFUNCTION()
+	void OnRep_IsSprinting();
 
 	/** Readiness to restore when hold-to-ADS (RMB) is released. Captured only when entering ADS from a non-ADS state; seeded to Low Ready as the fallback. Transient runtime state — never serialized. */
 	UPROPERTY(Transient)
@@ -123,17 +135,10 @@ protected:
 	/** BeginPlay override to initialize movement profile from DataTable */
 	virtual void BeginPlay() override;
 
-	/** Internal function to read the DataTable row and apply movement settings */
-	void ApplyMovementProfileFromDataTable();
-		/** Updates current movement speed based on input direction using the active movement profile */
-	void UpdateDirectionalMovementSpeed(float Right, float Forward);
-
-		/** Applies movement orientation rules based on the current readiness state */
+		/** Applies movement orientation rules based on the current readiness state (reads the mirror). */
 	void UpdateMovementOrientationBehavior();
-		/** Central internal function for changing readiness state */
+		/** Central internal function for changing readiness state — routes to CMC intent + mirror. */
 	void SetCombatReadinessState(ECombatReadinessState NewState);
-		/** Returns a movement speed multiplier based on the current readiness state */
-	float GetReadinessSpeedMultiplier() const;
 
 		/** Returns whether the current readiness state allows strafing movement */
 	bool DoesCurrentReadinessAllowStrafe() const;
@@ -164,8 +169,18 @@ protected:
 
 public:
 
-	/** Constructor */
-	ATacticalMovementCharacter();
+	/** Constructor — installs the custom UTacticalCharacterMovementComponent. */
+	ATacticalMovementCharacter(const FObjectInitializer& ObjectInitializer);
+
+	/** Replicated-property setup (readiness/sprint mirror -> simulated proxies only). */
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	/** Typed accessor for the custom movement component (may be null in early construction). */
+	UTacticalCharacterMovementComponent* GetTacticalMovementComponent() const;
+
+	/** Single writer of the readiness/sprint mirror. Updates the mirror fields + orientation.
+	 *  Called by the Character setters (owner/authority/tests) and by the CMC (server accept / owner correction). */
+	void SyncReadinessMirror(ECombatReadinessState NewReadiness, bool bNewSprint);
 
 	/** Handles move inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category="Input")
