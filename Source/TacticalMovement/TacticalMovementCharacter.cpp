@@ -10,13 +10,16 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Net/UnrealNetwork.h"
+#include "Movement/TacticalCharacterMovementComponent.h"
 #include "TacticalMovement.h"
 
-ATacticalMovementCharacter::ATacticalMovementCharacter()
+ATacticalMovementCharacter::ATacticalMovementCharacter(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer.SetDefaultSubobjectClass<UTacticalCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-		
+
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -49,85 +52,62 @@ ATacticalMovementCharacter::ATacticalMovementCharacter()
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
+void ATacticalMovementCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// The owning client predicts these via the CMC intent + move pipeline, so replicate the
+	// mirror to simulated proxies only (never fight the owner's prediction).
+	DOREPLIFETIME_CONDITION(ATacticalMovementCharacter, CombatReadinessState, COND_SimulatedOnly);
+	DOREPLIFETIME_CONDITION(ATacticalMovementCharacter, bIsSprinting, COND_SimulatedOnly);
+}
+
+UTacticalCharacterMovementComponent* ATacticalMovementCharacter::GetTacticalMovementComponent() const
+{
+	return Cast<UTacticalCharacterMovementComponent>(GetCharacterMovement());
+}
+
 void ATacticalMovementCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
 	DefaultMovementProfileRowName = MovementProfileRowName;
+
+	// Cache the movement-profile rows once; the CMC resolves speed/jump/friction per move from them.
+	if (UTacticalCharacterMovementComponent* TCMC = GetTacticalMovementComponent())
+	{
+		TCMC->CacheProfilesFromTable(MovementProfileTable, MovementProfileRowName, SprintMovementProfileRowName);
+		// Seed CMC intent from the shipped default readiness (mirror already holds it).
+		TCMC->SetIntentReadinessAndSprint(CombatReadinessState, bIsSprinting);
+	}
+
 	UpdateMovementOrientationBehavior();
-	ApplyMovementProfileFromDataTable();
 }
 
-void ATacticalMovementCharacter::ApplyMovementProfileFromDataTable()
+void ATacticalMovementCharacter::OnRep_CombatReadinessState()
 {
-    if (!MovementProfileTable)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("MovementProfileTable not assigned on %s"), *GetName());
-        return;
-    }
-
-    const FMovementProfileRow* Row = MovementProfileTable->FindRow<FMovementProfileRow>(MovementProfileRowName, TEXT(""));
-
-    if (!Row)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("MovementProfileRow '%s' not found in table"), *MovementProfileRowName.ToString());
-        return;
-    }
-
-    // Apply the values from the DataTable row to the CharacterMovement component
-    UCharacterMovementComponent* MoveComp = GetCharacterMovement();
-    if (!MoveComp) return;
-
-    MoveComp->MaxWalkSpeed            = Row->MaxWalkSpeedForward;
-    MoveComp->MaxWalkSpeedCrouched    = Row->MaxWalkSpeedForward * Row->CrouchSpeedMultiplier;
-    MoveComp->MaxAcceleration         = Row->MaxAcceleration;
-    MoveComp->BrakingDecelerationWalking = Row->BrakingDeceleration;
-    MoveComp->GroundFriction          = Row->GroundFriction;
-    MoveComp->JumpZVelocity           = Row->JumpZVelocity;
-    MoveComp->AirControl              = Row->AirControl;
-
-    UE_LOG(LogTemp, Log, TEXT("Applied movement profile '%s'"), *MovementProfileRowName.ToString());
+	// Simulated proxy: readiness mirror changed -> refresh orientation presentation.
+	UpdateMovementOrientationBehavior();
 }
 
-void ATacticalMovementCharacter::UpdateDirectionalMovementSpeed(float Right, float Forward)
+void ATacticalMovementCharacter::OnRep_IsSprinting()
 {
-	if (!MovementProfileTable)
-	{
-		return;
-	}
-
-	FMovementProfileRow* Row = MovementProfileTable->FindRow<FMovementProfileRow>(MovementProfileRowName, TEXT(""));
-
-	if (!Row)
-	{
-		return;
-	}
-
-	UCharacterMovementComponent* MoveComp = GetCharacterMovement();
-	if (!MoveComp)
-	{
-		return;
-	}
-
-	const float ReadinessMultiplier = GetReadinessSpeedMultiplier();
-
-	// Simple dominant-direction logic:
-	// - Forward input > 0 uses forward speed
-	// - Forward input < 0 uses backward speed
-	// - No forward input but right/left input uses strafe speed
-	if (Forward > 0.0f)
-	{
-		MoveComp->MaxWalkSpeed = Row->MaxWalkSpeedForward * ReadinessMultiplier;
-	}
-	else if (Forward < 0.0f)
-	{
-		MoveComp->MaxWalkSpeed = Row->MaxWalkSpeedBack * ReadinessMultiplier;
-	}
-	else if (FMath::Abs(Right) > 0.0f)
-	{
-		MoveComp->MaxWalkSpeed = Row->MaxWalkSpeedStrafe * ReadinessMultiplier;
-	}
+	// Presentation hook for simulated proxies (future proxy anim). No movement authority here.
 }
+
+void ATacticalMovementCharacter::SyncReadinessMirror(ECombatReadinessState NewReadiness, bool bNewSprint)
+{
+	// Single writer of the presentation/API mirror. On the server this is the replicated source;
+	// on the owning client it reflects the predicted state.
+	CombatReadinessState = NewReadiness;
+	bIsSprinting = bNewSprint;
+	UpdateMovementOrientationBehavior();
+}
+
+// Movement speed / jump / friction are now resolved per-move by
+// UTacticalCharacterMovementComponent (server-authoritative + client-predicted).
+// The former ApplyMovementProfileFromDataTable() / UpdateDirectionalMovementSpeed()
+// imperative writes have been removed.
 
 void ATacticalMovementCharacter::UpdateMovementOrientationBehavior()
 {
@@ -155,27 +135,6 @@ void ATacticalMovementCharacter::UpdateMovementOrientationBehavior()
 
 		default:
 			break;
-	}
-}
-
-float ATacticalMovementCharacter::GetReadinessSpeedMultiplier() const
-{
-	switch (CombatReadinessState)
-	{
-		case ECombatReadinessState::Sul:
-			return 1.00f;
-
-		case ECombatReadinessState::LowReady:
-			return 0.90f;
-
-		case ECombatReadinessState::MovementReady:
-			return 1.00f;
-
-		case ECombatReadinessState::ADS:
-			return 0.75f;
-
-		default:
-			return 1.00f;
 	}
 }
 
@@ -285,8 +244,21 @@ bool ATacticalMovementCharacter::DoesCurrentReadinessAllowSprint() const
 
 void ATacticalMovementCharacter::SetCombatReadinessState(ECombatReadinessState NewState)
 {
-	CombatReadinessState = NewState;
-	UpdateMovementOrientationBehavior();
+	// Entering ADS cancels an active sprint (identity rule).
+	bool bSprint = bIsSprinting;
+	if (NewState == ECombatReadinessState::ADS)
+	{
+		bSprint = false;
+	}
+
+	// Authoritative movement-intent source = CMC intent.
+	if (UTacticalCharacterMovementComponent* TCMC = GetTacticalMovementComponent())
+	{
+		TCMC->SetIntentReadinessAndSprint(NewState, bSprint);
+	}
+
+	// Synchronized presentation/API mirror (also the replicated source on the server).
+	SyncReadinessMirror(NewState, bSprint);
 }
 
 void ATacticalMovementCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -349,7 +321,8 @@ void ATacticalMovementCharacter::DoMove(float Right, float Forward)
 {
 	if (GetController() != nullptr)
 	{
-		UpdateDirectionalMovementSpeed(Right, Forward);
+		// Directional speed is resolved per-move by the CMC (GetMaxSpeed) from the predicted
+		// direction class; no imperative MaxWalkSpeed write here anymore.
 
 		// find out which way is forward
 		const FRotator Rotation = GetController()->GetControlRotation();
@@ -396,15 +369,12 @@ void ATacticalMovementCharacter::CancelSprintInternal()
 		return;
 	}
 
-	bIsSprinting = false;
-
-	if (!MovementProfileTable || DefaultMovementProfileRowName.IsNone())
+	// Clear sprint intent on the CMC + mirror; the CMC resolves the non-sprint profile per move.
+	if (UTacticalCharacterMovementComponent* TCMC = GetTacticalMovementComponent())
 	{
-		return;
+		TCMC->SetIntentReadinessAndSprint(CombatReadinessState, false);
 	}
-
-	MovementProfileRowName = DefaultMovementProfileRowName;
-	ApplyMovementProfileFromDataTable();
+	SyncReadinessMirror(CombatReadinessState, false);
 }
 
 void ATacticalMovementCharacter::StartSprinting()
@@ -419,17 +389,18 @@ void ATacticalMovementCharacter::StartSprinting()
 		return;
 	}
 
-	// Must have a sprint row and a valid table
+	// Must have a sprint row and a valid table (same data gate as before).
 	if (!MovementProfileTable || SprintMovementProfileRowName.IsNone())
 	{
 		return;
 	}
 
-	bIsSprinting = true;
-
-	// Switch to sprint row and re-apply profile
-	MovementProfileRowName = SprintMovementProfileRowName;
-	ApplyMovementProfileFromDataTable();
+	// Set sprint intent on the CMC + mirror; the CMC resolves the sprint profile per move.
+	if (UTacticalCharacterMovementComponent* TCMC = GetTacticalMovementComponent())
+	{
+		TCMC->SetIntentReadinessAndSprint(CombatReadinessState, true);
+	}
+	SyncReadinessMirror(CombatReadinessState, true);
 }
 
 void ATacticalMovementCharacter::StopSprinting()
@@ -454,7 +425,7 @@ void ATacticalMovementCharacter::SetReadinessMovementReady()
 
 void ATacticalMovementCharacter::SetReadinessADS()
 {
-	CancelSprintInternal();
+	// SetCombatReadinessState(ADS) already applies the ADS-cancels-sprint rule.
 	SetCombatReadinessState(ECombatReadinessState::ADS);
 }
 
