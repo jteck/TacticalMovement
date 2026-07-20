@@ -205,16 +205,19 @@ void UTacticalCharacterMovementComponent::RestoreIntentForReplay(ECombatReadines
 
 void UTacticalCharacterMovementComponent::CacheProfilesFromTable(const UDataTable* Table, FName DefaultRow, FName SprintRow)
 {
-	if (!Table)
+	// Require a valid table AND a valid default row before caching. If either is absent,
+	// leave profiles uncached so GetMaxSpeed() falls back to the engine base speed rather
+	// than silently using struct-default profile values.
+	const FMovementProfileRow* DefRow = Table
+		? Table->FindRow<FMovementProfileRow>(DefaultRow, TEXT("TacticalCMC:Default"))
+		: nullptr;
+	if (!DefRow)
 	{
 		bProfilesCached = false;
 		return;
 	}
+	ProfileDefault = *DefRow;
 
-	if (const FMovementProfileRow* Row = Table->FindRow<FMovementProfileRow>(DefaultRow, TEXT("TacticalCMC:Default")))
-	{
-		ProfileDefault = *Row;
-	}
 	// Sprint row is optional; fall back to the default row if absent so sprint is safe.
 	if (!SprintRow.IsNone())
 	{
@@ -287,19 +290,8 @@ void UTacticalCharacterMovementComponent::ApplyResolvedProfileForCurrentMove()
 	// MaxWalkSpeed is handled per-direction+readiness by GetMaxSpeed().
 }
 
-float UTacticalCharacterMovementComponent::GetMaxSpeed() const
+float UTacticalCharacterMovementComponent::ProfileDirectionalCap() const
 {
-	if (!bProfilesCached)
-	{
-		return Super::GetMaxSpeed();
-	}
-
-	// Only the ground walking speed is direction/readiness-scaled here.
-	if (MovementMode != MOVE_Walking && MovementMode != MOVE_NavWalking)
-	{
-		return Super::GetMaxSpeed();
-	}
-
 	const FMovementProfileRow& P = ActiveProfile();
 	float Base;
 	switch (IntentDirClass)
@@ -310,6 +302,32 @@ float UTacticalCharacterMovementComponent::GetMaxSpeed() const
 		default:                        Base = P.MaxWalkSpeedForward; break; // None (pre-movement) -> forward cap
 	}
 	return Base * ReadinessSpeedMultiplier();
+}
+
+float UTacticalCharacterMovementComponent::GetMaxSpeed() const
+{
+	if (!bProfilesCached)
+	{
+		return Super::GetMaxSpeed();
+	}
+
+	switch (MovementMode)
+	{
+		case MOVE_Walking:
+		case MOVE_NavWalking:
+			// Preserve main's crouch contract (base returns MaxWalkSpeedCrouched while crouched);
+			// otherwise the active directional/readiness profile cap.
+			return IsCrouching() ? MaxWalkSpeedCrouched : ProfileDirectionalCap();
+
+		case MOVE_Falling:
+			// Preserve main's airborne cap: base GetMaxSpeed returns MaxWalkSpeed while falling,
+			// which main kept updated to the directional/readiness profile speed before each move.
+			return ProfileDirectionalCap();
+
+		default:
+			// Swimming / Flying / Custom / None: unchanged engine behavior.
+			return Super::GetMaxSpeed();
+	}
 }
 
 void UTacticalCharacterMovementComponent::SyncMirrorToOwner()

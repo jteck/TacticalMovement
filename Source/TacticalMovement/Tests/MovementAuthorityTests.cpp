@@ -22,6 +22,8 @@
 #include "Misc/AutomationTest.h"
 #include "UObject/UObjectGlobals.h"
 #include "UObject/Package.h"
+#include "Engine/DataTable.h"
+#include "Components/CapsuleComponent.h"
 #include "TacticalMovementCharacter.h"
 #include "Movement/TacticalCharacterMovementComponent.h"
 
@@ -49,6 +51,26 @@ namespace TacticalMovementAuthorityTests
 
 	static int32 AsInt(ECombatReadinessState S) { return (int32)S; }
 	static int32 AsInt(ETacticalMoveDir D) { return (int32)D; }
+
+	static const TCHAR* MovementProfileTablePath =
+		TEXT("/Game/Data/DT_MovementProfiles.DT_MovementProfiles");
+
+	static UDataTable* LoadProfiles(FAutomationTestBase& Test)
+	{
+		UDataTable* DT = LoadObject<UDataTable>(nullptr, MovementProfileTablePath);
+		if (!DT)
+		{
+			Test.AddError(FString::Printf(TEXT("Could not load DataTable at '%s'"), MovementProfileTablePath));
+		}
+		return DT;
+	}
+
+	// Establish the CMC's CharacterOwner/UpdatedComponent link (as component registration would),
+	// so GetMaxSpeed()'s IsCrouching() reflects the character's crouch state.
+	static void WireOwner(ATacticalMovementCharacter* Character, UTacticalCharacterMovementComponent* TCMC)
+	{
+		TCMC->SetUpdatedComponent(Character->GetCapsuleComponent());
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -289,6 +311,160 @@ bool FMovementAuthorityMirrorWriterTest::RunTest(const FString& Parameters)
 	TestEqual(TEXT("Mirror readiness updated to Sul"),
 		AsInt(Character->GetCombatReadinessState()), AsInt(ECombatReadinessState::Sul));
 	TestTrue(TEXT("Mirror sprint updated"), Character->IsSprinting());
+	return true;
+}
+
+// ---------------------------------------------------------------------------
+// 9. Walking directional + readiness speed: GetMaxSpeed() differentiates
+//    Forward/Strafe and scales down for LowReady/ADS vs MovementReady.
+// ---------------------------------------------------------------------------
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FMovementAuthorityWalkSpeedTest,
+	"TacticalMovement.MovementAuthority.WalkDirectionalReadinessSpeed",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FMovementAuthorityWalkSpeedTest::RunTest(const FString& Parameters)
+{
+	using namespace TacticalMovementAuthorityTests;
+	ATacticalMovementCharacter* Character = MakeCharacter(*this);
+	if (!Character) { return false; }
+	UTacticalCharacterMovementComponent* TCMC = Character->GetTacticalMovementComponent();
+	if (!TCMC) { AddError(TEXT("No custom CMC")); return false; }
+	UDataTable* DT = LoadProfiles(*this);
+	if (!DT) { return false; }
+
+	WireOwner(Character, TCMC);
+	TCMC->CacheProfilesFromTable(DT, FName("Infantry_Default"), NAME_None);
+	if (!TCMC->AreProfilesCached()) { AddError(TEXT("Default row missing from DataTable")); return false; }
+	TCMC->MovementMode = MOVE_Walking;
+
+	// Directional differentiation (forward is the fastest ground direction).
+	TCMC->RestoreIntentForReplay(ECombatReadinessState::MovementReady, false, ETacticalMoveDir::Forward);
+	const float Fwd = TCMC->GetMaxSpeed();
+	TCMC->RestoreIntentForReplay(ECombatReadinessState::MovementReady, false, ETacticalMoveDir::Strafe);
+	const float Strafe = TCMC->GetMaxSpeed();
+	TestTrue(TEXT("Forward cap > 0"), Fwd > 0.f);
+	TestTrue(TEXT("Strafe cap < Forward cap"), Strafe < Fwd);
+
+	// Readiness scaling (MovementReady 1.00 > LowReady 0.90 > ADS 0.75) at fixed direction.
+	TCMC->RestoreIntentForReplay(ECombatReadinessState::MovementReady, false, ETacticalMoveDir::Forward);
+	const float MR = TCMC->GetMaxSpeed();
+	TCMC->RestoreIntentForReplay(ECombatReadinessState::LowReady, false, ETacticalMoveDir::Forward);
+	const float LR = TCMC->GetMaxSpeed();
+	TCMC->RestoreIntentForReplay(ECombatReadinessState::ADS, false, ETacticalMoveDir::Forward);
+	const float ADS = TCMC->GetMaxSpeed();
+	TestTrue(TEXT("LowReady < MovementReady"), LR < MR);
+	TestTrue(TEXT("ADS < LowReady"), ADS < LR);
+	return true;
+}
+
+// ---------------------------------------------------------------------------
+// 10. Crouched walking honors the profile crouch cap (main's crouch contract).
+// ---------------------------------------------------------------------------
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FMovementAuthorityCrouchSpeedTest,
+	"TacticalMovement.MovementAuthority.CrouchedWalkSpeed",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FMovementAuthorityCrouchSpeedTest::RunTest(const FString& Parameters)
+{
+	using namespace TacticalMovementAuthorityTests;
+	ATacticalMovementCharacter* Character = MakeCharacter(*this);
+	if (!Character) { return false; }
+	UTacticalCharacterMovementComponent* TCMC = Character->GetTacticalMovementComponent();
+	if (!TCMC) { AddError(TEXT("No custom CMC")); return false; }
+	UDataTable* DT = LoadProfiles(*this);
+	if (!DT) { return false; }
+
+	WireOwner(Character, TCMC);
+	if (Character->GetCharacterMovement() != TCMC || TCMC->GetCharacterOwner() != Character)
+	{
+		AddError(TEXT("CharacterOwner link not established; crouch state would be unreadable."));
+		return false;
+	}
+	TCMC->CacheProfilesFromTable(DT, FName("Infantry_Default"), NAME_None);
+	TCMC->MovementMode = MOVE_Walking;
+	TCMC->RestoreIntentForReplay(ECombatReadinessState::MovementReady, false, ETacticalMoveDir::Forward);
+
+	const float CrouchCap = 77.f;               // distinctive value, distinct from any profile cap
+	TCMC->MaxWalkSpeedCrouched = CrouchCap;
+
+	Character->bIsCrouched = false;
+	const float Standing = TCMC->GetMaxSpeed();
+	Character->bIsCrouched = true;
+	const float Crouched = TCMC->GetMaxSpeed();
+
+	TestEqual(TEXT("Crouched returns MaxWalkSpeedCrouched"), Crouched, CrouchCap);
+	TestNotEqual(TEXT("Standing does not use the crouch cap"), Standing, CrouchCap);
+	return true;
+}
+
+// ---------------------------------------------------------------------------
+// 11. Falling uses the directional/readiness profile cap, NOT the constructor 500.
+// ---------------------------------------------------------------------------
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FMovementAuthorityFallSpeedTest,
+	"TacticalMovement.MovementAuthority.FallingDirectionalReadinessSpeed",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FMovementAuthorityFallSpeedTest::RunTest(const FString& Parameters)
+{
+	using namespace TacticalMovementAuthorityTests;
+	ATacticalMovementCharacter* Character = MakeCharacter(*this);
+	if (!Character) { return false; }
+	UTacticalCharacterMovementComponent* TCMC = Character->GetTacticalMovementComponent();
+	if (!TCMC) { AddError(TEXT("No custom CMC")); return false; }
+	UDataTable* DT = LoadProfiles(*this);
+	if (!DT) { return false; }
+
+	WireOwner(Character, TCMC);
+	TCMC->CacheProfilesFromTable(DT, FName("Infantry_Default"), NAME_None);
+	TCMC->RestoreIntentForReplay(ECombatReadinessState::MovementReady, false, ETacticalMoveDir::Strafe);
+
+	TCMC->MovementMode = MOVE_Walking;
+	const float Walk = TCMC->GetMaxSpeed();
+	TCMC->MovementMode = MOVE_Falling;
+	const float Fall = TCMC->GetMaxSpeed();
+
+	TestEqual(TEXT("Falling cap == walking directional cap (same intent)"), Fall, Walk);
+	TestNotEqual(TEXT("Falling cap is NOT the constructor value 500"), Fall, 500.f);
+	TestNotEqual(TEXT("Falling cap is NOT the un-profiled MaxWalkSpeed member"), Fall, TCMC->MaxWalkSpeed);
+	return true;
+}
+
+// ---------------------------------------------------------------------------
+// 12. A missing default row leaves profiles uncached; GetMaxSpeed() falls back
+//     to Unreal's base speed (the constructor MaxWalkSpeed).
+// ---------------------------------------------------------------------------
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FMovementAuthorityMissingRowTest,
+	"TacticalMovement.MovementAuthority.MissingDefaultRowFallsBackToBase",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FMovementAuthorityMissingRowTest::RunTest(const FString& Parameters)
+{
+	using namespace TacticalMovementAuthorityTests;
+	ATacticalMovementCharacter* Character = MakeCharacter(*this);
+	if (!Character) { return false; }
+	UTacticalCharacterMovementComponent* TCMC = Character->GetTacticalMovementComponent();
+	if (!TCMC) { AddError(TEXT("No custom CMC")); return false; }
+	UDataTable* DT = LoadProfiles(*this);
+	if (!DT) { return false; }
+
+	WireOwner(Character, TCMC);
+
+	// Valid table but a non-existent default row -> must not cache.
+	TCMC->CacheProfilesFromTable(DT, FName("NoSuchRow_ShouldNotExist"), NAME_None);
+	TestFalse(TEXT("Missing default row -> profiles not cached"), TCMC->AreProfilesCached());
+
+	// GetMaxSpeed() falls back to base (constructor MaxWalkSpeed = 500) while walking.
+	TCMC->MovementMode = MOVE_Walking;
+	TCMC->RestoreIntentForReplay(ECombatReadinessState::MovementReady, false, ETacticalMoveDir::Forward);
+	TestEqual(TEXT("Uncached -> base MaxWalkSpeed"), TCMC->GetMaxSpeed(), TCMC->MaxWalkSpeed);
+
+	// A null table must also leave profiles uncached.
+	TCMC->CacheProfilesFromTable(nullptr, FName("Infantry_Default"), NAME_None);
+	TestFalse(TEXT("Null table -> profiles not cached"), TCMC->AreProfilesCached());
 	return true;
 }
 

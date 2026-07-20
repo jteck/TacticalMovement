@@ -161,6 +161,8 @@ protected:
 	void ApplyResolvedProfileForCurrentMove();
 	const FMovementProfileRow& ActiveProfile() const { return bIntentSprint ? ProfileSprint : ProfileDefault; }
 	float ReadinessSpeedMultiplier() const;
+	/** Active profile's directional (Forward/Back/Strafe) cap scaled by the readiness multiplier. */
+	float ProfileDirectionalCap() const;
 	/** Push accepted intent to the owning Character's synchronized mirror (server/authority + owner correction). */
 	void SyncMirrorToOwner();
 
