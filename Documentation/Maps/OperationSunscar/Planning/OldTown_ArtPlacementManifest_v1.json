@@ -1,0 +1,318 @@
+{
+  "schemaVersion": 1,
+  "project": "Operation Sunscar",
+  "scope": "Old Town first complete environment-art round",
+  "status": "planning_only",
+  "sourceLevel": "/Game/Maps/Blockout/Lvl_Blockout_01",
+  "sourceActorTag": "SunscarCorePlayable",
+  "sourceOfTruth": {
+    "layout": "../BuildPack_v1/Manifests/Sunscar_BlockoutManifest.json",
+    "verifiedHandoff": "../MAP_DEVELOPMENT_HANDOFF_2026-07-24.md",
+    "productionPlan": "OLD_TOWN_ART_PRODUCTION_PLAN.md",
+    "assetCatalog": "OLD_TOWN_ASSET_CATALOG.csv"
+  },
+  "publisherAllowList": [
+    "Epic Games",
+    "Quixel Megascans"
+  ],
+  "treatmentModes": {
+    "skin": "Preserve graybox collision; apply surface or thin render shell",
+    "cap": "Add trims, parapets, doors, windows or roof pieces",
+    "replace": "Use art mesh while retaining hidden simple collision until verified",
+    "dress": "Add non-structural props, decals, rubble or vegetation"
+  },
+  "globalRules": {
+    "preserveCollisionUntilVerified": true,
+    "preserveDoorAndStairLocations": true,
+    "preserveThreeVerifiedRoutes": true,
+    "manualPlacementForGameplayObjects": true,
+    "pcgRequiresExclusionVolumes": true,
+    "fullSampleProjectMigrationAllowed": false,
+    "thirdPartyFabPublishersAllowed": false,
+    "driveableVehicleSystemsAllowed": false
+  },
+  "zones": [
+    {
+      "id": "A",
+      "name": "Detention and north compound",
+      "style": "fortified_civic_historic_perimeter",
+      "accent": "faded_turquoise_or_gray_green",
+      "assetFamilies": [
+        "Historic Desert Ruin",
+        "Military Trench",
+        "Historic Pakistan Street",
+        "Urban Miscellaneous"
+      ]
+    },
+    {
+      "id": "B",
+      "name": "Civic center",
+      "style": "legible_plaster_concrete_civic",
+      "accent": "chalk_white_and_muted_ochre",
+      "assetFamilies": [
+        "Historic Pakistan Street",
+        "Quixel concrete and plaster",
+        "Residential South Asian",
+        "Quixel rubble and decals"
+      ]
+    },
+    {
+      "id": "C",
+      "name": "Water tower and residential east",
+      "style": "enclosed_residential_utility_compounds",
+      "accent": "desaturated_green",
+      "assetFamilies": [
+        "Residential South Asian",
+        "Urban Miscellaneous",
+        "Historic Desert Ruin",
+        "Military Trench"
+      ]
+    },
+    {
+      "id": "D",
+      "name": "Tea House and courtyard edge",
+      "style": "warm_human_scale_residential",
+      "accent": "dark_weathered_timber",
+      "assetFamilies": [
+        "Residential South Asian",
+        "Historic Pakistan Street",
+        "Urban Shanty Town"
+      ]
+    },
+    {
+      "id": "E",
+      "name": "Bazaar and southwest trade quarter",
+      "style": "patched_trade_corrugated_canvas",
+      "accent": "faded_rust_and_canvas",
+      "assetFamilies": [
+        "Urban Shanty Town",
+        "Urban Miscellaneous",
+        "Military Trench",
+        "Quixel decals"
+      ]
+    },
+    {
+      "id": "F",
+      "name": "Salvage and motor-pool south",
+      "style": "industrial_scrap_vehicle_yard",
+      "accent": "oxidized_gray_and_rust",
+      "assetFamilies": [
+        "City Sample Vehicles",
+        "Urban Miscellaneous",
+        "Urban Shanty Town",
+        "Quixel industrial surfaces"
+      ]
+    },
+    {
+      "id": "G",
+      "name": "Dry canal and pump infrastructure",
+      "style": "pale_concrete_silt_utility",
+      "accent": "cool_gray_concrete",
+      "assetFamilies": [
+        "Quixel concrete and silt",
+        "Urban Miscellaneous",
+        "Quixel rubble and dry vegetation"
+      ]
+    }
+  ],
+  "sites": [
+    {
+      "sourceId": "SS_001",
+      "label": "Attacker Spawn and Extraction",
+      "zone": "E",
+      "priority": "P1",
+      "modes": ["skin", "dress"],
+      "assetCatalogIds": ["SURF_005", "SURF_008", "PROP_001"],
+      "tacticalNotes": "Keep spawn space clear and preserve extraction readability"
+    },
+    {
+      "sourceId": "SS_002",
+      "label": "Dry Canal Entrance",
+      "zone": "G",
+      "priority": "P0",
+      "modes": ["skin", "cap", "dress"],
+      "assetCatalogIds": ["SURF_004", "SURF_006", "PROP_004", "NAT_001"],
+      "tacticalNotes": "Preserve culvert clearance and exposed bypass sightlines"
+    },
+    {
+      "sourceId": "SS_003",
+      "label": "Canal Pump Station",
+      "zone": "G",
+      "priority": "P1",
+      "modes": ["skin", "cap", "dress"],
+      "assetCatalogIds": ["SURF_004", "PROP_003", "PROP_004", "DECAL_002"],
+      "tacticalNotes": "Pipes and boxes cannot create climbing exploits"
+    },
+    {
+      "sourceId": "SS_004",
+      "label": "Tea House",
+      "zone": "D",
+      "priority": "P0",
+      "modes": ["skin", "cap", "dress"],
+      "assetCatalogIds": ["SURF_001", "ARCH_008", "PROP_008", "PROP_010"],
+      "tacticalNotes": "Door frames remain high contrast and shade stays above weapon view"
+    },
+    {
+      "sourceId": "SS_005",
+      "label": "Old Clinic",
+      "zone": "B",
+      "priority": "P1",
+      "modes": ["skin", "cap", "dress"],
+      "assetCatalogIds": ["SURF_001", "SURF_002", "ARCH_007", "DECAL_001"],
+      "tacticalNotes": "Maintain obvious primary entrance and readable second floor"
+    },
+    {
+      "sourceId": "SS_006",
+      "label": "Water Tower Compound",
+      "zone": "C",
+      "priority": "P0",
+      "modes": ["skin", "cap", "replace", "dress"],
+      "assetCatalogIds": ["ARCH_004", "SURF_003", "PROP_004", "DECAL_002"],
+      "tacticalNotes": "Preserve accessible platform ladder and landmark silhouette"
+    },
+    {
+      "sourceId": "SS_007",
+      "label": "Municipal Hotel",
+      "zone": "B",
+      "priority": "P0",
+      "modes": ["skin", "cap", "replace", "dress"],
+      "assetCatalogIds": ["SURF_001", "ARCH_006", "ARCH_007", "DECAL_001"],
+      "tacticalNotes": "Windows watch only intended route portions; roof chain stays limited"
+    },
+    {
+      "sourceId": "SS_008",
+      "label": "Central Courtyard",
+      "zone": "B",
+      "priority": "P0",
+      "modes": ["skin", "dress"],
+      "assetCatalogIds": ["SURF_003", "SURF_005", "NAT_001", "DECAL_003"],
+      "tacticalNotes": "Keep center open; cluster visual detail along edges"
+    },
+    {
+      "sourceId": "SS_009",
+      "label": "Transit Plaza",
+      "zone": "B",
+      "priority": "P1",
+      "modes": ["skin", "dress"],
+      "assetCatalogIds": ["SURF_004", "SURF_008", "PROP_005", "DECAL_003"],
+      "tacticalNotes": "Preserve cross-route visibility and do not create a cover chain"
+    },
+    {
+      "sourceId": "SS_010",
+      "label": "Detention Annex",
+      "zone": "A",
+      "priority": "P0",
+      "modes": ["skin", "cap", "replace", "dress"],
+      "assetCatalogIds": ["SURF_001", "ARCH_001", "ARCH_002", "PROP_001"],
+      "tacticalNotes": "Preserve differentiated entrances and objective access"
+    },
+    {
+      "sourceId": "SS_011",
+      "label": "Checkpoint Office",
+      "zone": "C",
+      "priority": "P1",
+      "modes": ["skin", "cap", "dress"],
+      "assetCatalogIds": ["SURF_004", "PROP_001", "PROP_003", "PROP_005"],
+      "tacticalNotes": "Manual barrier placement; vehicle gate remains 6 to 8 meters"
+    },
+    {
+      "sourceId": "SS_012",
+      "label": "Consulate Residence",
+      "zone": "C",
+      "priority": "P1",
+      "modes": ["skin", "cap", "dress"],
+      "assetCatalogIds": ["SURF_001", "ARCH_008", "PROP_009", "DECAL_001"],
+      "tacticalNotes": "Cleaner compound treatment but no privileged hidden sightline"
+    },
+    {
+      "sourceId": "SS_013",
+      "label": "Freight Depot",
+      "zone": "F",
+      "priority": "P1",
+      "modes": ["skin", "cap", "dress"],
+      "assetCatalogIds": ["SURF_007", "ARCH_009", "PROP_006", "DECAL_002"],
+      "tacticalNotes": "Loading props stay outside verified traversal channel"
+    },
+    {
+      "sourceId": "SS_014",
+      "label": "Salvage Yard",
+      "zone": "F",
+      "priority": "P0",
+      "modes": ["skin", "cap", "dress"],
+      "assetCatalogIds": ["PACK_002", "ARCH_009", "PROP_007", "PROP_009"],
+      "tacticalNotes": "Vehicle shells and scrap clusters are deliberate cover placements"
+    },
+    {
+      "sourceId": "SS_015",
+      "label": "Motor Pool",
+      "zone": "F",
+      "priority": "P0",
+      "modes": ["skin", "cap", "dress"],
+      "assetCatalogIds": ["PACK_002", "SURF_004", "PROP_003", "PROP_007"],
+      "tacticalNotes": "Use static art dependencies only; no driving systems"
+    },
+    {
+      "sourceId": "SS_016",
+      "label": "Power Substation",
+      "zone": "F",
+      "priority": "P1",
+      "modes": ["skin", "cap", "dress"],
+      "assetCatalogIds": ["SURF_004", "PROP_003", "PROP_004", "PROP_009"],
+      "tacticalNotes": "Fence and equipment collision must not leak into route"
+    },
+    {
+      "sourceId": "SS_017",
+      "label": "Covered Bazaar",
+      "zone": "E",
+      "priority": "P0",
+      "modes": ["skin", "cap", "dress"],
+      "assetCatalogIds": ["ARCH_009", "PROP_006", "PROP_010", "DECAL_002"],
+      "tacticalNotes": "Overhead shade cannot obscure enemies or block the verified path"
+    },
+    {
+      "sourceId": "SS_018",
+      "label": "Telecom Workshop",
+      "zone": "E",
+      "priority": "P1",
+      "modes": ["skin", "cap", "dress"],
+      "assetCatalogIds": ["SURF_007", "PROP_003", "PROP_004", "DECAL_002"],
+      "tacticalNotes": "Roof equipment remains non-traversable unless already supported"
+    },
+    {
+      "sourceId": "SS_019",
+      "label": "South Defender Insertion",
+      "zone": "F",
+      "priority": "P1",
+      "modes": ["skin", "dress"],
+      "assetCatalogIds": ["SURF_005", "SURF_008", "PROP_001"],
+      "tacticalNotes": "Keep insertion and safe initial movement clear"
+    },
+    {
+      "sourceId": "SS_020",
+      "label": "North Defender Insertion",
+      "zone": "A",
+      "priority": "P1",
+      "modes": ["skin", "cap", "dress"],
+      "assetCatalogIds": ["ARCH_001", "PROP_001", "NAT_001"],
+      "tacticalNotes": "Fortified edge must not become an overly strong spawn position"
+    }
+  ],
+  "lookDevelopmentSlice": {
+    "requiredSites": [
+      "SS_002",
+      "SS_004",
+      "SS_006",
+      "SS_007",
+      "SS_008",
+      "SS_017"
+    ],
+    "approvalChecks": [
+      "Material palette is coherent",
+      "Doors and routes remain readable",
+      "All tested movement remains valid",
+      "Lighting supports gameplay",
+      "Memory and frame-time guardrails are acceptable",
+      "No unapproved publisher content is present"
+    ]
+  }
+}

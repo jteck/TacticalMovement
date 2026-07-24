@@ -1,0 +1,15 @@
+material_id,unreal_asset_name,source_listing_id,material_role,base_tint_srgb,tiling_m,roughness_adjustment,normal_strength,assigned_sites,coverage_rule
+MAT_001,MI_OT_Stucco_Warm,e2f69285-c695-4aa8-851c-1b6492b79b74,Primary warm exterior stucco,"D3B98F",2.0,+0.05,0.80,"SS_004; SS_005; SS_007; SS_010; SS_012",50-70 percent of civic/residential facade area
+MAT_002,MI_OT_Stucco_Pale,e2f69285-c695-4aa8-851c-1b6492b79b74,Pale landmark stucco,"D8D2B8",2.0,+0.02,0.75,"SS_005; SS_007; SS_012",20-40 percent; differentiate landmarks without pure white
+MAT_003,MI_OT_Paint_Faded,cfdcd26b-db70-413c-aa5c-e71ca8e43a7a,Smoother painted wall,"B8AD8C",1.0,+0.08,0.55,"SS_004; SS_005; SS_007; SS_010; SS_012",Accent fields and sheltered walls only
+MAT_004,MI_OT_Paint_Flaked,42731ac6-bc7e-4855-9c91-b1b73e2cc0fc,Weathered facade patch,"B6A780",2.0,+0.10,0.90,"SS_004; SS_005; SS_007; SS_010; SS_012; SS_018",10-20 percent maximum per facade
+MAT_005,MI_OT_Concrete_Dusty,9485cd8b-02f5-42c0-9cfd-097b5b7b7f55,Concrete/canal/pad,"8F897A",2.0,+0.08,0.85,"SS_002; SS_003; SS_009; SS_011; SS_015; SS_016",Primary concrete with sand accumulation blend at edges
+MAT_006,MI_OT_Asphalt_Worn,88e41c55-6675-4872-ab19-e5757899e549,Dominant worn asphalt,"54504A",2.0,+0.04,0.85,"SS_001; SS_009; SS_014; SS_015; SS_019",50-70 percent of paved areas
+MAT_007,MI_OT_Asphalt_Base,d656c99c-e792-4880-b832-7835dd450395,Clean asphalt underlayer,"4A4945",2.0,+0.10,0.65,"SS_001; SS_009; SS_019",10-30 percent; always dust blended
+MAT_008,MI_OT_Asphalt_Cracked,3aab93f6-c82b-45c8-883f-04bec06d6915,Cracked road patches,"575149",2.0,+0.02,0.90,"SS_001; SS_009; SS_015; SS_019",Masked patches under 20 percent coverage
+MAT_009,MI_OT_Metal_Shutter,8d31d799-0d73-4786-9937-174b68facded,Garage and bazaar shutter,"77746B",2.0,+0.05,0.80,"SS_013; SS_015; SS_017",Use muted gray/green variants; no bright galvanized repetition
+MAT_010,MI_OT_Tarp_Neutral,c7d0f2e1-e22c-4025-86f3-480e0cb2aa14,Primary canopy,"9B875E",2.0,+0.06,0.70,"SS_004; SS_017",65-80 percent of canopy surface
+MAT_011,MI_OT_Tarp_Weathered,b2709451-71c6-4424-bb5a-457f5d912d9e,Secondary canopy,"76694D",2.0,+0.08,0.80,"SS_004; SS_017",20-35 percent; avoid alternating every panel
+MAT_012,MI_OT_Corrugated_Dusty,b303f5a1-42da-460c-a14c-4022f447f8dd,Corrugated fence/stall,"777267",2.0,+0.05,0.85,"SS_014; SS_017",Use source mesh material or map-owned panels; 2-3 restrained tint variants
+MAT_013,MI_OT_DriedGrass_Ground,1b83d08e-77fd-4885-9dce-32d8658b5559,Dry vegetation blend,"9B8A62",2.0,+0.08,0.70,"SS_002; SS_006; SS_008; SS_014; SS_016; SS_020",Small patches beneath sparse grass meshes
+MAT_014,MI_OT_Damage_Plaster,261cf6b0-2810-4482-9c90-a0a175c7815f,Plaster damage decal,"FFFFFF",1.0,0.00,1.00,"SS_004; SS_005; SS_007; SS_010; SS_012",0.5-2.0 m projected patches; concentrate instead of uniform scatter

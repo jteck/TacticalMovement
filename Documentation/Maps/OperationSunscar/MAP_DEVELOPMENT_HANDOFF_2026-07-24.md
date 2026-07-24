@@ -46,31 +46,24 @@ Branch:
 
 `feature/map-development`
 
-Current branch base and HEAD:
+Production base:
 
 `881c891df41ca4b7ad81ddd706baf6e22ff9da94`
 
-At the last verification, this exactly matched `origin/main`.
+Graybox checkpoint commit:
 
-No commit, push, pull request, merge, branch deletion or production-main
-change has been made for the map.
+`a0c07027a573d886975c9903a99db3c5bc679332`
+
+At the 2026-07-24 verification, the graybox checkpoint matched
+`origin/feature/map-development`. Production `main` was not changed.
 
 ## 3. Git state
 
-The completed graybox is currently **not committed to Git**.
+The completed graybox is committed in:
 
-Last verified uncommitted scope:
+`a0c07027a573d886975c9903a99db3c5bc679332`
 
-| Category | Count |
-| --- | ---: |
-| Tracked-file changes | 0 |
-| Map assets | 4 |
-| World Partition external actor files | 1,849 |
-| World Partition external object files | 235 |
-| Unexpected files | 0 |
-| Total untracked/status entries | 2,088 |
-
-All files are contained under the new map's paths:
+Its map assets are contained under:
 
 - `Content/Maps/Blockout/Lvl_Blockout_01*`
 - `Content/__ExternalActors__/Maps/Blockout/Lvl_Blockout_01/`
@@ -83,8 +76,16 @@ Protected file hashes remained unchanged:
 | `Config/DefaultEngine.ini` | `2989c1f3cb8dab8c23198f0c756c63aaa762d80c` |
 | `Content/ThirdPerson/Lvl_ThirdPerson.umap` | `4846f4d1766808f7b106516143c5b5128e0f7cbd` |
 
-Do not assume the map is backed up remotely until a separately authorized
-commit and push have completed.
+The checkpoint was verified on `origin/feature/map-development`.
+
+The detailed Old Town asset, material and execution planning set is stored
+under:
+
+`Documentation/Maps/OperationSunscar/Planning/`
+
+Start with:
+
+`Documentation/Maps/OperationSunscar/README.md`
 
 ## 4. Design intent
 
