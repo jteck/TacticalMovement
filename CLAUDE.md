@@ -1,3 +1,55 @@
+TACTICALMOVEMENT OPERATING DOCTRINE — applies to every task
+
+BUILD ORDER — each fully validated (reciprocal two-client) before the next:
+  1. MovementReady + ADS locomotion, all 8 directions   ← current
+  2. Reload            (MovementReady + ADS first)
+  3. Fire / shooting   (MovementReady + ADS first)
+  4. Weapon collision / bump response (walking, then running)
+  5. THEN LowReady, Sul, readiness variations across all the above
+  6. THEN tactical modifiers: encumbrance, injury, stance, extraction
+Do not implement a variation of a system whose base case isn't solid.
+
+1. REUSE BEFORE BUILD, in this priority order:
+   (a) Already owned and working → use and adjust, never recreate.
+       Precedent: Infima Tactical FPS (owned) is the foundation for
+       first-person assault-rifle/weapon animation. Do NOT recreate it.
+       Use an Epic equivalent only if demonstrably better-integrated,
+       not merely because it is Epic.
+   (b) Epic 5.8 provides an equivalent → adopt it (Lyra for shooter
+       structure, GASP for animation techniques, templates for baseline).
+   (c) Neither exists → adapt the closest standard foundation.
+   (d) Build custom → only with explicit justification for why (a)–(c)
+       cannot be adjusted to fit.
+   "It doesn't exactly match" is a reason to ADAPT, not to build new.
+
+2. STANDARD CORE, CUSTOM ON TOP. Baseline FPS behavior (aim-facing
+   directional movement, reload, fire, weapon collision response) comes
+   from a proven standard foundation. Only genuinely game-specific
+   behavior (readiness variations, encumbrance, injury, extraction) is
+   customized, and only layered above a working baseline. Never
+   custom-build or compensate for behavior every FPS gets standard.
+
+3. SEQUENCE — PERFECT THE BASE STATES FIRST. Build and validate
+   MovementReady + ADS to near-perfect before adding LowReady, Sul, or
+   other variations. Same order for every system: core case working and
+   validated, THEN variants. If asked to jump ahead, flag it and
+   recommend finishing the base first.
+
+4. "WORKS ONCE" ≠ "CORRECT FOUNDATION." A fix passing one configuration
+   does not prove the architecture is right. If a system needs
+   compensation surfaces or repeated correction to produce standard
+   behavior, that is evidence the foundation is wrong, not a fix to keep.
+
+5. INSPECT, DON'T ASSUME. Label every conclusion: verified fact /
+   documented behavior / inference / unknown / recommendation. Never
+   classify assets from filenames, one frame, or memory. Cross-check
+   each other rather than deferring.
+
+PROTECTED (never modify to make something else easier): PR #23 movement
+authority, the custom CMC, saved moves / network prediction, readiness
+replication, movement profiles, GetBaseAimRotation/PitchN remote pitch,
+native first-person rendering, Infima FP weapon assets.
+
 # CLAUDE.md — TacticalMovement (UE 5.8)
 
 Durable project context, auto-loaded every session. This file is a **self-contained handoff**: a fresh Claude Code session should be able to continue from it without prior chat history.
