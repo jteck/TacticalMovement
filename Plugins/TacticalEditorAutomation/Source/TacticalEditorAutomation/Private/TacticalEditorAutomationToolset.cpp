@@ -528,3 +528,51 @@ UToolCallAsyncResultVoid* UTacticalEditorAutomationToolset::SetPreviewBlendPosit
 			return true;
 		});
 }
+
+UToolCallAsyncResultVoid* UTacticalEditorAutomationToolset::SetPreviewRootMotionMode(const FString& AssetPath, const FString& Mode)
+{
+	FString Path = AssetPath;
+	FString ModeStr = Mode;
+	return TacticalEditorAutomation::RunDeferredVoid(
+		[Path, ModeStr](FString& OutError) -> bool
+		{
+			EProcessRootMotionMode Requested;
+			if (ModeStr.Equals(TEXT("Ignore"), ESearchCase::IgnoreCase))
+			{
+				Requested = EProcessRootMotionMode::Ignore;
+			}
+			else if (ModeStr.Equals(TEXT("Loop"), ESearchCase::IgnoreCase))
+			{
+				Requested = EProcessRootMotionMode::Loop;
+			}
+			else if (ModeStr.Equals(TEXT("LoopAndReset"), ESearchCase::IgnoreCase))
+			{
+				Requested = EProcessRootMotionMode::LoopAndReset;
+			}
+			else
+			{
+				OutError = FString::Printf(
+					TEXT("Invalid mode '%s'; expected Ignore, Loop, or LoopAndReset."), *ModeStr);
+				return false;
+			}
+
+			TacticalEditorAutomation::FPreviewHandles H;
+			if (!TacticalEditorAutomation::ResolvePreview(Path, /*bRequireSingleNode*/ false, H, OutError))
+			{
+				return false;
+			}
+			// Preview-only display setting on the debug component; does not touch the asset,
+			// its root-motion/root-lock settings, or import data.
+			H.Component->SetProcessRootMotionMode(Requested);
+			TacticalEditorAutomation::RefreshPreview(H);
+
+			if (H.Component->GetProcessRootMotionMode() != Requested)
+			{
+				OutError = FString::Printf(
+					TEXT("Requested root-motion mode '%s' not applied (asset may not support it) for: %s"),
+					*ModeStr, *Path);
+				return false;
+			}
+			return true;
+		});
+}

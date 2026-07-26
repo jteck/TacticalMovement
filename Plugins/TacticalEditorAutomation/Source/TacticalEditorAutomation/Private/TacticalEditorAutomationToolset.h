@@ -105,4 +105,16 @@ public:
 	 */
 	UFUNCTION(meta = (AICallable))
 	static UToolCallAsyncResultVoid* SetPreviewBlendPosition(const FString& AssetPath, float X, float Y);
+
+	/*
+	 * Sets how the open Persona preview consumes root motion (preview-only; never modifies
+	 * the asset, its root-motion settings, root lock, or import data). Use "Ignore" to keep
+	 * the character in place while screening a full gait cycle so root-motion translation
+	 * does not carry it out of frame; "Loop" consumes root motion continually; "LoopAndReset"
+	 * resets to origin each loop. The editor must already be open.
+	 * @param AssetPath The package path of the open asset.
+	 * @param Mode One of "Ignore", "Loop", or "LoopAndReset" (case-insensitive).
+	 */
+	UFUNCTION(meta = (AICallable))
+	static UToolCallAsyncResultVoid* SetPreviewRootMotionMode(const FString& AssetPath, const FString& Mode);
 };
