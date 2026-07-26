@@ -23,6 +23,9 @@ public class TacticalEditorAutomation : ModuleRules
 				"UnrealEd",
 				"EditorSubsystem",
 				"ToolsetRegistry",
+				"Persona",
+				"AnimationEditor",
+				"AnimationBlueprintEditor",
 			}
 			);
 	}
