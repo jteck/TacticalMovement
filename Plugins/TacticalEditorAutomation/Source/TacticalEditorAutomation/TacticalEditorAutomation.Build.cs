@@ -26,6 +26,11 @@ public class TacticalEditorAutomation : ModuleRules
 				"Persona",
 				"AnimationEditor",
 				"AnimationBlueprintEditor",
+				"AnimGraph",
+				"AnimGraphRuntime",
+				"AssetTools",
+				"BlueprintGraph",
+				"Kismet",
 			}
 			);
 	}

@@ -4,6 +4,7 @@
 #include "ToolsetRegistry/UToolsetRegistry.h"
 
 #include "TacticalEditorAutomationToolset.h"
+#include "TacticalAnimAuthoringToolset.h"
 
 #define LOCTEXT_NAMESPACE "FTacticalEditorAutomationModule"
 
@@ -12,10 +13,12 @@ class FTacticalEditorAutomationModule : public IModuleInterface
 	virtual void StartupModule() override
 	{
 		UToolsetRegistry::RegisterToolsetClass(UTacticalEditorAutomationToolset::StaticClass());
+		UToolsetRegistry::RegisterToolsetClass(UTacticalAnimAuthoringToolset::StaticClass());
 	}
 
 	virtual void ShutdownModule() override
 	{
+		UToolsetRegistry::UnregisterToolsetClass(UTacticalAnimAuthoringToolset::StaticClass());
 		UToolsetRegistry::UnregisterToolsetClass(UTacticalEditorAutomationToolset::StaticClass());
 	}
 };
