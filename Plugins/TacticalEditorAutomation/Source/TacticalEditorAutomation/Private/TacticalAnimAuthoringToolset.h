@@ -121,4 +121,47 @@ public:
 	 */
 	UFUNCTION(meta = (AICallable))
 	static UToolCallAsyncResultVoid* SetAnimGraphNodeAnimationAssetDeferred(const FString& NodePath, const FString& AnimationAssetPath);
+
+	/*
+	 * Binds a Use Cached Pose node to a Save Cached Pose node in the same animation graph, so the
+	 * cached pose (evaluated once at the Save node) is consumed by the Use node. This replicates the
+	 * association Epic's editor sets when you pick a cache from the Use Cached Pose menu action -- an
+	 * operation the stock MCP toolsets cannot perform (SaveCachedPoseNode is a non-editable UPROPERTY,
+	 * so ObjectTools cannot set it, and there is no cache-specific create_node action).
+	 *
+	 * SCOPE (conservative, first reusable version): both nodes must live in the SAME named graph of
+	 * the SAME AnimBlueprint. Cross-subgraph / cross-layer cached-pose arrangements Epic may otherwise
+	 * permit are intentionally NOT supported and are rejected.
+	 *
+	 * Resolves each node by stable identity within the graph: the node's NodeGuid string (preferred),
+	 * or its object name / full object path. Requires exactly one match of the correct node class.
+	 *
+	 * Validation (all before any mutation): AnimBlueprint + graph load; exactly one UseCachedPose and
+	 * one SaveCachedPose resolved in that graph; both belong to this AnimBlueprint/graph; the Save
+	 * node's CacheName is nonempty and unique within the graph; the Save node's pose input is wired.
+	 * Idempotency: if the Use node is already bound to the requested Save node, returns a successful
+	 * readback WITHOUT dirtying anything; if it is bound to a DIFFERENT Save node, rejects (no silent
+	 * rebind). Mutation is minimal (Modify the use node, assign SaveCachedPoseNode, notify the graph,
+	 * mark the Blueprint structurally modified); it never calls ReconstructNode and never mutates the
+	 * Save node. Does not save.
+	 * @param BlueprintPath Object/package path of the AnimBlueprint owning both nodes.
+	 * @param GraphName Name of the animation graph containing both nodes (e.g. 'AnimGraph').
+	 * @param UseNodeId NodeGuid / object name / object path of the UAnimGraphNode_UseCachedPose.
+	 * @param SaveNodeId NodeGuid / object name / object path of the UAnimGraphNode_SaveCachedPose.
+	 * @return JSON: { blueprint, graph, useNodeId, useNodePath, saveNodeId, saveNodePath, cacheName, idempotent }.
+	 */
+	UFUNCTION(meta = (AICallable))
+	static UToolCallAsyncResultString* BindUseCachedPoseDeferred(const FString& BlueprintPath, const FString& GraphName, const FString& UseNodeId, const FString& SaveNodeId);
+
+	/*
+	 * Read-only companion to BindUseCachedPoseDeferred: reports the Save Cached Pose node (if any)
+	 * currently associated with a Use Cached Pose node, plus that Save node's CacheName, so a binding
+	 * can be verified after save and cold restart. Never mutates, never saves.
+	 * @param BlueprintPath Object/package path of the AnimBlueprint owning the node.
+	 * @param GraphName Name of the animation graph containing the Use node.
+	 * @param UseNodeId NodeGuid / object name / object path of the UAnimGraphNode_UseCachedPose.
+	 * @return JSON: { blueprint, graph, useNodeId, useNodePath, bound, saveNodeId, saveNodePath, cacheName }.
+	 */
+	UFUNCTION(meta = (AICallable))
+	static UToolCallAsyncResultString* GetUseCachedPoseBinding(const FString& BlueprintPath, const FString& GraphName, const FString& UseNodeId);
 };
