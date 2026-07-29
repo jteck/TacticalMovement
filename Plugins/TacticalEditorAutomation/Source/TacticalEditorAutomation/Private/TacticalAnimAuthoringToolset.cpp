@@ -16,6 +16,7 @@
 #include "Engine/MemberReference.h"
 #include "UObject/UnrealType.h"
 #include "EdGraph/EdGraph.h"
+#include "EdGraph/EdGraphPin.h"
 #include "EdGraphSchema_K2.h"
 
 #include "Engine/Blueprint.h"
@@ -31,6 +32,8 @@
 #include "AnimGraphNode_LinkedInputPose.h"
 #include "AnimGraphNode_LinkedAnimLayer.h"
 #include "AnimGraphNode_AssetPlayerBase.h"
+#include "AnimGraphNode_SaveCachedPose.h"
+#include "AnimGraphNode_UseCachedPose.h"
 
 #include "ToolsetRegistry/ToolCallAsyncResultVoid.h"
 #include "ToolsetRegistry/ToolCallAsyncResultString.h"
@@ -108,6 +111,56 @@ namespace TacticalAnimAuthoring
 			}
 		}
 		return nullptr;
+	}
+
+	// Minimal JSON string escaper for embedding paths/names/cache into a JSON value.
+	static FString JsonEscape(const FString& In)
+	{
+		FString Out;
+		Out.Reserve(In.Len() + 8);
+		for (TCHAR C : In)
+		{
+			switch (C)
+			{
+			case TEXT('\\'): Out += TEXT("\\\\"); break;
+			case TEXT('\"'): Out += TEXT("\\\""); break;
+			case TEXT('\n'): Out += TEXT("\\n"); break;
+			case TEXT('\r'): Out += TEXT("\\r"); break;
+			case TEXT('\t'): Out += TEXT("\\t"); break;
+			default: Out += C; break;
+			}
+		}
+		return Out;
+	}
+
+	// Resolves exactly one node of type T within Graph whose NodeGuid string (preferred), object
+	// name, or full object path equals Id. Because the search is scoped to a single graph of a single
+	// AnimBlueprint, nodes from other Blueprints/graphs simply do not resolve (rejected as not-found),
+	// and an Id belonging to a different node class yields zero matches of T (wrong-class rejection).
+	template <typename T>
+	static T* ResolveUniqueNodeInGraph(UEdGraph* Graph, const FString& Id, const TCHAR* Label, FString& OutError)
+	{
+		TArray<T*> Matches;
+		for (UEdGraphNode* N : Graph->Nodes)
+		{
+			T* Typed = Cast<T>(N);
+			if (!Typed) { continue; }
+			if (Typed->NodeGuid.ToString() == Id || Typed->GetName() == Id || Typed->GetPathName() == Id)
+			{
+				Matches.Add(Typed);
+			}
+		}
+		if (Matches.Num() == 0)
+		{
+			OutError = FString::Printf(TEXT("No %s node with id '%s' in graph '%s'."), Label, *Id, *Graph->GetName());
+			return nullptr;
+		}
+		if (Matches.Num() > 1)
+		{
+			OutError = FString::Printf(TEXT("Ambiguous: %d %s nodes match id '%s' in graph '%s'."), Matches.Num(), Label, *Id, *Graph->GetName());
+			return nullptr;
+		}
+		return Matches[0];
 	}
 }
 
@@ -530,6 +583,148 @@ UToolCallAsyncResultVoid* UTacticalAnimAuthoringToolset::SetAnimGraphNodeAnimati
 			if (UBlueprint* BP = Node->GetBlueprint())
 			{
 				FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(BP);
+			}
+			return true;
+		});
+}
+
+UToolCallAsyncResultString* UTacticalAnimAuthoringToolset::BindUseCachedPoseDeferred(const FString& BlueprintPath, const FString& GraphName, const FString& UseNodeId, const FString& SaveNodeId)
+{
+	FString BPPath = BlueprintPath, GName = GraphName, UseId = UseNodeId, SaveId = SaveNodeId;
+	return TacticalAnimAuthoring::RunDeferredString(
+		[BPPath, GName, UseId, SaveId](FString& OutValue, FString& OutError) -> bool
+		{
+			// ---- Resolve + validate everything BEFORE any mutation. ----
+			UAnimBlueprint* BP = TacticalAnimAuthoring::LoadAnimBlueprint(BPPath, OutError);
+			if (!BP) { return false; }
+			UEdGraph* Graph = TacticalAnimAuthoring::FindGraphByName(BP, GName);
+			if (!Graph)
+			{
+				OutError = FString::Printf(TEXT("Graph '%s' not found in %s."), *GName, *BPPath);
+				return false;
+			}
+			// Conservative scope: both nodes must live in this single animation graph of this AnimBlueprint.
+			UClass* SchemaClass = Graph->Schema;
+			if (!SchemaClass || !SchemaClass->IsChildOf(UAnimationGraphSchema::StaticClass()))
+			{
+				OutError = FString::Printf(TEXT("Graph '%s' in %s is not an Animation Graph."), *GName, *BPPath);
+				return false;
+			}
+			UAnimGraphNode_UseCachedPose* UseNode =
+				TacticalAnimAuthoring::ResolveUniqueNodeInGraph<UAnimGraphNode_UseCachedPose>(Graph, UseId, TEXT("Use Cached Pose"), OutError);
+			if (!UseNode) { return false; }
+			UAnimGraphNode_SaveCachedPose* SaveNode =
+				TacticalAnimAuthoring::ResolveUniqueNodeInGraph<UAnimGraphNode_SaveCachedPose>(Graph, SaveId, TEXT("Save Cached Pose"), OutError);
+			if (!SaveNode) { return false; }
+
+			// Save node CacheName must be nonempty and unique within the graph.
+			if (SaveNode->CacheName.IsEmpty())
+			{
+				OutError = FString::Printf(TEXT("Save Cached Pose node '%s' has an empty CacheName."), *SaveNode->GetName());
+				return false;
+			}
+			int32 SameName = 0;
+			for (UEdGraphNode* N : Graph->Nodes)
+			{
+				if (UAnimGraphNode_SaveCachedPose* S = Cast<UAnimGraphNode_SaveCachedPose>(N))
+				{
+					if (S->CacheName == SaveNode->CacheName) { ++SameName; }
+				}
+			}
+			if (SameName > 1)
+			{
+				OutError = FString::Printf(TEXT("Ambiguous CacheName '%s': %d Save Cached Pose nodes share it in graph '%s'."), *SaveNode->CacheName, SameName, *GName);
+				return false;
+			}
+			// Save node pose input must be wired (reject an unlinked/invalid Save).
+			bool bSaveWired = false;
+			for (UEdGraphPin* Pin : SaveNode->Pins)
+			{
+				if (Pin && Pin->Direction == EGPD_Input && Pin->LinkedTo.Num() > 0) { bSaveWired = true; break; }
+			}
+			if (!bSaveWired)
+			{
+				OutError = FString::Printf(TEXT("Save Cached Pose node '%s' (cache '%s') has no wired pose input."), *SaveNode->GetName(), *SaveNode->CacheName);
+				return false;
+			}
+
+			// ---- Idempotency (no automatic unbind/rebind). ----
+			UAnimGraphNode_SaveCachedPose* Existing = UseNode->SaveCachedPoseNode.Get();
+			bool bIdempotent = false;
+			if (Existing == SaveNode)
+			{
+				bIdempotent = true; // already bound to the requested Save node: successful readback, no dirtying
+			}
+			else if (Existing != nullptr)
+			{
+				OutError = FString::Printf(
+					TEXT("Use Cached Pose node '%s' is already bound to a different Save node '%s' (cache '%s'); refusing to silently rebind."),
+					*UseNode->GetName(), *Existing->GetName(), *Existing->CacheName);
+				return false;
+			}
+
+			// ---- Minimal Epic-aligned mutation (only when not already bound). ----
+			if (!bIdempotent)
+			{
+				UseNode->Modify();
+				UseNode->SaveCachedPoseNode = SaveNode; // public UPROPERTY; same assignment Epic's menu action performs
+				if (UEdGraph* UG = UseNode->GetGraph()) { UG->NotifyGraphChanged(); }
+				FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(BP);
+			}
+
+			OutValue = FString::Printf(
+				TEXT("{\"blueprint\":\"%s\",\"graph\":\"%s\",\"useNodeId\":\"%s\",\"useNodePath\":\"%s\",\"saveNodeId\":\"%s\",\"saveNodePath\":\"%s\",\"cacheName\":\"%s\",\"idempotent\":%s}"),
+				*TacticalAnimAuthoring::JsonEscape(BP->GetPathName()),
+				*TacticalAnimAuthoring::JsonEscape(Graph->GetName()),
+				*TacticalAnimAuthoring::JsonEscape(UseNode->NodeGuid.ToString()),
+				*TacticalAnimAuthoring::JsonEscape(UseNode->GetPathName()),
+				*TacticalAnimAuthoring::JsonEscape(SaveNode->NodeGuid.ToString()),
+				*TacticalAnimAuthoring::JsonEscape(SaveNode->GetPathName()),
+				*TacticalAnimAuthoring::JsonEscape(SaveNode->CacheName),
+				bIdempotent ? TEXT("true") : TEXT("false"));
+			return true;
+		});
+}
+
+UToolCallAsyncResultString* UTacticalAnimAuthoringToolset::GetUseCachedPoseBinding(const FString& BlueprintPath, const FString& GraphName, const FString& UseNodeId)
+{
+	FString BPPath = BlueprintPath, GName = GraphName, UseId = UseNodeId;
+	return TacticalAnimAuthoring::RunDeferredString(
+		[BPPath, GName, UseId](FString& OutValue, FString& OutError) -> bool
+		{
+			UAnimBlueprint* BP = TacticalAnimAuthoring::LoadAnimBlueprint(BPPath, OutError);
+			if (!BP) { return false; }
+			UEdGraph* Graph = TacticalAnimAuthoring::FindGraphByName(BP, GName);
+			if (!Graph)
+			{
+				OutError = FString::Printf(TEXT("Graph '%s' not found in %s."), *GName, *BPPath);
+				return false;
+			}
+			UAnimGraphNode_UseCachedPose* UseNode =
+				TacticalAnimAuthoring::ResolveUniqueNodeInGraph<UAnimGraphNode_UseCachedPose>(Graph, UseId, TEXT("Use Cached Pose"), OutError);
+			if (!UseNode) { return false; }
+
+			UAnimGraphNode_SaveCachedPose* SaveNode = UseNode->SaveCachedPoseNode.Get();
+			if (SaveNode)
+			{
+				OutValue = FString::Printf(
+					TEXT("{\"blueprint\":\"%s\",\"graph\":\"%s\",\"useNodeId\":\"%s\",\"useNodePath\":\"%s\",\"bound\":true,\"saveNodeId\":\"%s\",\"saveNodePath\":\"%s\",\"cacheName\":\"%s\"}"),
+					*TacticalAnimAuthoring::JsonEscape(BP->GetPathName()),
+					*TacticalAnimAuthoring::JsonEscape(Graph->GetName()),
+					*TacticalAnimAuthoring::JsonEscape(UseNode->NodeGuid.ToString()),
+					*TacticalAnimAuthoring::JsonEscape(UseNode->GetPathName()),
+					*TacticalAnimAuthoring::JsonEscape(SaveNode->NodeGuid.ToString()),
+					*TacticalAnimAuthoring::JsonEscape(SaveNode->GetPathName()),
+					*TacticalAnimAuthoring::JsonEscape(SaveNode->CacheName));
+			}
+			else
+			{
+				OutValue = FString::Printf(
+					TEXT("{\"blueprint\":\"%s\",\"graph\":\"%s\",\"useNodeId\":\"%s\",\"useNodePath\":\"%s\",\"bound\":false,\"saveNodeId\":null,\"saveNodePath\":null,\"cacheName\":\"\"}"),
+					*TacticalAnimAuthoring::JsonEscape(BP->GetPathName()),
+					*TacticalAnimAuthoring::JsonEscape(Graph->GetName()),
+					*TacticalAnimAuthoring::JsonEscape(UseNode->NodeGuid.ToString()),
+					*TacticalAnimAuthoring::JsonEscape(UseNode->GetPathName()));
 			}
 			return true;
 		});
