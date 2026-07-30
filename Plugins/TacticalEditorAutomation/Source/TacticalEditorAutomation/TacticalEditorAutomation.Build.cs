@@ -20,6 +20,8 @@ public class TacticalEditorAutomation : ModuleRules
 			{
 				"CoreUObject",
 				"Engine",
+				"RenderCore",
+				"RHI",
 				"UnrealEd",
 				"EditorSubsystem",
 				"ToolsetRegistry",
