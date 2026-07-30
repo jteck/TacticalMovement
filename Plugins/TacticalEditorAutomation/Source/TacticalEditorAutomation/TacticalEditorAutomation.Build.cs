@@ -31,6 +31,7 @@ public class TacticalEditorAutomation : ModuleRules
 				"AssetTools",
 				"BlueprintGraph",
 				"Kismet",
+				"EnhancedInput",
 			}
 			);
 	}
