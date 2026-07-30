@@ -29,10 +29,13 @@ class UToolCallAsyncResultString;
  *  - All UObject / FProperty access happens on the game thread.
  *  - PIE worlds only: Editor / EditorPreview / GamePreview worlds, CDOs/templates, preview
  *    AnimInstances, unregistered/pending-kill components are rejected.
- *  - Capture state is module-owned and holds only WEAK references to PIE UObjects; it never
- *    retains a PIE object past PIE end. The finalize delegate and any continuous input
- *    injection are stopped on every exit path (normal, stop, timeout, PIE end, world/component
- *    destruction, missing/replaced instance, tool failure, module shutdown).
+ *  - Pre-existing gameplay PIE objects (worlds, pawns, meshes, anim instances) are held ONLY by
+ *    WEAK references and are never retained past PIE end. STRONG references are limited to
+ *    tool-owned transient objects (the pawn-view capture's transient actor / scene-capture
+ *    component / render target) and the pending async result; every such transient reference is
+ *    RELEASED on every exit path. The finalize delegate and any continuous input injection are
+ *    stopped on every exit path (normal, stop, timeout, PIE end, world/component destruction,
+ *    missing/replaced instance, tool failure, module shutdown).
  *  - This toolset embeds NO E0 tolerances or pass/fail logic; it returns raw paired readings.
  */
 UCLASS(MinimalAPI)
@@ -133,6 +136,50 @@ public:
 	 */
 	UFUNCTION(meta = (AICallable))
 	static UToolCallAsyncResultString* DrivePIEInputSequenceDeferred(const FString& PawnPath, const FString& ReadinessActionProperty, const FString& MoveActionProperty, float MoveX, float MoveY, float PreMoveIdleSeconds, float MoveSeconds, float TimeoutSeconds);
+
+	/*
+	 * Renders ONE non-owner third-person frame of a specific PIE pawn's skeletal mesh and returns it as a
+	 * base64 PNG plus identity metadata. It spawns a SEPARATE transient capture actor + USceneCaptureComponent2D
+	 * + UTextureRenderTarget2D in the pawn's own PIE world, aims the capture from (pawn location + CameraOffset)
+	 * at (pawn location + LookAtOffset), waits a small bounded number of ticker passes (so the world advances a
+	 * frame with the capture rig present), then explicitly calls CaptureScene() and synchronizes the render
+	 * commands (FlushRenderingCommands) before the game-thread render-target readback, and destroys every
+	 * transient object. Because the capture's view owner is NOT the pawn, the pawn's owner-hidden (bOwnerNoSee)
+	 * third-person body renders while its owner-only (bOnlyOwnerSee) first-person arms/weapon do NOT -- WITHOUT
+	 * any visibility/camera/asset mutation. It NEVER alters the pawn, mesh visibility flags, gameplay camera,
+	 * map, assets, config, or play settings, and NEVER saves anything.
+	 *
+	 * One frame per call (make an ordered burst by calling repeatedly). At most ONE view-capture session may be
+	 * active at a time: an overlapping call is rejected up front, before any session is allocated or scheduled.
+	 * Rejects (structured error): a view capture already in progress; no PIE world; editor/preview world;
+	 * CDO/template; pending-kill objects; pawn not found; mesh not found; mesh not owned by the supplied pawn;
+	 * any non-finite offset/FOV/timeout; a camera-to-look-at distance below the minimum (coincident vectors);
+	 * dimensions/FOV/offsets/timeout out of the documented bounds. Immediately before capture the session
+	 * revalidates that the pawn and mesh are still in the original PIE world, the mesh is still owned by the
+	 * pawn and still registered/live, and the stored paths still resolve to those exact objects. Every transient
+	 * actor, component, render target, and ticker is destroyed/unregistered on success, failure, timeout, PIE
+	 * end, world destruction, and module shutdown.
+	 *
+	 * Bounds (hard): at most 1 concurrent session; 64 <= Width,Height <= 1920; Width*Height <= 4,000,000;
+	 * 5 <= FOV <= 170; each offset component |v| <= 100000 and finite; camera-to-look-at distance >= 1.0;
+	 * 0 < TimeoutSeconds <= 60 and finite. The 12 MiB cap applies to the Base64 image DATA string only (its
+	 * Len() equals its UTF-8 byte count because Base64 is ASCII); it is NOT a cap on the whole JSON response.
+	 * @param PawnPath Object path of the exact PIE pawn/actor to view.
+	 * @param MeshComponentPath Object path of that pawn's exact USkeletalMeshComponent (must be owned by PawnPath).
+	 * @param CameraOffsetX Camera position offset from the pawn location, X (cm).
+	 * @param CameraOffsetY Camera position offset from the pawn location, Y (cm).
+	 * @param CameraOffsetZ Camera position offset from the pawn location, Z (cm).
+	 * @param LookAtOffsetX Look-at target offset from the pawn location, X (cm).
+	 * @param LookAtOffsetY Look-at target offset from the pawn location, Y (cm).
+	 * @param LookAtOffsetZ Look-at target offset from the pawn location, Z (cm, e.g. ~90 for chest height).
+	 * @param Width Render width in pixels (64..1920).
+	 * @param Height Render height in pixels (64..1920).
+	 * @param FOV Horizontal field of view in degrees (5..170).
+	 * @param TimeoutSeconds Wall-clock ceiling for the capture (0 < t <= 60).
+	 * @return JSON: { pawn, mesh, world, frameNumber, worldTimeSeconds, cameraTransform:{location,rotation}, width, height, fov, image:{ mimeType, data } }.
+	 */
+	UFUNCTION(meta = (AICallable))
+	static UToolCallAsyncResultString* CapturePIEPawnViewDeferred(const FString& PawnPath, const FString& MeshComponentPath, float CameraOffsetX, float CameraOffsetY, float CameraOffsetZ, float LookAtOffsetX, float LookAtOffsetY, float LookAtOffsetZ, int32 Width, int32 Height, float FOV, float TimeoutSeconds);
 
 	/** Stops and disposes ALL active capture sessions and any continuous input injection they own.
 	 *  Called from module shutdown (and usable as a hard reset). Safe to call with no active state. */

@@ -35,6 +35,14 @@
 #include "InputActionValue.h"
 
 #include "ToolsetRegistry/ToolCallAsyncResultString.h"
+#include "ToolsetRegistry/ToolsetImage.h"
+
+#include "Components/SceneCaptureComponent2D.h"
+#include "Engine/TextureRenderTarget2D.h"
+#include "Engine/Scene.h"
+#include "TextureResource.h"
+#include "RenderingThread.h"
+#include "RHIDefinitions.h"
 
 // =============================================================================
 // Internal helpers + module-owned capture/drive state (all game-thread only).
@@ -257,8 +265,44 @@ namespace TacticalRuntimeAnimInspection
 		FTSTicker::FDelegateHandle TickHandle;
 	};
 
+	// Non-owner pawn-view capture session (module-owned; separate transient capture actor/component/RT).
+	struct FViewCaptureSession
+	{
+		TStrongObjectPtr<UToolCallAsyncResultString> Result;
+		bool bResolved = false;
+		FString PawnPath, MeshPath, WorldName;
+		FVector CamOffset = FVector::ZeroVector;
+		FVector LookAtOffset = FVector::ZeroVector;
+		int32 Width = 0, Height = 0;
+		double Fov = 90.0;
+		double Timeout = 0.0;
+		double StartTime = 0.0;
+		int32 Phase = 0;            // 0 = validate/spawn, 1 = wait-a-frame then capture
+		int32 FramesSinceSpawn = 0;
+		TWeakObjectPtr<UWorld> World;
+		TWeakObjectPtr<APawn> Pawn;
+		TWeakObjectPtr<USkeletalMeshComponent> Mesh;
+		TStrongObjectPtr<AActor> CaptureActor;
+		TStrongObjectPtr<USceneCaptureComponent2D> Capture;
+		TStrongObjectPtr<UTextureRenderTarget2D> RT;
+		FTSTicker::FDelegateHandle TickHandle;
+	};
+
+	// ---- view-capture hard bounds ----
+	static const int32  kMaxConcurrentViewCaptures = 1;    // at most one active pawn-view capture session
+	static const int32  kViewMinDim = 64;
+	static const int32  kViewMaxDim = 1920;
+	static const int64  kViewMaxPixels = 4000000;
+	static const double kViewFovMin = 5.0;
+	static const double kViewFovMax = 170.0;
+	static const double kViewOffsetMax = 100000.0;
+	static const double kViewMinCamTargetDist = 1.0;       // reject coincident camera/look-at vectors
+	static const double kViewTimeoutMax = 60.0;
+	static const int32  kViewMaxEncodedBytes = 12 * 1024 * 1024; // 12 MiB Base64 image DATA string (ASCII: Len()==UTF-8 bytes)
+
 	static TMap<FString, TSharedPtr<FCaptureSession>> GSessions;
 	static TArray<TSharedPtr<FDriveState>> GDrives;
+	static TArray<TSharedPtr<FViewCaptureSession>> GViewCaptures;
 	static bool GHooksRegistered = false;
 	static FDelegateHandle GEndPIEHandle;
 	static FDelegateHandle GWorldCleanupHandle;
@@ -354,12 +398,49 @@ namespace TacticalRuntimeAnimInspection
 		GDrives.Remove(D);
 	}
 
+	// Destroys every transient object a view-capture session owns (idempotent, game-thread).
+	static void DestroyViewTransients(const TSharedPtr<FViewCaptureSession>& V)
+	{
+		if (!V.IsValid()) { return; }
+		if (USceneCaptureComponent2D* Cap = V->Capture.Get())
+		{
+			Cap->TextureTarget = nullptr;
+			Cap->DestroyComponent();
+		}
+		V->Capture.Reset();
+		if (AActor* Actor = V->CaptureActor.Get())
+		{
+			Actor->Destroy();
+		}
+		V->CaptureActor.Reset();
+		V->RT.Reset(); // sole strong ref released -> eligible for GC
+	}
+
+	// Resolves the pending MCP caller EXACTLY once (success or structured error), destroys all transient
+	// objects + the ticker, and removes the session. Safe on every exit path.
+	static void FinalizeViewCapture(const TSharedPtr<FViewCaptureSession>& V, bool bSuccess, const FString& Payload)
+	{
+		if (!V.IsValid() || V->bResolved) { return; }
+		V->bResolved = true;
+		if (V->TickHandle.IsValid()) { FTSTicker::GetCoreTicker().RemoveTicker(V->TickHandle); V->TickHandle.Reset(); }
+		DestroyViewTransients(V);
+		if (V->Result.IsValid())
+		{
+			if (bSuccess) { V->Result->SetValue(Payload); }
+			else { V->Result->SetError(Payload); }
+			V->Result.Reset();
+		}
+		GViewCaptures.Remove(V);
+	}
+
 	static void StopAll(const FString& Reason)
 	{
 		for (auto& Pair : GSessions) { StopSession(Pair.Value, Reason); }
-		// Copy because FinalizeDrive mutates GDrives.
+		// Copy because FinalizeDrive / FinalizeViewCapture mutate their arrays.
 		TArray<TSharedPtr<FDriveState>> DrivesCopy = GDrives;
 		for (const TSharedPtr<FDriveState>& D : DrivesCopy) { FinalizeDrive(D, Reason); }
+		TArray<TSharedPtr<FViewCaptureSession>> ViewsCopy = GViewCaptures;
+		for (const TSharedPtr<FViewCaptureSession>& V : ViewsCopy) { FinalizeViewCapture(V, false, FString::Printf(TEXT("capture aborted: %s"), *Reason)); }
 	}
 
 	static void OnEndPIE(const bool /*bIsSimulating*/) { StopAll(TEXT("PIE ended")); }
@@ -375,6 +456,11 @@ namespace TacticalRuntimeAnimInspection
 		for (const TSharedPtr<FDriveState>& D : DrivesCopy)
 		{
 			if (D.IsValid() && (!D->Pawn.IsValid() || D->Pawn->GetWorld() == World)) { FinalizeDrive(D, TEXT("world destroyed")); }
+		}
+		TArray<TSharedPtr<FViewCaptureSession>> ViewsCopy = GViewCaptures;
+		for (const TSharedPtr<FViewCaptureSession>& V : ViewsCopy)
+		{
+			if (V.IsValid() && (!V->World.IsValid() || V->World.Get() == World)) { FinalizeViewCapture(V, false, TEXT("capture aborted: world destroyed")); }
 		}
 	}
 
@@ -815,12 +901,194 @@ UToolCallAsyncResultString* UTacticalRuntimeAnimInspectionToolset::DrivePIEInput
 }
 
 // =============================================================================
+// CapturePIEPawnViewDeferred
+// =============================================================================
+UToolCallAsyncResultString* UTacticalRuntimeAnimInspectionToolset::CapturePIEPawnViewDeferred(
+	const FString& PawnPath, const FString& MeshComponentPath,
+	float CameraOffsetX, float CameraOffsetY, float CameraOffsetZ,
+	float LookAtOffsetX, float LookAtOffsetY, float LookAtOffsetZ,
+	int32 Width, int32 Height, float FOV, float TimeoutSeconds)
+{
+	using namespace TacticalRuntimeAnimInspection;
+
+	UToolCallAsyncResultString* Result = NewObject<UToolCallAsyncResultString>();
+
+	// Reject an overlapping call BEFORE any session is allocated or scheduled.
+	if (GViewCaptures.Num() >= kMaxConcurrentViewCaptures)
+	{
+		Result->SetError(FString::Printf(TEXT("A pawn-view capture is already in progress; at most %d concurrent CapturePIEPawnViewDeferred session(s) allowed."), kMaxConcurrentViewCaptures));
+		return Result;
+	}
+
+	// All numeric validation happens up front, BEFORE registering a session (non-finite, bounds, coincident vectors).
+	const FVector CamOffset(CameraOffsetX, CameraOffsetY, CameraOffsetZ);
+	const FVector LookAtOffset(LookAtOffsetX, LookAtOffsetY, LookAtOffsetZ);
+	{
+		FString Err;
+		if (!FMath::IsFinite(CameraOffsetX) || !FMath::IsFinite(CameraOffsetY) || !FMath::IsFinite(CameraOffsetZ)
+			|| !FMath::IsFinite(LookAtOffsetX) || !FMath::IsFinite(LookAtOffsetY) || !FMath::IsFinite(LookAtOffsetZ))
+			{ Err = TEXT("Camera/look-at offset components must be finite."); }
+		else if (!FMath::IsFinite(FOV)) { Err = TEXT("FOV must be finite."); }
+		else if (!FMath::IsFinite(TimeoutSeconds)) { Err = TEXT("TimeoutSeconds must be finite."); }
+		else if (Width < kViewMinDim || Width > kViewMaxDim || Height < kViewMinDim || Height > kViewMaxDim)
+			{ Err = FString::Printf(TEXT("Width/Height must be in [%d,%d]."), kViewMinDim, kViewMaxDim); }
+		else if ((int64)Width * (int64)Height > kViewMaxPixels)
+			{ Err = FString::Printf(TEXT("Width*Height exceeds %lld pixels."), kViewMaxPixels); }
+		else if ((double)FOV < kViewFovMin || (double)FOV > kViewFovMax)
+			{ Err = FString::Printf(TEXT("FOV must be in [%.0f,%.0f]."), kViewFovMin, kViewFovMax); }
+		else if (CamOffset.GetAbsMax() > kViewOffsetMax || LookAtOffset.GetAbsMax() > kViewOffsetMax)
+			{ Err = FString::Printf(TEXT("An offset component exceeds %.0f."), kViewOffsetMax); }
+		else if ((LookAtOffset - CamOffset).Size() < kViewMinCamTargetDist)
+			{ Err = FString::Printf(TEXT("Camera and look-at are coincident; distance must be >= %.1f."), kViewMinCamTargetDist); }
+		else if ((double)TimeoutSeconds <= 0.0 || (double)TimeoutSeconds > kViewTimeoutMax)
+			{ Err = FString::Printf(TEXT("TimeoutSeconds must be in (0,%.0f]."), kViewTimeoutMax); }
+		if (!Err.IsEmpty()) { Result->SetError(Err); return Result; }
+	}
+
+	TSharedPtr<FViewCaptureSession> V = MakeShared<FViewCaptureSession>();
+	V->Result = TStrongObjectPtr<UToolCallAsyncResultString>(Result);
+	V->PawnPath = PawnPath;
+	V->MeshPath = MeshComponentPath;
+	V->CamOffset = CamOffset;
+	V->LookAtOffset = LookAtOffset;
+	V->Width = Width; V->Height = Height; V->Fov = (double)FOV;
+	V->Timeout = (double)TimeoutSeconds;
+
+	GViewCaptures.Add(V);
+	TWeakPtr<FViewCaptureSession> WeakV = V;
+
+	// Object resolution, spawn, capture, readback, and cleanup all run on the game thread.
+	V->TickHandle = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda(
+		[WeakV](float) -> bool
+		{
+			check(IsInGameThread());
+			TSharedPtr<FViewCaptureSession> Vp = WeakV.Pin();
+			if (!Vp.IsValid() || Vp->bResolved) { return false; }
+
+			// ---- Phase 0: resolve pawn/mesh + spawn transient capture rig (numeric bounds already validated) ----
+			if (Vp->Phase == 0)
+			{
+				EnsureHooks();
+				APawn* Pawn = Cast<APawn>(ResolveActor(Vp->PawnPath));
+				if (!IsValid(Pawn)) { FinalizeViewCapture(Vp, false, FString::Printf(TEXT("Pawn not found: %s"), *Vp->PawnPath)); return false; }
+				if (Pawn->IsTemplate()) { FinalizeViewCapture(Vp, false, TEXT("Pawn is a CDO/template.")); return false; }
+				UWorld* World = Pawn->GetWorld();
+				if (!IsPIEWorld(World)) { FinalizeViewCapture(Vp, false, TEXT("Pawn is not in a PIE world (editor/preview rejected).")); return false; }
+
+				USkeletalMeshComponent* Mesh = ResolveMeshComponent(Vp->MeshPath);
+				if (!Mesh) { FinalizeViewCapture(Vp, false, FString::Printf(TEXT("Skeletal-mesh component not found: %s"), *Vp->MeshPath)); return false; }
+				if (!IsUsableMesh(Mesh)) { FinalizeViewCapture(Vp, false, TEXT("Mesh is not a live/registered PIE component (editor/preview/template/pending-kill rejected).")); return false; }
+				if (Mesh->GetOwner() != Pawn) { FinalizeViewCapture(Vp, false, FString::Printf(TEXT("Mesh not owned by the supplied pawn: owner=%s, expected=%s."), *GetPathNameSafe(Mesh->GetOwner()), *Vp->PawnPath)); return false; }
+
+				// SEPARATE transient capture actor in the pawn's world; deliberately NOT owned by the pawn
+				// (so the pawn is not the capture's view owner -> bOwnerNoSee body renders, bOnlyOwnerSee FP hides).
+				FActorSpawnParameters SpawnParams;
+				SpawnParams.ObjectFlags |= RF_Transient;
+				SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+				const FVector CamPos = Pawn->GetActorLocation() + Vp->CamOffset;
+				AActor* Actor = World->SpawnActor<AActor>(AActor::StaticClass(), FTransform(CamPos), SpawnParams);
+				if (!Actor) { FinalizeViewCapture(Vp, false, TEXT("Failed to spawn transient capture actor.")); return false; }
+
+				USceneCaptureComponent2D* Cap = NewObject<USceneCaptureComponent2D>(Actor, NAME_None, RF_Transient);
+				Actor->SetRootComponent(Cap);
+				Cap->RegisterComponent();
+
+				UTextureRenderTarget2D* RT = NewObject<UTextureRenderTarget2D>(Actor, NAME_None, RF_Transient);
+				RT->RenderTargetFormat = RTF_RGBA8;
+				RT->ClearColor = FLinearColor::Black;
+				RT->bAutoGenerateMips = false;
+				RT->InitCustomFormat(Vp->Width, Vp->Height, PF_B8G8R8A8, /*bForceLinearGamma=*/false);
+				RT->UpdateResourceImmediate(true);
+
+				Cap->TextureTarget = RT;
+				Cap->CaptureSource = SCS_FinalColorLDR;
+				Cap->bCaptureEveryFrame = false;
+				Cap->bCaptureOnMovement = false;
+				Cap->bAlwaysPersistRenderingState = true;
+				Cap->FOVAngle = (float)Vp->Fov;
+
+				const FVector Target = Pawn->GetActorLocation() + Vp->LookAtOffset;
+				Cap->SetWorldLocationAndRotation(CamPos, (Target - CamPos).Rotation());
+
+				Vp->World = World; Vp->Pawn = Pawn; Vp->Mesh = Mesh;
+				Vp->WorldName = World->GetPathName();
+				Vp->CaptureActor = TStrongObjectPtr<AActor>(Actor);
+				Vp->Capture = TStrongObjectPtr<USceneCaptureComponent2D>(Cap);
+				Vp->RT = TStrongObjectPtr<UTextureRenderTarget2D>(RT);
+				Vp->StartTime = FPlatformTime::Seconds();
+				Vp->Phase = 1;
+				Vp->FramesSinceSpawn = 0;
+				return true; // keep ticking
+			}
+
+			// ---- Phase 1: let the world render one frame with the rig present, then capture + read back ----
+			UWorld* World = Vp->World.Get();
+			APawn* Pawn = Vp->Pawn.Get();
+			USkeletalMeshComponent* Mesh = Vp->Mesh.Get();
+			USceneCaptureComponent2D* Cap = Vp->Capture.Get();
+			UTextureRenderTarget2D* RT = Vp->RT.Get();
+			if (!IsPIEWorld(World) || !IsValid(Pawn) || !IsUsableMesh(Mesh) || !Cap || !RT)
+				{ FinalizeViewCapture(Vp, false, TEXT("capture aborted: pawn/mesh/world/target invalidated during capture")); return false; }
+			if ((FPlatformTime::Seconds() - Vp->StartTime) >= Vp->Timeout)
+				{ FinalizeViewCapture(Vp, false, TEXT("timeout")); return false; }
+
+			if (++Vp->FramesSinceSpawn < 2) { return true; }
+
+			// Full revalidation IMMEDIATELY before capture/readback: pawn & mesh still in the ORIGINAL PIE world,
+			// mesh still owned by the pawn and still registered/live, and the stored paths still resolve to these
+			// exact objects. Any drift aborts with a structured reason (never captures a wrong/replaced object).
+			if (Pawn->GetWorld() != World || Mesh->GetWorld() != World
+				|| Mesh->GetOwner() != Pawn || !IsUsableMesh(Mesh)
+				|| ResolveActor(Vp->PawnPath) != Pawn || ResolveMeshComponent(Vp->MeshPath) != Mesh)
+			{ FinalizeViewCapture(Vp, false, TEXT("capture aborted: pawn/mesh identity, world, ownership, or registration changed before capture")); return false; }
+
+			// Re-aim at the pawn's CURRENT location (it may have moved since spawn), then capture one frame.
+			const FVector CamPos = Pawn->GetActorLocation() + Vp->CamOffset;
+			const FVector Target = Pawn->GetActorLocation() + Vp->LookAtOffset;
+			Cap->SetWorldLocationAndRotation(CamPos, (Target - CamPos).Rotation());
+			Cap->CaptureScene();
+			FlushRenderingCommands();
+
+			FTextureRenderTargetResource* RTRes = RT->GameThread_GetRenderTargetResource();
+			if (!RTRes) { FinalizeViewCapture(Vp, false, TEXT("render target resource unavailable")); return false; }
+			TArray<FColor> Bitmap;
+			FReadSurfaceDataFlags ReadFlags(RCM_UNorm, CubeFace_MAX);
+			if (!RTRes->ReadPixels(Bitmap, ReadFlags) || Bitmap.Num() != Vp->Width * Vp->Height)
+				{ FinalizeViewCapture(Vp, false, TEXT("pixel readback failed or size mismatch")); return false; }
+
+			FToolsetImage Img;
+			if (!Img.SetFromBitmap(Bitmap, FIntPoint(Vp->Width, Vp->Height), ERGBFormat::BGRA))
+				{ FinalizeViewCapture(Vp, false, TEXT("PNG encode failed")); return false; }
+			// The cap is on the Base64 image DATA only (ASCII, so Len() == UTF-8 byte count), not the whole JSON.
+			if (Img.Data.Len() > kViewMaxEncodedBytes)
+				{ FinalizeViewCapture(Vp, false, FString::Printf(TEXT("Base64 image data %d bytes exceeds the %d-byte cap."), Img.Data.Len(), kViewMaxEncodedBytes)); return false; }
+
+			const FRotator FinalRot = Cap->GetComponentRotation();
+			const FVector  FinalLoc = Cap->GetComponentLocation();
+			const FString Payload = FString::Printf(
+				TEXT("{\"pawn\":%s,\"mesh\":%s,\"world\":%s,\"frameNumber\":%llu,\"worldTimeSeconds\":%.6f,")
+				TEXT("\"cameraTransform\":{\"location\":{\"x\":%.3f,\"y\":%.3f,\"z\":%.3f},\"rotation\":{\"pitch\":%.3f,\"yaw\":%.3f,\"roll\":%.3f}},")
+				TEXT("\"width\":%d,\"height\":%d,\"fov\":%.3f,\"image\":{\"mimeType\":%s,\"data\":%s}}"),
+				*JStr(Vp->PawnPath), *JStr(Vp->MeshPath), *JStr(Vp->WorldName),
+				(unsigned long long)GFrameCounter, World->GetTimeSeconds(),
+				FinalLoc.X, FinalLoc.Y, FinalLoc.Z, FinalRot.Pitch, FinalRot.Yaw, FinalRot.Roll,
+				Vp->Width, Vp->Height, Vp->Fov, *JStr(Img.MimeType), *JStr(Img.Data));
+
+			FinalizeViewCapture(Vp, true, Payload);
+			return false;
+		}), 0.0f);
+
+	return Result;
+}
+
+// =============================================================================
 // ShutdownAllSessions
 // =============================================================================
 void UTacticalRuntimeAnimInspectionToolset::ShutdownAllSessions()
 {
 	StopAll(TEXT("module shutdown"));
 	GSessions.Reset();
+	GViewCaptures.Reset();
 	if (GHooksRegistered)
 	{
 		FEditorDelegates::EndPIE.Remove(GEndPIEHandle);
