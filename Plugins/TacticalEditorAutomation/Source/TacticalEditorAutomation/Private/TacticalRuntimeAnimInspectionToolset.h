@@ -181,6 +181,57 @@ public:
 	UFUNCTION(meta = (AICallable))
 	static UToolCallAsyncResultString* CapturePIEPawnViewDeferred(const FString& PawnPath, const FString& MeshComponentPath, float CameraOffsetX, float CameraOffsetY, float CameraOffsetZ, float LookAtOffsetX, float LookAtOffsetY, float LookAtOffsetZ, int32 Width, int32 Height, float FOV, float TimeoutSeconds);
 
+	/*
+	 * One-shot, read-only attachment/socket introspection for a PIE pawn's weapon presentation (Boundary G).
+	 * Resolves the EXACT PIE pawn, its CharacterMesh0 (skeletal) component, and the weapon component (any USceneComponent,
+	 * e.g. a static-mesh WeaponMesh), validating world type, pawn/component ownership, registration, and lifecycle.
+	 * Returns, using Epic APIs directly and WITHOUT selecting/creating/modifying any socket: the weapon component
+	 * class/path and mesh asset; USceneComponent::GetAttachParent() path; GetAttachSocketName(); GetAllSocketNames()
+	 * for BOTH the weapon component and CharacterMesh0 (bounded by kMaxSocketNames with a `truncated` flag);
+	 * DoesSocketExist(candidate) on each; candidate GetSocketTransform(RTS_World) from each where it exists; the weapon
+	 * component's world transform; and the pawn's controller path, IsLocallyControlled(), local Role and RemoteRole.
+	 * Rejects (structured error): pawn/component not found; CDO/template; non-PIE (editor/preview) world; component not
+	 * owned by the pawn; unregistered/pending-kill; cross-world component; a CandidateSocketName longer than
+	 * kMaxPropertyNameLen characters (checked BEFORE any FName is constructed from it). Never mutates or saves anything.
+	 * @param PawnPath Object path of the PIE pawn/actor.
+	 * @param MeshComponentPath Object path of that pawn's CharacterMesh0 skeletal-mesh component.
+	 * @param WeaponComponentPath Object path of the weapon USceneComponent owned by that pawn.
+	 * @param CandidateSocketName Optional socket name to test/measure on each component (empty = skip candidate queries).
+	 *        When non-empty it must be at most kMaxPropertyNameLen (128) characters, the same bound the
+	 *        transform-capture SocketName uses.
+	 */
+	UFUNCTION(meta = (AICallable))
+	static UToolCallAsyncResultString* IntrospectPawnWeaponSockets(const FString& PawnPath, const FString& MeshComponentPath, const FString& WeaponComponentPath, const FString& CandidateSocketName);
+
+	/*
+	 * Frame-coherent world-transform capture (Boundary G). REUSES the existing capture-session lifecycle and the same
+	 * OnBoneTransformsFinalized callback as StartLinkedAnimInstanceCapture (no second session framework); collect and
+	 * dispose with StopLinkedAnimInstanceCapture(sessionId). On each completed frame of the named CharacterMesh0 it
+	 * serializes RAW values from Epic APIs only: transform-source GetSocketTransform(explicitSocket, RTS_World); the
+	 * transform-source component world transform; APawn::GetBaseAimRotation(); the pawn actor rotation; the capsule
+	 * component world rotation; the controller path; IsLocallyControlled(); local Role/RemoteRole; plus the existing
+	 * frame number and world time. It performs NO bone-space reconstruction, muzzle offsets, axis assumptions,
+	 * correction angles, acceptance tolerances, or socket selection. Guards: the explicit socket must exist on the
+	 * transform-source component; all components must belong to the supplied pawn; editor/preview worlds, CDOs/templates,
+	 * stale/cross-world objects, ownership mismatch, ambiguous/absent linked layer, and host-class mismatch are rejected.
+	 * The capsule/root component that supplies capsuleWorldRotation is validated to the SAME standard as the transform
+	 * source -- live, non-template, registered, owned by the supplied pawn, and in the same PIE world -- both at session
+	 * start and again before every sample. Identity (mesh host, linked layer, transform-source and capsule
+	 * ownership/registration/world, socket existence) is revalidated every sampled frame, and any drift stops the session
+	 * cleanly with a structured reason BEFORE sampling; the existing sample/timeout/result-size limits and cleanup
+	 * behavior apply. Never saves or mutates state.
+	 * @param PawnPath Object path of the PIE pawn/actor that owns every component below.
+	 * @param MeshComponentPath Object path of the CharacterMesh0 skeletal-mesh component whose finalized frames drive sampling.
+	 * @param TransformSourcePath Object path of the component to read the socket/world transform from (weapon component or the mesh itself).
+	 * @param SocketName Explicit socket name on the transform-source component (never assumed/selected by the tool).
+	 * @param HostClassPath Generated-class or AnimBlueprint path the mesh host AnimInstance must be (or derive from).
+	 * @param LayerClassPath Generated-class or AnimBlueprint path selecting the single linked layer instance.
+	 * @param MaxSamples Maximum completed-frame samples to record (1..kMaxSamplesLimit).
+	 * @param TimeoutSeconds Wall-clock ceiling after which sampling auto-stops (0 < t <= kMaxTimeoutSeconds).
+	 */
+	UFUNCTION(meta = (AICallable))
+	static UToolCallAsyncResultString* StartWeaponSocketTransformCapture(const FString& PawnPath, const FString& MeshComponentPath, const FString& TransformSourcePath, const FString& SocketName, const FString& HostClassPath, const FString& LayerClassPath, int32 MaxSamples, float TimeoutSeconds);
+
 	/** Stops and disposes ALL active capture sessions and any continuous input injection they own.
 	 *  Called from module shutdown (and usable as a hard reset). Safe to call with no active state. */
 	static void ShutdownAllSessions();

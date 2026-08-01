@@ -24,9 +24,13 @@
 
 #include "Engine/Blueprint.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/SceneComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Animation/AnimInstance.h"
 #include "GameFramework/Pawn.h"
+#include "GameFramework/Character.h"
 #include "GameFramework/Actor.h"
+#include "GameFramework/Controller.h"
 #include "GameFramework/PlayerController.h"
 
 #include "EnhancedInputSubsystems.h"
@@ -57,6 +61,7 @@ namespace TacticalRuntimeAnimInspection
 	static const int64  kMaxSampleBytes = 8LL * 1024 * 1024; // 8 MiB accumulated sample JSON / session
 	static const double kReadinessPressHoldSeconds = 0.1;
 	static const float  kLifecycleTickInterval = 0.05f;
+	static const int32  kMaxSocketNames = 256;              // introspection: max socket names returned per component
 
 	// ---- deferred one-shot string result (same pattern as the authoring toolset) ----
 	static UToolCallAsyncResultString* RunDeferredString(TFunction<bool(FString&, FString&)>&& Action)
@@ -186,6 +191,34 @@ namespace TacticalRuntimeAnimInspection
 		return Cast<USkeletalMeshComponent>(StaticFindObject(USkeletalMeshComponent::StaticClass(), nullptr, *Path));
 	}
 
+	// Generic scene-component resolver (weapon component may be static-mesh or any USceneComponent).
+	static USceneComponent* ResolveSceneComponent(const FString& Path)
+	{
+		return Cast<USceneComponent>(StaticFindObject(USceneComponent::StaticClass(), nullptr, *Path));
+	}
+
+	// ---- raw world-transform JSON helpers (Boundary G): serialize Epic values verbatim, no math ----
+	static FString VecJson(const FVector& V) { return FString::Printf(TEXT("{\"x\":%.6f,\"y\":%.6f,\"z\":%.6f}"), V.X, V.Y, V.Z); }
+	static FString RotJson(const FRotator& R) { return FString::Printf(TEXT("{\"pitch\":%.6f,\"yaw\":%.6f,\"roll\":%.6f}"), R.Pitch, R.Yaw, R.Roll); }
+	static FString QuatJson(const FQuat& Q) { return FString::Printf(TEXT("{\"x\":%.9f,\"y\":%.9f,\"z\":%.9f,\"w\":%.9f}"), Q.X, Q.Y, Q.Z, Q.W); }
+	static FString XformJson(const FTransform& T)
+	{
+		return FString::Printf(TEXT("{\"location\":%s,\"rotation\":%s,\"quat\":%s,\"scale\":%s}"),
+			*VecJson(T.GetLocation()), *RotJson(T.Rotator()), *QuatJson(T.GetRotation()), *VecJson(T.GetScale3D()));
+	}
+
+	static const TCHAR* NetRoleStr(ENetRole R)
+	{
+		switch (R)
+		{
+		case ROLE_None:            return TEXT("ROLE_None");
+		case ROLE_SimulatedProxy:  return TEXT("ROLE_SimulatedProxy");
+		case ROLE_AutonomousProxy: return TEXT("ROLE_AutonomousProxy");
+		case ROLE_Authority:       return TEXT("ROLE_Authority");
+		default:                   return TEXT("ROLE_Unknown");
+		}
+	}
+
 	// Rejects: too many names, empty names, over-long names, and duplicates within a single list.
 	static bool ValidatePropertyList(const TArray<FString>& Props, const TCHAR* Which, FString& OutError)
 	{
@@ -229,6 +262,13 @@ namespace TacticalRuntimeAnimInspection
 		int64 AccumBytes = 0;   // accumulated serialized sample JSON bytes (UTF-8)
 		bool bActive = false;
 		FString StopReason;
+
+		// --- transform-capture mode (Boundary G): reuses THIS session + OnBoneTransformsFinalized ---
+		bool bTransformMode = false;
+		TWeakObjectPtr<APawn> Pawn;
+		TWeakObjectPtr<USceneComponent> TransformSource;  // socket/world-transform source (weapon comp or the mesh itself)
+		TWeakObjectPtr<USceneComponent> Capsule;          // pawn capsule/root component (world rotation source)
+		FString PawnPath, TransformSourcePath, SocketName, CapsulePath;
 	};
 
 	// Active input-drive state (module-owned) so the caller is ALWAYS resolved exactly once and any
@@ -472,6 +512,49 @@ namespace TacticalRuntimeAnimInspection
 		GWorldCleanupHandle = FWorldDelegates::OnWorldCleanup.AddStatic(&OnWorldCleanup);
 	}
 
+	// Frame-coherent transform sample: revalidates the transform-source/pawn/capsule + explicit socket, then
+	// serializes RAW Epic-API world transforms/rotations (no bone-space math, no offsets, no axis assumptions).
+	// Returns false (and StopSession's the capture) on any drift.
+	static bool BuildTransformSample(const TSharedPtr<FCaptureSession>& S, FString& OutSample)
+	{
+		check(IsInGameThread());
+		UWorld* World = S->World.Get();
+		APawn* Pawn = S->Pawn.Get();
+		USceneComponent* TS = S->TransformSource.Get();
+		USceneComponent* Capsule = S->Capsule.Get();
+
+		if (!IsValid(Pawn) || Pawn->IsTemplate() || !IsPIEWorld(Pawn->GetWorld()) || Pawn->GetWorld() != World)
+		{ StopSession(S, TEXT("transform-capture pawn invalid/cross-world")); return false; }
+		if (!IsValid(TS) || TS->IsTemplate() || !TS->IsRegistered() || TS->GetWorld() != World || TS->GetOwner() != Pawn)
+		{ StopSession(S, TEXT("transform-source component invalid/unregistered/ownership changed")); return false; }
+		if (!IsValid(Capsule) || Capsule->IsTemplate() || !Capsule->IsRegistered() || Capsule->GetWorld() != World || Capsule->GetOwner() != Pawn)
+		{ StopSession(S, TEXT("capsule component invalid/unregistered/cross-world/ownership changed")); return false; }
+		const FName Socket(*S->SocketName);
+		if (!TS->DoesSocketExist(Socket))
+		{ StopSession(S, TEXT("explicit socket no longer exists on transform-source")); return false; }
+
+		const FTransform SockW  = TS->GetSocketTransform(Socket, RTS_World);
+		const FTransform CompW  = TS->GetComponentTransform();
+		const FRotator BaseAim  = Pawn->GetBaseAimRotation();
+		const FRotator ActorRot = Pawn->GetActorRotation();
+		const FRotator CapRot   = Capsule->GetComponentRotation();
+		AController* Ctrl = Pawn->GetController();
+		const FString CtrlPath = Ctrl ? Ctrl->GetPathName() : FString();
+		const bool bLocal = Pawn->IsLocallyControlled();
+
+		OutSample = FString::Printf(
+			TEXT("{\"sessionId\":%s,\"mode\":\"transform\",\"frameNumber\":%llu,\"worldTimeSeconds\":%.6f,\"world\":%s,\"owner\":%s,")
+			TEXT("\"meshComponent\":%s,\"transformSource\":%s,\"socket\":%s,\"hostInstance\":%s,\"hostClass\":%s,\"layerInstance\":%s,\"layerClass\":%s,")
+			TEXT("\"socketWorldTransform\":%s,\"transformSourceWorldTransform\":%s,\"baseAimRotation\":%s,\"actorRotation\":%s,\"capsuleWorldRotation\":%s,")
+			TEXT("\"controller\":%s,\"isLocallyControlled\":%s,\"localRole\":\"%s\",\"remoteRole\":\"%s\"}"),
+			*JStr(S->Id), (unsigned long long)GFrameCounter, World->GetTimeSeconds(),
+			*JStr(S->WorldName), *JStr(S->OwnerPath), *JStr(S->MeshPath), *JStr(S->TransformSourcePath), *JStr(S->SocketName),
+			*JStr(S->HostInstPath), *JStr(S->HostClass), *JStr(S->LayerInstPath), *JStr(S->LayerClass),
+			*XformJson(SockW), *XformJson(CompW), *RotJson(BaseAim), *RotJson(ActorRot), *RotJson(CapRot),
+			*JStr(CtrlPath), bLocal ? TEXT("true") : TEXT("false"), NetRoleStr(Pawn->GetLocalRole()), NetRoleStr(Pawn->GetRemoteRole()));
+		return true;
+	}
+
 	// Per-completed-frame sampler. Runs on the game thread inside FinalizeBoneTransform.
 	static void OnBoneTransformsFinalized(TWeakPtr<FCaptureSession> WeakSession)
 	{
@@ -504,44 +587,53 @@ namespace TacticalRuntimeAnimInspection
 			StopSession(S, TEXT("host/layer class no longer matches expected")); return;
 		}
 
-		TArray<FString> ReadErrors;
-		auto ReadInto = [&ReadErrors](UAnimInstance* Inst, const FString& InstPath, const TArray<FString>& Props) -> FString
+		FString Sample;
+		if (S->bTransformMode)
 		{
-			FString Fields;
-			for (int32 i = 0; i < Props.Num(); ++i)
+			// Boundary G: reuses this session + callback; on any drift BuildTransformSample StopSession's and returns false.
+			if (!BuildTransformSample(S, Sample)) { return; }
+		}
+		else
+		{
+			TArray<FString> ReadErrors;
+			auto ReadInto = [&ReadErrors](UAnimInstance* Inst, const FString& InstPath, const TArray<FString>& Props) -> FString
 			{
-				FString ValJson, Err;
-				if (ReadScalarJson(Inst, Props[i], ValJson, Err))
+				FString Fields;
+				for (int32 i = 0; i < Props.Num(); ++i)
 				{
-					Fields += FString::Printf(TEXT("%s%s:%s"), (i ? TEXT(",") : TEXT("")), *JStr(Props[i]), *ValJson);
+					FString ValJson, Err;
+					if (ReadScalarJson(Inst, Props[i], ValJson, Err))
+					{
+						Fields += FString::Printf(TEXT("%s%s:%s"), (i ? TEXT(",") : TEXT("")), *JStr(Props[i]), *ValJson);
+					}
+					else
+					{
+						Fields += FString::Printf(TEXT("%s%s:null"), (i ? TEXT(",") : TEXT("")), *JStr(Props[i]));
+						ReadErrors.Add(FString::Printf(TEXT("{\"instance\":%s,\"property\":%s,\"error\":%s}"),
+							*JStr(InstPath), *JStr(Props[i]), *JStr(Err)));
+					}
 				}
-				else
-				{
-					Fields += FString::Printf(TEXT("%s%s:null"), (i ? TEXT(",") : TEXT("")), *JStr(Props[i]));
-					ReadErrors.Add(FString::Printf(TEXT("{\"instance\":%s,\"property\":%s,\"error\":%s}"),
-						*JStr(InstPath), *JStr(Props[i]), *JStr(Err)));
-				}
-			}
-			return Fields;
-		};
+				return Fields;
+			};
 
-		const FString HostPath = Host->GetPathName();
-		const FString LayerPath = Layer->GetPathName();
-		const FString HostFields = ReadInto(Host, HostPath, S->HostProps);
-		const FString LayerFields = ReadInto(Layer, LayerPath, S->LayerProps);
-		const bool bSampleOk = (ReadErrors.Num() == 0);
+			const FString HostPath = Host->GetPathName();
+			const FString LayerPath = Layer->GetPathName();
+			const FString HostFields = ReadInto(Host, HostPath, S->HostProps);
+			const FString LayerFields = ReadInto(Layer, LayerPath, S->LayerProps);
+			const bool bSampleOk = (ReadErrors.Num() == 0);
 
-		FString ErrArr;
-		for (int32 i = 0; i < ReadErrors.Num(); ++i) { ErrArr += (i ? TEXT(",") : TEXT("")) + ReadErrors[i]; }
+			FString ErrArr;
+			for (int32 i = 0; i < ReadErrors.Num(); ++i) { ErrArr += (i ? TEXT(",") : TEXT("")) + ReadErrors[i]; }
 
-		const FString Sample = FString::Printf(
-			TEXT("{\"sessionId\":%s,\"frameNumber\":%llu,\"worldTimeSeconds\":%.6f,\"world\":%s,\"owner\":%s,\"meshComponent\":%s,")
-			TEXT("\"hostInstance\":%s,\"hostClass\":%s,\"layerInstance\":%s,\"layerClass\":%s,")
-			TEXT("\"sampleOk\":%s,\"host\":{%s},\"layer\":{%s},\"readErrors\":[%s]}"),
-			*JStr(S->Id), (unsigned long long)GFrameCounter, World->GetTimeSeconds(),
-			*JStr(S->WorldName), *JStr(S->OwnerPath), *JStr(S->MeshPath),
-			*JStr(HostPath), *JStr(S->HostClass), *JStr(LayerPath), *JStr(S->LayerClass),
-			bSampleOk ? TEXT("true") : TEXT("false"), *HostFields, *LayerFields, *ErrArr);
+			Sample = FString::Printf(
+				TEXT("{\"sessionId\":%s,\"frameNumber\":%llu,\"worldTimeSeconds\":%.6f,\"world\":%s,\"owner\":%s,\"meshComponent\":%s,")
+				TEXT("\"hostInstance\":%s,\"hostClass\":%s,\"layerInstance\":%s,\"layerClass\":%s,")
+				TEXT("\"sampleOk\":%s,\"host\":{%s},\"layer\":{%s},\"readErrors\":[%s]}"),
+				*JStr(S->Id), (unsigned long long)GFrameCounter, World->GetTimeSeconds(),
+				*JStr(S->WorldName), *JStr(S->OwnerPath), *JStr(S->MeshPath),
+				*JStr(HostPath), *JStr(S->HostClass), *JStr(LayerPath), *JStr(S->LayerClass),
+				bSampleOk ? TEXT("true") : TEXT("false"), *HostFields, *LayerFields, *ErrArr);
+		}
 
 		// Enforce the serialized-byte cap BEFORE storing; never store a partial/truncated object.
 		const int64 SampleBytes = (int64)FTCHARToUTF8(*Sample).Length();
@@ -898,6 +990,224 @@ UToolCallAsyncResultString* UTacticalRuntimeAnimInspectionToolset::DrivePIEInput
 	}));
 
 	return Result;
+}
+
+// =============================================================================
+// IntrospectPawnWeaponSockets  (one-shot, read-only attachment/socket introspection)
+// =============================================================================
+UToolCallAsyncResultString* UTacticalRuntimeAnimInspectionToolset::IntrospectPawnWeaponSockets(
+	const FString& PawnPath, const FString& MeshComponentPath, const FString& WeaponComponentPath, const FString& CandidateSocketName)
+{
+	return RunDeferredString([=](FString& OutValue, FString& OutError) -> bool
+	{
+		check(IsInGameThread());
+
+		// Bound the candidate before any FName is constructed from it. Empty stays allowed
+		// (candidate queries are simply skipped); non-empty uses the same length bound as the
+		// transform-capture socket name.
+		if (CandidateSocketName.Len() > kMaxPropertyNameLen)
+		{ OutError = FString::Printf(TEXT("CandidateSocketName is %d characters; the maximum is %d."), CandidateSocketName.Len(), kMaxPropertyNameLen); return false; }
+
+		APawn* Pawn = Cast<APawn>(ResolveActor(PawnPath));
+		if (!IsValid(Pawn)) { OutError = FString::Printf(TEXT("Pawn not found: %s"), *PawnPath); return false; }
+		if (Pawn->IsTemplate()) { OutError = TEXT("Pawn is a CDO/template."); return false; }
+		UWorld* World = Pawn->GetWorld();
+		if (!IsPIEWorld(World)) { OutError = TEXT("Pawn is not in a PIE world (editor/preview rejected)."); return false; }
+
+		USkeletalMeshComponent* Mesh = ResolveMeshComponent(MeshComponentPath);
+		if (!Mesh) { OutError = FString::Printf(TEXT("Skeletal-mesh component not found: %s"), *MeshComponentPath); return false; }
+		if (!IsUsableMesh(Mesh)) { OutError = TEXT("Mesh is not a live/registered PIE component."); return false; }
+		if (Mesh->GetOwner() != Pawn) { OutError = FString::Printf(TEXT("Mesh not owned by the supplied pawn: owner=%s."), *GetPathNameSafe(Mesh->GetOwner())); return false; }
+		if (Mesh->GetWorld() != World) { OutError = TEXT("Mesh is in a different world than the pawn."); return false; }
+
+		USceneComponent* Weapon = ResolveSceneComponent(WeaponComponentPath);
+		if (!Weapon) { OutError = FString::Printf(TEXT("Weapon component not found: %s"), *WeaponComponentPath); return false; }
+		if (!IsValid(Weapon) || Weapon->IsTemplate() || !Weapon->IsRegistered() || !IsPIEWorld(Weapon->GetWorld())) { OutError = TEXT("Weapon component is not a live/registered PIE component."); return false; }
+		if (Weapon->GetOwner() != Pawn) { OutError = FString::Printf(TEXT("Weapon component not owned by the supplied pawn: owner=%s."), *GetPathNameSafe(Weapon->GetOwner())); return false; }
+		if (Weapon->GetWorld() != World) { OutError = TEXT("Weapon component is in a different world than the pawn."); return false; }
+
+		// Mesh asset via reflection (static-mesh or skeletal-mesh component), read-only.
+		FString MeshAsset;
+		for (const TCHAR* PropName : { TEXT("StaticMesh"), TEXT("SkeletalMeshAsset"), TEXT("SkeletalMesh") })
+		{
+			if (FObjectProperty* OP = CastField<FObjectProperty>(Weapon->GetClass()->FindPropertyByName(FName(PropName))))
+			{
+				if (UObject* Asset = OP->GetObjectPropertyValue_InContainer(Weapon)) { MeshAsset = Asset->GetPathName(); break; }
+			}
+		}
+
+		auto SocketNamesJson = [](USceneComponent* Comp, bool& bTruncated) -> FString
+		{
+			TArray<FName> Names = Comp->GetAllSocketNames();
+			bTruncated = Names.Num() > kMaxSocketNames;
+			const int32 N = FMath::Min(Names.Num(), kMaxSocketNames);
+			FString Arr;
+			for (int32 i = 0; i < N; ++i) { Arr += (i ? TEXT(",") : TEXT("")) + JStr(Names[i].ToString()); }
+			return Arr;
+		};
+		bool bWeaponTrunc = false, bMeshTrunc = false;
+		const FString WeaponSockets = SocketNamesJson(Weapon, bWeaponTrunc);
+		const FString MeshSockets = SocketNamesJson(Mesh, bMeshTrunc);
+
+		const bool bHasCandidate = !CandidateSocketName.IsEmpty();
+		const FName Cand(*CandidateSocketName);
+		const bool bWeaponHas = bHasCandidate && Weapon->DoesSocketExist(Cand);
+		const bool bMeshHas = bHasCandidate && Mesh->DoesSocketExist(Cand);
+		const FString WeaponCandXform = bWeaponHas ? XformJson(Weapon->GetSocketTransform(Cand, RTS_World)) : FString(TEXT("null"));
+		const FString MeshCandXform = bMeshHas ? XformJson(Mesh->GetSocketTransform(Cand, RTS_World)) : FString(TEXT("null"));
+		const FString CandJson = bHasCandidate ? JStr(CandidateSocketName) : FString(TEXT("null"));
+
+		USceneComponent* AttachParent = Weapon->GetAttachParent();
+		const FString AttachParentPath = AttachParent ? AttachParent->GetPathName() : FString();
+		const FString AttachSocket = Weapon->GetAttachSocketName().ToString();
+		const FString WeaponWorldXform = XformJson(Weapon->GetComponentTransform());
+
+		AController* Ctrl = Pawn->GetController();
+		const FString CtrlPath = Ctrl ? Ctrl->GetPathName() : FString();
+		const bool bLocal = Pawn->IsLocallyControlled();
+
+		OutValue = FString::Printf(
+			TEXT("{\"world\":%s,\"pawn\":%s,\"meshComponent\":%s,")
+			TEXT("\"weaponComponent\":{\"path\":%s,\"class\":%s,\"meshAsset\":%s,\"attachParent\":%s,\"attachSocketName\":%s,\"worldTransform\":%s},")
+			TEXT("\"candidateSocket\":%s,\"weaponComponentSockets\":{\"names\":[%s],\"truncated\":%s},\"meshComponentSockets\":{\"names\":[%s],\"truncated\":%s},")
+			TEXT("\"candidateOnWeapon\":{\"exists\":%s,\"socketWorldTransform\":%s},\"candidateOnMesh\":{\"exists\":%s,\"socketWorldTransform\":%s},")
+			TEXT("\"controller\":%s,\"isLocallyControlled\":%s,\"localRole\":\"%s\",\"remoteRole\":\"%s\",\"limits\":{\"maxSocketNames\":%d}}"),
+			*JStr(World->GetPathName()), *JStr(Pawn->GetPathName()), *JStr(Mesh->GetPathName()),
+			*JStr(Weapon->GetPathName()), *JStr(Weapon->GetClass()->GetPathName()), *JStr(MeshAsset), *JStr(AttachParentPath), *JStr(AttachSocket), *WeaponWorldXform,
+			*CandJson, *WeaponSockets, bWeaponTrunc ? TEXT("true") : TEXT("false"), *MeshSockets, bMeshTrunc ? TEXT("true") : TEXT("false"),
+			bWeaponHas ? TEXT("true") : TEXT("false"), *WeaponCandXform, bMeshHas ? TEXT("true") : TEXT("false"), *MeshCandXform,
+			*JStr(CtrlPath), bLocal ? TEXT("true") : TEXT("false"), NetRoleStr(Pawn->GetLocalRole()), NetRoleStr(Pawn->GetRemoteRole()),
+			kMaxSocketNames);
+		return true;
+	});
+}
+
+// =============================================================================
+// StartWeaponSocketTransformCapture  (frame-coherent; reuses the capture session + StopLinkedAnimInstanceCapture)
+// =============================================================================
+UToolCallAsyncResultString* UTacticalRuntimeAnimInspectionToolset::StartWeaponSocketTransformCapture(
+	const FString& PawnPath, const FString& MeshComponentPath, const FString& TransformSourcePath, const FString& SocketName,
+	const FString& HostClassPath, const FString& LayerClassPath, int32 MaxSamples, float TimeoutSeconds)
+{
+	return RunDeferredString([=](FString& OutValue, FString& OutError) -> bool
+	{
+		check(IsInGameThread());
+		EnsureHooks();
+
+		if (MaxSamples < 1 || MaxSamples > kMaxSamplesLimit) { OutError = FString::Printf(TEXT("MaxSamples must be in [1,%d]."), kMaxSamplesLimit); return false; }
+		if (TimeoutSeconds <= 0.f || (double)TimeoutSeconds > kMaxTimeoutSeconds) { OutError = FString::Printf(TEXT("TimeoutSeconds must be in (0,%.0f]."), kMaxTimeoutSeconds); return false; }
+		if (SocketName.IsEmpty()) { OutError = TEXT("SocketName must be explicit (non-empty)."); return false; }
+		if (SocketName.Len() > kMaxPropertyNameLen) { OutError = FString::Printf(TEXT("SocketName exceeds %d characters."), kMaxPropertyNameLen); return false; }
+
+		APawn* Pawn = Cast<APawn>(ResolveActor(PawnPath));
+		if (!IsValid(Pawn) || Pawn->IsTemplate()) { OutError = FString::Printf(TEXT("Pawn not found or is a CDO/template: %s"), *PawnPath); return false; }
+		UWorld* World = Pawn->GetWorld();
+		if (!IsPIEWorld(World)) { OutError = TEXT("Pawn is not in a PIE world (editor/preview rejected)."); return false; }
+
+		USkeletalMeshComponent* Mesh = ResolveMeshComponent(MeshComponentPath);
+		if (!Mesh || !IsUsableMesh(Mesh)) { OutError = FString::Printf(TEXT("Finalization mesh not found/usable: %s"), *MeshComponentPath); return false; }
+		if (Mesh->GetOwner() != Pawn) { OutError = TEXT("Finalization mesh is not owned by the supplied pawn."); return false; }
+		if (Mesh->GetWorld() != World) { OutError = TEXT("Finalization mesh is in a different world than the pawn."); return false; }
+
+		USceneComponent* TS = ResolveSceneComponent(TransformSourcePath);
+		if (!TS || !IsValid(TS) || TS->IsTemplate() || !TS->IsRegistered() || !IsPIEWorld(TS->GetWorld())) { OutError = FString::Printf(TEXT("Transform-source component not found/usable: %s"), *TransformSourcePath); return false; }
+		if (TS->GetOwner() != Pawn) { OutError = TEXT("Transform-source component is not owned by the supplied pawn."); return false; }
+		if (TS->GetWorld() != World) { OutError = TEXT("Transform-source component is in a different world than the pawn."); return false; }
+		if (!TS->DoesSocketExist(FName(*SocketName))) { OutError = FString::Printf(TEXT("Explicit socket '%s' does not exist on the transform-source component."), *SocketName); return false; }
+
+		// The capsule/root component is a reported transform source (capsuleWorldRotation), so it
+		// gets the same full validation as the transform source: live, non-template, registered,
+		// owned by the supplied pawn, and in the same PIE world.
+		USceneComponent* Capsule = nullptr;
+		if (ACharacter* Char = Cast<ACharacter>(Pawn)) { Capsule = Char->GetCapsuleComponent(); }
+		if (!Capsule) { Capsule = Pawn->GetRootComponent(); }
+		if (!IsValid(Capsule)) { OutError = TEXT("Pawn has no capsule/root component."); return false; }
+		if (Capsule->IsTemplate()) { OutError = TEXT("Capsule/root component is a CDO/template."); return false; }
+		if (!Capsule->IsRegistered()) { OutError = TEXT("Capsule/root component is not registered."); return false; }
+		if (!IsPIEWorld(Capsule->GetWorld())) { OutError = TEXT("Capsule/root component is not in a PIE world."); return false; }
+		if (Capsule->GetOwner() != Pawn) { OutError = FString::Printf(TEXT("Capsule/root component is not owned by the supplied pawn: owner=%s."), *GetPathNameSafe(Capsule->GetOwner())); return false; }
+		if (Capsule->GetWorld() != World) { OutError = TEXT("Capsule/root component is in a different world than the pawn."); return false; }
+
+		for (auto& Pair : GSessions)
+		{
+			const TSharedPtr<FCaptureSession>& Existing = Pair.Value;
+			if (Existing.IsValid() && Existing->bActive && Existing->Mesh.Get() == Mesh)
+			{ OutError = FString::Printf(TEXT("A capture session (%s) is already active on this mesh."), *Existing->Id); return false; }
+		}
+
+		UAnimInstance* Host = Mesh->GetAnimInstance();
+		if (!IsUsableAnimInstance(Host)) { OutError = TEXT("Finalization mesh has no usable host AnimInstance."); return false; }
+		UClass* WantHost = ResolveAnimInstanceClass(HostClassPath);
+		if (!WantHost) { OutError = FString::Printf(TEXT("Could not resolve host class: %s"), *HostClassPath); return false; }
+		if (!Host->GetClass()->IsChildOf(WantHost)) { OutError = FString::Printf(TEXT("Host class mismatch: instance is %s, expected %s."), *Host->GetClass()->GetPathName(), *WantHost->GetPathName()); return false; }
+		UClass* WantLayer = ResolveAnimInstanceClass(LayerClassPath);
+		if (!WantLayer) { OutError = FString::Printf(TEXT("Could not resolve layer class: %s"), *LayerClassPath); return false; }
+		UAnimInstance* Layer = nullptr; int32 LayerMatches = 0;
+		for (UAnimInstance* L : GetLinkedInstances(Mesh)) { if (IsUsableAnimInstance(L) && L->GetClass()->IsChildOf(WantLayer)) { ++LayerMatches; Layer = L; } }
+		if (LayerMatches == 0) { OutError = FString::Printf(TEXT("No linked layer instance of class %s on this mesh."), *WantLayer->GetPathName()); return false; }
+		if (LayerMatches > 1) { OutError = FString::Printf(TEXT("Ambiguous: %d linked layer instances of class %s."), LayerMatches, *WantLayer->GetPathName()); return false; }
+
+		TSharedPtr<FCaptureSession> S = MakeShared<FCaptureSession>();
+		S->Id = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens);
+		S->World = World;
+		S->Mesh = Mesh; S->Host = Host; S->Layer = Layer;
+		S->ExpectedHostClass = WantHost; S->ExpectedLayerClass = WantLayer;
+		S->WorldName = World->GetPathName();
+		S->OwnerPath = Pawn->GetPathName();
+		S->MeshPath = Mesh->GetPathName();
+		S->HostInstPath = Host->GetPathName();
+		S->HostClass = Host->GetClass()->GetPathName();
+		S->LayerInstPath = Layer->GetPathName();
+		S->LayerClass = Layer->GetClass()->GetPathName();
+		S->MaxSamples = MaxSamples; S->Timeout = (double)TimeoutSeconds;
+		S->StartTime = FPlatformTime::Seconds();
+		S->bActive = true;
+		S->bTransformMode = true;
+		S->Pawn = Pawn;
+		S->TransformSource = TS;
+		S->TransformSourcePath = TS->GetPathName();
+		S->SocketName = SocketName;
+		S->Capsule = Capsule;
+		S->CapsulePath = Capsule->GetPathName();
+
+		TWeakPtr<FCaptureSession> WeakS = S;
+		S->FinalizeHandle = Mesh->RegisterOnBoneTransformsFinalizedDelegate(
+			FOnBoneTransformsFinalizedMultiCast::FDelegate::CreateLambda([WeakS]() { OnBoneTransformsFinalized(WeakS); }));
+
+		S->LifecycleHandle = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda(
+			[WeakS](float) -> bool
+			{
+				TSharedPtr<FCaptureSession> Sp = WeakS.Pin();
+				if (!Sp.IsValid() || !Sp->bActive) { return false; }
+				UWorld* W = Sp->World.Get();
+				USkeletalMeshComponent* M = Sp->Mesh.Get();
+				UAnimInstance* H = Sp->Host.Get();
+				UAnimInstance* L = Sp->Layer.Get();
+				USceneComponent* TSp = Sp->TransformSource.Get();
+				APawn* P = Sp->Pawn.Get();
+				if (!IsPIEWorld(W) || !IsUsableMesh(M) || !IsUsableAnimInstance(H) || !IsUsableAnimInstance(L)
+					|| M->GetAnimInstance() != H || !LayerStillPresent(M, L)
+					|| !IsValid(P) || !IsPIEWorld(P->GetWorld())
+					|| !IsValid(TSp) || !TSp->IsRegistered() || TSp->GetOwner() != P)
+				{
+					StopSession(Sp, TEXT("invalidated (lifecycle)")); return false;
+				}
+				if ((FPlatformTime::Seconds() - Sp->StartTime) >= Sp->Timeout)
+				{
+					StopSession(Sp, TEXT("timeout")); return false;
+				}
+				return true;
+			}), kLifecycleTickInterval);
+
+		GSessions.Add(S->Id, S);
+
+		OutValue = FString::Printf(
+			TEXT("{\"sessionId\":%s,\"mode\":\"transform\",\"world\":%s,\"owner\":%s,\"meshComponent\":%s,\"transformSource\":%s,\"socket\":%s,")
+			TEXT("\"hostAnimInstance\":%s,\"hostClass\":%s,\"layerInstance\":%s,\"layerClass\":%s,\"capsuleComponent\":%s,\"maxSamples\":%d,\"timeoutSeconds\":%.3f}"),
+			*JStr(S->Id), *JStr(S->WorldName), *JStr(S->OwnerPath), *JStr(S->MeshPath), *JStr(S->TransformSourcePath), *JStr(S->SocketName),
+			*JStr(S->HostInstPath), *JStr(S->HostClass), *JStr(S->LayerInstPath), *JStr(S->LayerClass), *JStr(S->CapsulePath), MaxSamples, TimeoutSeconds);
+		return true;
+	});
 }
 
 // =============================================================================
