@@ -19,6 +19,11 @@
 #include "EdGraph/EdGraphPin.h"
 #include "EdGraphSchema_K2.h"
 
+#include "Engine/StaticMesh.h"
+#include "Engine/StaticMeshSocket.h"
+#include "ScopedTransaction.h"
+#include "UObject/Package.h"
+#include "Containers/StringConv.h"
 #include "Engine/Blueprint.h"
 #include "Animation/AnimBlueprint.h"
 #include "Animation/AnimInstance.h"
@@ -726,6 +731,450 @@ UToolCallAsyncResultString* UTacticalAnimAuthoringToolset::GetUseCachedPoseBindi
 					*TacticalAnimAuthoring::JsonEscape(UseNode->NodeGuid.ToString()),
 					*TacticalAnimAuthoring::JsonEscape(UseNode->GetPathName()));
 			}
+			return true;
+		});
+}
+
+// =============================================================================
+// Static-mesh socket authoring (Boundary G muzzle reference)
+// =============================================================================
+namespace TacticalAnimAuthoring
+{
+	// ---- static-mesh socket hard bounds (mirrored in the header documentation) ----
+	static const int32  kMaxSocketNameLen = 128;          // characters
+	static const double kMaxSocketLocation = 10000.0;     // cm, per axis, absolute
+	static const double kMaxSocketRotationDeg = 360.0;    // degrees, per component, absolute
+	static const double kMinSocketScale = 0.001;          // per component, absolute magnitude
+	static const double kMaxSocketScale = 100.0;          // per component, absolute magnitude
+	static const double kSocketMatchTolerance = 0.001;    // readback / expected-prior-transform tolerance
+	static const int32  kMaxSocketsReturned = 256;        // GetStaticMeshSockets: max entries serialized
+	static const int32  kMaxSocketsJsonBytes = 256 * 1024;// GetStaticMeshSockets: max serialized socket-array bytes
+
+	// Provenance of sockets THIS tool added during the current editor session, keyed by
+	// "<meshPath>|<socketName>" -> the EXACT socket object created. A weak pointer is used
+	// deliberately: if the socket is destroyed, replaced, or undone, the entry goes stale and
+	// the CAS bypass is refused. A same-named replacement is a DIFFERENT object and is never
+	// trusted. Session-scoped only; never persisted.
+	static TMap<FString, TWeakObjectPtr<UStaticMeshSocket>> GToolAddedSockets;
+
+	// RAW component-wise rotator comparison. Deliberately NOT FRotator::Equals: that compares
+	// orientation and treats wrap-equivalent components (e.g. 0 and 360 degrees) as equal, which
+	// would contradict the documented policy that this tool preserves the caller's supplied
+	// components verbatim and never normalizes, wraps, or rewrites them.
+	static bool RotatorComponentsEqual(const FRotator& A, const FRotator& B, double Tolerance)
+	{
+		return FMath::Abs(A.Pitch - B.Pitch) <= Tolerance
+			&& FMath::Abs(A.Yaw   - B.Yaw)   <= Tolerance
+			&& FMath::Abs(A.Roll  - B.Roll)  <= Tolerance;
+	}
+
+	static FString SocketKey(const FString& MeshPath, const FString& SocketName)
+	{
+		return MeshPath + TEXT("|") + SocketName;
+	}
+
+	// Drops entries whose weak pointer has gone stale. Keeps the map from growing across a session.
+	static void PurgeStaleSocketProvenance()
+	{
+		for (auto It = GToolAddedSockets.CreateIterator(); It; ++It)
+		{
+			if (!It.Value().IsValid()) { It.RemoveCurrent(); }
+		}
+	}
+
+	// True only when this tool added EXACTLY this live socket object in this session.
+	static bool IsToolAddedSocket(const FString& MeshPath, const FString& SocketName, const UStaticMeshSocket* Current)
+	{
+		PurgeStaleSocketProvenance();
+		const TWeakObjectPtr<UStaticMeshSocket>* Found = GToolAddedSockets.Find(SocketKey(MeshPath, SocketName));
+		if (!Found) { return false; }
+		UStaticMeshSocket* Tracked = Found->Get();
+		return Tracked != nullptr && Current != nullptr && Tracked == Current;
+	}
+
+	static UStaticMesh* LoadStaticMeshAsset(const FString& Path, FString& OutError)
+	{
+		const FString Trimmed = Path.TrimStartAndEnd();
+		if (Trimmed.IsEmpty()) { OutError = TEXT("AssetPath must be non-empty."); return nullptr; }
+
+		UObject* Obj = StaticLoadObject(UObject::StaticClass(), nullptr, *Trimmed);
+		if (!Obj)
+		{
+			FString ObjectName;
+			if (Trimmed.Split(TEXT("/"), nullptr, &ObjectName, ESearchCase::CaseSensitive, ESearchDir::FromEnd)
+				&& !ObjectName.IsEmpty() && !Trimmed.Contains(TEXT(".")))
+			{
+				Obj = StaticLoadObject(UObject::StaticClass(), nullptr, *(Trimmed + TEXT(".") + ObjectName));
+			}
+		}
+		if (!Obj) { OutError = FString::Printf(TEXT("Asset not found: %s"), *Trimmed); return nullptr; }
+
+		UStaticMesh* Mesh = Cast<UStaticMesh>(Obj);
+		if (!Mesh) { OutError = FString::Printf(TEXT("Asset is %s, not a StaticMesh: %s"), *Obj->GetClass()->GetName(), *Trimmed); return nullptr; }
+		if (!IsValid(Mesh)) { OutError = TEXT("StaticMesh is pending kill / invalid."); return nullptr; }
+		if (Mesh->IsTemplate()) { OutError = TEXT("Asset is a CDO/template."); return nullptr; }
+		if (Mesh->HasAnyFlags(RF_Transient)) { OutError = TEXT("Asset is transient."); return nullptr; }
+		return Mesh;
+	}
+
+	static bool ValidateSocketName(const FString& Name, FString& OutError)
+	{
+		if (Name.IsEmpty()) { OutError = TEXT("SocketName must be non-empty."); return false; }
+		if (Name.TrimStartAndEnd().IsEmpty()) { OutError = TEXT("SocketName must not be whitespace-only."); return false; }
+		if (Name.Len() > kMaxSocketNameLen)
+		{ OutError = FString::Printf(TEXT("SocketName is %d characters; the maximum is %d."), Name.Len(), kMaxSocketNameLen); return false; }
+		return true;
+	}
+
+	static bool ValidateSocketTransform(const FVector& Loc, const FRotator& Rot, const FVector& Scale, FString& OutError)
+	{
+		if (Loc.ContainsNaN() || !FMath::IsFinite(Loc.X) || !FMath::IsFinite(Loc.Y) || !FMath::IsFinite(Loc.Z))
+		{ OutError = TEXT("Relative location must be finite."); return false; }
+		if (Rot.ContainsNaN() || !FMath::IsFinite(Rot.Pitch) || !FMath::IsFinite(Rot.Yaw) || !FMath::IsFinite(Rot.Roll))
+		{ OutError = TEXT("Relative rotation must be finite."); return false; }
+		if (Scale.ContainsNaN() || !FMath::IsFinite(Scale.X) || !FMath::IsFinite(Scale.Y) || !FMath::IsFinite(Scale.Z))
+		{ OutError = TEXT("Relative scale must be finite."); return false; }
+
+		if (FMath::Abs(Loc.X) > kMaxSocketLocation || FMath::Abs(Loc.Y) > kMaxSocketLocation || FMath::Abs(Loc.Z) > kMaxSocketLocation)
+		{ OutError = FString::Printf(TEXT("Relative location components must be within +/-%.0f cm."), kMaxSocketLocation); return false; }
+
+		// Explicit rotation policy: components are accepted only in [-360,360]. Callers author
+		// normalized rotations; the tool never normalizes or rewrites a caller's value.
+		if (FMath::Abs(Rot.Pitch) > kMaxSocketRotationDeg || FMath::Abs(Rot.Yaw) > kMaxSocketRotationDeg || FMath::Abs(Rot.Roll) > kMaxSocketRotationDeg)
+		{ OutError = FString::Printf(TEXT("Relative rotation components must be within +/-%.0f degrees (author normalized rotations)."), kMaxSocketRotationDeg); return false; }
+
+		const double S[3] = { Scale.X, Scale.Y, Scale.Z };
+		for (int32 i = 0; i < 3; ++i)
+		{
+			if (FMath::Abs(S[i]) < kMinSocketScale || FMath::Abs(S[i]) > kMaxSocketScale)
+			{ OutError = FString::Printf(TEXT("Relative scale components must have magnitude within [%.3f, %.0f]."), kMinSocketScale, kMaxSocketScale); return false; }
+		}
+		return true;
+	}
+
+	static FString XformJson(const FVector& Loc, const FRotator& Rot, const FVector& Scale)
+	{
+		return FString::Printf(
+			TEXT("\"relativeLocation\":{\"x\":%.6f,\"y\":%.6f,\"z\":%.6f},")
+			TEXT("\"relativeRotation\":{\"pitch\":%.6f,\"yaw\":%.6f,\"roll\":%.6f},")
+			TEXT("\"relativeScale\":{\"x\":%.6f,\"y\":%.6f,\"z\":%.6f}"),
+			Loc.X, Loc.Y, Loc.Z, Rot.Pitch, Rot.Yaw, Rot.Roll, Scale.X, Scale.Y, Scale.Z);
+	}
+}
+
+UToolCallAsyncResultString* UTacticalAnimAuthoringToolset::GetStaticMeshSockets(const FString& AssetPath)
+{
+	return TacticalAnimAuthoring::RunDeferredString(
+		[AssetPath](FString& OutValue, FString& OutError) -> bool
+		{
+			check(IsInGameThread());
+			UStaticMesh* Mesh = TacticalAnimAuthoring::LoadStaticMeshAsset(AssetPath, OutError);
+			if (!Mesh) { return false; }
+
+			const int32 Total = Mesh->Sockets.Num();
+			FString Items;
+			int32 Count = 0;
+			int32 AccumBytes = 0;      // ACTUAL serialized UTF-8 bytes of the socket array
+			bool bTruncated = false;
+			for (UStaticMeshSocket* Socket : Mesh->Sockets)
+			{
+				if (!Socket) { continue; }
+				if (Count >= TacticalAnimAuthoring::kMaxSocketsReturned) { bTruncated = true; break; }
+				const FString Entry = FString::Printf(TEXT("%s{\"name\":\"%s\",%s}"),
+					(Count ? TEXT(",") : TEXT("")),
+					*TacticalAnimAuthoring::JsonEscape(Socket->SocketName.ToString()),
+					*TacticalAnimAuthoring::XformJson(Socket->RelativeLocation, Socket->RelativeRotation, Socket->RelativeScale));
+
+				// Measure the COMPLETE entry in UTF-8 bytes (FString::Len() counts TCHARs, not bytes)
+				// and decide BEFORE appending, so a partial entry is never emitted.
+				const int32 EntryBytes = FTCHARToUTF8(*Entry).Length();
+				if (AccumBytes + EntryBytes > TacticalAnimAuthoring::kMaxSocketsJsonBytes) { bTruncated = true; break; }
+
+				Items += Entry;
+				AccumBytes += EntryBytes;
+				++Count;
+			}
+
+			OutValue = FString::Printf(
+				TEXT("{\"asset\":\"%s\",\"socketCount\":%d,\"returned\":%d,\"truncated\":%s,\"socketsJsonBytes\":%d,")
+				TEXT("\"limits\":{\"maxSocketsReturned\":%d,\"maxSocketsJsonBytes\":%d},\"sockets\":[%s]}"),
+				*TacticalAnimAuthoring::JsonEscape(Mesh->GetPathName()), Total, Count,
+				bTruncated ? TEXT("true") : TEXT("false"), AccumBytes,
+				TacticalAnimAuthoring::kMaxSocketsReturned, TacticalAnimAuthoring::kMaxSocketsJsonBytes, *Items);
+			return true;
+		});
+}
+
+UToolCallAsyncResultString* UTacticalAnimAuthoringToolset::AddStaticMeshSocketDeferred(
+	const FString& AssetPath, const FString& SocketName,
+	float LocationX, float LocationY, float LocationZ,
+	float Pitch, float Yaw, float Roll,
+	float ScaleX, float ScaleY, float ScaleZ)
+{
+	return TacticalAnimAuthoring::RunDeferredString(
+		[=](FString& OutValue, FString& OutError) -> bool
+		{
+			check(IsInGameThread());
+
+			// ---------- validation: ALL of it before any mutation / transaction ----------
+			UStaticMesh* Mesh = TacticalAnimAuthoring::LoadStaticMeshAsset(AssetPath, OutError);
+			if (!Mesh) { return false; }
+			if (!TacticalAnimAuthoring::ValidateSocketName(SocketName, OutError)) { return false; }
+
+			const FVector  NewLoc((double)LocationX, (double)LocationY, (double)LocationZ);
+			const FRotator NewRot((double)Pitch, (double)Yaw, (double)Roll);
+			const FVector  NewScale((double)ScaleX, (double)ScaleY, (double)ScaleZ);
+			if (!TacticalAnimAuthoring::ValidateSocketTransform(NewLoc, NewRot, NewScale, OutError)) { return false; }
+
+			const FName SocketFName(*SocketName);
+			if (Mesh->FindSocket(SocketFName) != nullptr)
+			{ OutError = FString::Printf(TEXT("Socket '%s' already exists on %s; duplicates are rejected."), *SocketName, *Mesh->GetPathName()); return false; }
+
+			UPackage* Package = Mesh->GetOutermost();
+			const bool bWasDirty = Package ? Package->IsDirty() : false;
+			const FString MeshPath = Mesh->GetPathName();
+
+			// ---------- mutation + readback + rollback, ALL inside the live transaction ----------
+			bool bSucceeded = false;
+			FString Payload;
+			{
+				FScopedTransaction Transaction(NSLOCTEXT("TacticalAnimAuthoring", "AddStaticMeshSocket", "Add Static Mesh Socket"));
+
+				UStaticMeshSocket* NewSocket = NewObject<UStaticMeshSocket>(Mesh);
+				if (!NewSocket)
+				{
+					Transaction.Cancel();
+					if (Package && !bWasDirty) { Package->SetDirtyFlag(false); }
+					OutError = TEXT("Failed to create UStaticMeshSocket.");
+					return false;
+				}
+				NewSocket->SocketName = SocketFName;
+				NewSocket->RelativeLocation = NewLoc;
+				NewSocket->RelativeRotation = NewRot;
+				NewSocket->RelativeScale = NewScale;
+				NewSocket->SetFlags(RF_Transactional);
+
+				Mesh->PreEditChange(nullptr);
+				Mesh->AddSocket(NewSocket);
+				Mesh->PostEditChange();
+				Mesh->MarkPackageDirty();
+
+				// Identity-strict readback: the stored socket must be the EXACT object we created.
+				UStaticMeshSocket* Stored = Mesh->FindSocket(SocketFName);
+				const bool bOk = (Stored == NewSocket)
+					&& Stored->SocketName == SocketFName
+					&& Stored->RelativeLocation.Equals(NewLoc, TacticalAnimAuthoring::kSocketMatchTolerance)
+					&& TacticalAnimAuthoring::RotatorComponentsEqual(Stored->RelativeRotation, NewRot, TacticalAnimAuthoring::kSocketMatchTolerance)
+					&& Stored->RelativeScale.Equals(NewScale, TacticalAnimAuthoring::kSocketMatchTolerance);
+
+				if (!bOk)
+				{
+					// Remove that exact pointer through the proper mesh edit path, then cancel the
+					// transaction so no undo entry can resurrect the failed mutation.
+					Mesh->PreEditChange(nullptr);
+					Mesh->RemoveSocket(NewSocket);
+					Mesh->PostEditChange();
+					Transaction.Cancel();
+					if (Package && !bWasDirty) { Package->SetDirtyFlag(false); }
+					TacticalAnimAuthoring::GToolAddedSockets.Remove(TacticalAnimAuthoring::SocketKey(MeshPath, SocketName));
+					OutError = TEXT("Socket readback did not match the requested socket object/values; the socket was removed, the transaction cancelled, and the prior dirty state restored.");
+					return false;
+				}
+
+				TacticalAnimAuthoring::GToolAddedSockets.Add(
+					TacticalAnimAuthoring::SocketKey(MeshPath, SocketName), TWeakObjectPtr<UStaticMeshSocket>(NewSocket));
+
+				Payload = FString::Printf(
+					TEXT("{\"asset\":\"%s\",\"socketName\":\"%s\",\"added\":true,%s,\"socketCount\":%d,\"packageDirty\":%s,\"saved\":false}"),
+					*TacticalAnimAuthoring::JsonEscape(MeshPath),
+					*TacticalAnimAuthoring::JsonEscape(SocketName),
+					*TacticalAnimAuthoring::XformJson(Stored->RelativeLocation, Stored->RelativeRotation, Stored->RelativeScale),
+					Mesh->Sockets.Num(),
+					(Package && Package->IsDirty()) ? TEXT("true") : TEXT("false"));
+				bSucceeded = true;
+			}
+
+			if (!bSucceeded) { return false; }
+			OutValue = Payload;
+			return true;
+		});
+}
+
+UToolCallAsyncResultString* UTacticalAnimAuthoringToolset::SetStaticMeshSocketTransformDeferred(
+	const FString& AssetPath, const FString& SocketName,
+	float LocationX, float LocationY, float LocationZ,
+	float Pitch, float Yaw, float Roll,
+	float ScaleX, float ScaleY, float ScaleZ,
+	bool bExpectPriorTransform,
+	float ExpectLocationX, float ExpectLocationY, float ExpectLocationZ,
+	float ExpectPitch, float ExpectYaw, float ExpectRoll,
+	float ExpectScaleX, float ExpectScaleY, float ExpectScaleZ)
+{
+	return TacticalAnimAuthoring::RunDeferredString(
+		[=](FString& OutValue, FString& OutError) -> bool
+		{
+			check(IsInGameThread());
+
+			// ---------- validation: ALL of it before any mutation / transaction ----------
+			UStaticMesh* Mesh = TacticalAnimAuthoring::LoadStaticMeshAsset(AssetPath, OutError);
+			if (!Mesh) { return false; }
+			if (!TacticalAnimAuthoring::ValidateSocketName(SocketName, OutError)) { return false; }
+
+			const FVector  NewLoc((double)LocationX, (double)LocationY, (double)LocationZ);
+			const FRotator NewRot((double)Pitch, (double)Yaw, (double)Roll);
+			const FVector  NewScale((double)ScaleX, (double)ScaleY, (double)ScaleZ);
+			if (!TacticalAnimAuthoring::ValidateSocketTransform(NewLoc, NewRot, NewScale, OutError)) { return false; }
+
+			const FName SocketFName(*SocketName);
+			UStaticMeshSocket* Socket = Mesh->FindSocket(SocketFName);
+			if (!Socket)
+			{ OutError = FString::Printf(TEXT("Socket '%s' does not exist on %s."), *SocketName, *Mesh->GetPathName()); return false; }
+
+			const FString MeshPath = Mesh->GetPathName();
+
+			// Provenance is by EXACT object identity. A same-named replacement is a different
+			// object, so it is never trusted and always requires the expected-prior-transform CAS.
+			const bool bToolAdded = TacticalAnimAuthoring::IsToolAddedSocket(MeshPath, SocketName, Socket);
+			FString MatchedBy;
+			if (bToolAdded)
+			{
+				MatchedBy = TEXT("tool-added-this-session");
+			}
+			else
+			{
+				if (!bExpectPriorTransform)
+				{
+					OutError = FString::Printf(
+						TEXT("Socket '%s' was not added by this tool in this session as this exact object; supply bExpectPriorTransform=true with its complete expected prior transform."),
+						*SocketName);
+					return false;
+				}
+				const FVector  ExpLoc((double)ExpectLocationX, (double)ExpectLocationY, (double)ExpectLocationZ);
+				const FRotator ExpRot((double)ExpectPitch, (double)ExpectYaw, (double)ExpectRoll);
+				const FVector  ExpScale((double)ExpectScaleX, (double)ExpectScaleY, (double)ExpectScaleZ);
+				if (!TacticalAnimAuthoring::ValidateSocketTransform(ExpLoc, ExpRot, ExpScale, OutError)) { return false; }
+
+				if (!Socket->RelativeLocation.Equals(ExpLoc, TacticalAnimAuthoring::kSocketMatchTolerance)
+					|| !TacticalAnimAuthoring::RotatorComponentsEqual(Socket->RelativeRotation, ExpRot, TacticalAnimAuthoring::kSocketMatchTolerance)
+					|| !Socket->RelativeScale.Equals(ExpScale, TacticalAnimAuthoring::kSocketMatchTolerance))
+				{
+					OutError = FString::Printf(
+						TEXT("Expected prior transform does not match the stored socket (stale). Stored: loc(%.6f,%.6f,%.6f) rot(%.6f,%.6f,%.6f) scale(%.6f,%.6f,%.6f). No mutation performed."),
+						Socket->RelativeLocation.X, Socket->RelativeLocation.Y, Socket->RelativeLocation.Z,
+						Socket->RelativeRotation.Pitch, Socket->RelativeRotation.Yaw, Socket->RelativeRotation.Roll,
+						Socket->RelativeScale.X, Socket->RelativeScale.Y, Socket->RelativeScale.Z);
+					return false;
+				}
+				MatchedBy = TEXT("expected-prior-transform");
+			}
+
+			UPackage* Package = Mesh->GetOutermost();
+			const bool bWasDirty = Package ? Package->IsDirty() : false;
+			const FVector  OldLoc = Socket->RelativeLocation;
+			const FRotator OldRot = Socket->RelativeRotation;
+			const FVector  OldScale = Socket->RelativeScale;
+
+			// TRUE NO-OP: if the requested transform already matches component-wise within tolerance,
+			// return without opening a transaction and without any edit notification. Nothing is
+			// dirtied and NO undo entry is created; the package's prior dirty state is untouched.
+			if (Socket->RelativeLocation.Equals(NewLoc, TacticalAnimAuthoring::kSocketMatchTolerance)
+				&& TacticalAnimAuthoring::RotatorComponentsEqual(Socket->RelativeRotation, NewRot, TacticalAnimAuthoring::kSocketMatchTolerance)
+				&& Socket->RelativeScale.Equals(NewScale, TacticalAnimAuthoring::kSocketMatchTolerance))
+			{
+				OutValue = FString::Printf(
+					TEXT("{\"asset\":\"%s\",\"socketName\":\"%s\",\"updated\":false,\"noOp\":true,\"matchedBy\":\"%s\",")
+					TEXT("\"changedProperties\":[],%s,\"packageDirty\":%s,\"saved\":false}"),
+					*TacticalAnimAuthoring::JsonEscape(MeshPath),
+					*TacticalAnimAuthoring::JsonEscape(SocketName),
+					*MatchedBy,
+					*TacticalAnimAuthoring::XformJson(Socket->RelativeLocation, Socket->RelativeRotation, Socket->RelativeScale),
+					(Package && Package->IsDirty()) ? TEXT("true") : TEXT("false"));
+				return true;
+			}
+
+			// ---------- mutation + readback + rollback, ALL inside the live transaction ----------
+			bool bSucceeded = false;
+			FString Payload;
+			{
+				FScopedTransaction Transaction(NSLOCTEXT("TacticalAnimAuthoring", "SetStaticMeshSocketTransform", "Set Static Mesh Socket Transform"));
+
+				// Notify PER PROPERTY. SSocketManager's listener switches on the changed property name
+				// (RelativeLocation vs RelativeRotation), so a location-only event would leave
+				// rotation-facing editor state stale. Every transform property that actually changes
+				// gets its own PreEditChange / assign / PostEditChangeProperty cycle, all inside this
+				// same transaction.
+				FProperty* LocProp   = FindFProperty<FProperty>(UStaticMeshSocket::StaticClass(), GET_MEMBER_NAME_CHECKED(UStaticMeshSocket, RelativeLocation));
+				FProperty* RotProp   = FindFProperty<FProperty>(UStaticMeshSocket::StaticClass(), GET_MEMBER_NAME_CHECKED(UStaticMeshSocket, RelativeRotation));
+				FProperty* ScaleProp = FindFProperty<FProperty>(UStaticMeshSocket::StaticClass(), GET_MEMBER_NAME_CHECKED(UStaticMeshSocket, RelativeScale));
+
+				auto ApplySocketProperty = [Socket](FProperty* Prop, TFunctionRef<void()> Assign)
+				{
+					Socket->PreEditChange(Prop);
+					Socket->Modify();
+					Assign();
+					if (Prop) { FPropertyChangedEvent Changed(Prop); Socket->PostEditChangeProperty(Changed); }
+					else { Socket->PostEditChange(); }
+				};
+
+				FString ChangedProps;
+				const bool bLocChanged   = !Socket->RelativeLocation.Equals(NewLoc, 0.0);
+				const bool bRotChanged   = !TacticalAnimAuthoring::RotatorComponentsEqual(Socket->RelativeRotation, NewRot, 0.0);
+				const bool bScaleChanged = !Socket->RelativeScale.Equals(NewScale, 0.0);
+
+				if (bLocChanged)
+				{
+					ApplySocketProperty(LocProp, [&]() { Socket->RelativeLocation = NewLoc; });
+					ChangedProps += TEXT("\"RelativeLocation\"");
+				}
+				if (bRotChanged)
+				{
+					ApplySocketProperty(RotProp, [&]() { Socket->RelativeRotation = NewRot; });
+					ChangedProps += FString(ChangedProps.IsEmpty() ? TEXT("") : TEXT(",")) + TEXT("\"RelativeRotation\"");
+				}
+				if (bScaleChanged)
+				{
+					ApplySocketProperty(ScaleProp, [&]() { Socket->RelativeScale = NewScale; });
+					ChangedProps += FString(ChangedProps.IsEmpty() ? TEXT("") : TEXT(",")) + TEXT("\"RelativeScale\"");
+				}
+				Mesh->MarkPackageDirty();
+
+				// Identity-strict readback: the stored socket must still be the EXACT original object.
+				UStaticMeshSocket* Stored = Mesh->FindSocket(SocketFName);
+				const bool bOk = (Stored == Socket)
+					&& Stored->RelativeLocation.Equals(NewLoc, TacticalAnimAuthoring::kSocketMatchTolerance)
+					&& TacticalAnimAuthoring::RotatorComponentsEqual(Stored->RelativeRotation, NewRot, TacticalAnimAuthoring::kSocketMatchTolerance)
+					&& Stored->RelativeScale.Equals(NewScale, TacticalAnimAuthoring::kSocketMatchTolerance);
+
+				if (!bOk)
+				{
+					// Restore that exact object with the SAME per-property notification pattern (so
+					// rotation/scale listeners are not left stale by a location-only event), then cancel
+					// so no undo entry survives, and drop provenance that can no longer be trusted.
+					if (bLocChanged)   { ApplySocketProperty(LocProp,   [&]() { Socket->RelativeLocation = OldLoc; }); }
+					if (bRotChanged)   { ApplySocketProperty(RotProp,   [&]() { Socket->RelativeRotation = OldRot; }); }
+					if (bScaleChanged) { ApplySocketProperty(ScaleProp, [&]() { Socket->RelativeScale = OldScale; }); }
+					Transaction.Cancel();
+					if (Package && !bWasDirty) { Package->SetDirtyFlag(false); }
+					if (Stored != Socket)
+					{
+						TacticalAnimAuthoring::GToolAddedSockets.Remove(TacticalAnimAuthoring::SocketKey(MeshPath, SocketName));
+					}
+					OutError = TEXT("Socket readback did not match the requested socket object/values; the original transform was restored, the transaction cancelled, and the prior dirty state restored.");
+					return false;
+				}
+
+				Payload = FString::Printf(
+					TEXT("{\"asset\":\"%s\",\"socketName\":\"%s\",\"updated\":true,\"noOp\":false,\"matchedBy\":\"%s\",\"changedProperties\":[%s],%s,\"packageDirty\":%s,\"saved\":false}"),
+					*TacticalAnimAuthoring::JsonEscape(MeshPath),
+					*TacticalAnimAuthoring::JsonEscape(SocketName),
+					*MatchedBy, *ChangedProps,
+					*TacticalAnimAuthoring::XformJson(Stored->RelativeLocation, Stored->RelativeRotation, Stored->RelativeScale),
+					(Package && Package->IsDirty()) ? TEXT("true") : TEXT("false"));
+				bSucceeded = true;
+			}
+
+			if (!bSucceeded) { return false; }
+			OutValue = Payload;
 			return true;
 		});
 }
