@@ -43,6 +43,11 @@
 
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/TextureRenderTarget2D.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetRenderingLibrary.h"
+#include "Engine/Canvas.h"
+#include "Camera/CameraTypes.h"
+#include "SceneView.h"
 #include "Engine/Scene.h"
 #include "TextureResource.h"
 #include "RenderingThread.h"
@@ -303,6 +308,43 @@ namespace TacticalRuntimeAnimInspection
 
 		TArray<FString> Steps;
 		FTSTicker::FDelegateHandle TickHandle;
+
+		// ---- A2 aim-hold extension (unused by DrivePIEInputSequenceDeferred) ----
+		bool bAimHold = false;
+		TWeakObjectPtr<UInputAction> LookAction;
+		TWeakObjectPtr<APlayerController> Controller;
+		FString LookActionProperty, ControllerPath, LocalPlayerPath, WorldName;
+		double TargetPitch = 0.0, TargetYaw = 0.0, Tolerance = 0.0, HoldSeconds = 0.0;
+		int32 MaxIterations = 0, Iterations = 0;
+		FRotator InitialAim = FRotator::ZeroRotator, AchievedAim = FRotator::ZeroRotator, FinalAim = FRotator::ZeroRotator;
+		bool bConverged = false;
+		double ConvergedAt = -1.0, HoldStartAt = -1.0, HoldEndAt = -1.0;
+		double MaxPitchErrHold = 0.0, MaxYawErrHold = 0.0;
+		bool bTraceTruncated = false;
+		TWeakObjectPtr<UWorld> AimWorld;
+		TWeakObjectPtr<ULocalPlayer> LocalPlayer;
+		FString LookActionPath, MoveActionPath;
+		bool bMoveStopCalled = false;   // true ONLY when StopContinuousInputInjectionForAction actually ran
+		FString FailureReason;
+		// Local-control / role evidence captured under PROVEN identity (registration, then refreshed on each
+		// identity-valid tick). The A2 finalizer serializes these and never dereferences the pawn.
+		// ---- per-session response calibration state/evidence ----
+		bool bCalibrated = false;
+		bool bCalibInitialized = false;
+		int32 CalAxis = 0;                 // 0 = yaw, 1 = pitch
+		bool bAwaitingProbe = false;
+		// responseObserved is the ONLY proof a sign was measured; a skipped or unfinished axis keeps a
+		// placeholder sign of +1 that must never be used to correct.
+		bool bYawResponseObserved = false, bPitchResponseObserved = false;
+		bool bYawCalRequired = false, bPitchCalRequired = false;
+		bool bYawCalDone = false, bPitchCalDone = false;
+		int32 YawProbeAttempts = 0, PitchProbeAttempts = 0;
+		double YawResponseSign = 1.0, PitchResponseSign = 1.0;
+		double ProbeBaseYaw = 0.0, ProbeBasePitch = 0.0;
+		double YawProbeInput = 0.0, PitchProbeInput = 0.0;
+		double YawProbeDelta = 0.0, PitchProbeDelta = 0.0;
+		bool bAimLocallyControlled = false;
+		FString AimLocalRole = TEXT("None"), AimRemoteRole = TEXT("None");
 	};
 
 	// Non-owner pawn-view capture session (module-owned; separate transient capture actor/component/RT).
@@ -326,6 +368,12 @@ namespace TacticalRuntimeAnimInspection
 		TStrongObjectPtr<USceneCaptureComponent2D> Capture;
 		TStrongObjectPtr<UTextureRenderTarget2D> RT;
 		FTSTicker::FDelegateHandle TickHandle;
+		// ---- A1 projection extension (unused by CapturePIEPawnViewDeferred) ----
+		bool bProjection = false;
+		bool bAnnotate = false;
+		double AxisLength = 0.0;
+		TArray<FString> TargetComponentPaths;
+		TArray<FString> TargetSocketNames;
 	};
 
 	// ---- view-capture hard bounds ----
@@ -338,9 +386,36 @@ namespace TacticalRuntimeAnimInspection
 	static const double kViewOffsetMax = 100000.0;
 	static const double kViewMinCamTargetDist = 1.0;       // reject coincident camera/look-at vectors
 	static const double kViewTimeoutMax = 60.0;
+	static const int32  kMaxProjectionTargets = 32;      // component/socket pairs per projected capture
+	static const int32  kMaxComponentPathLen = 512;      // characters, checked BEFORE object resolution
+	static const int32  kMaxSocketNameLenProj = 128;     // characters, checked BEFORE FName construction
+	static const double kMaxAxisLength = 200.0;          // cm
+	// The approved bound is on the COMPLETE returned result: the whole projected response,
+	// measured in UTF-8 bytes, must not exceed 12 MiB. (The per-image Base64 precheck above is a
+	// cheap early-out; this is the rule that actually governs what may be returned.)
+	static const int32  kMaxResponseBytes = 12 * 1024 * 1024;
+	static const int32  kMaxProjectionJsonBytes = 256 * 1024; // matrices + targets JSON, UTF-8 bytes
 	static const int32  kViewMaxEncodedBytes = 12 * 1024 * 1024; // 12 MiB Base64 image DATA string (ASCII: Len()==UTF-8 bytes)
 
 	static TMap<FString, TSharedPtr<FCaptureSession>> GSessions;
+	// ---- A2 aim-hold hard bounds ----
+	static const int32  kAimMaxPawnPathLen = 512;
+	static const int32  kAimMaxActionNameLen = 128;
+	static const double kAimMaxAbsPitch = 89.0;
+	static const double kAimMaxAbsYaw = 180.0;
+	static const double kAimMinTolerance = 0.1;
+	static const double kAimMaxTolerance = 10.0;
+	static const int32  kAimMaxIterations = 240;
+	static const double kAimMinHoldSeconds = 0.1;
+	static const double kAimMaxHoldSeconds = 30.0;
+	static const double kAimMaxTimeoutSeconds = 60.0;
+	// ---- A2 response calibration (empirical; NEVER derived from config or deprecated scales) ----
+	static const double kAimProbeMagnitude = 0.25;          // bounded one-tick probe input per axis
+	static const double kAimMinMeasurableResponseDeg = 0.05;// minimum |delta| accepted as a real response
+	static const int32  kAimMaxProbeAttempts = 2;           // per axis: initial probe + one opposite probe
+	static const int32  kAimMaxTraceEntries = 240;
+	static const int32  kAimMaxResponseBytes = 1024 * 1024; // complete UTF-8 response
+
 	static TArray<TSharedPtr<FDriveState>> GDrives;
 	static TArray<TSharedPtr<FViewCaptureSession>> GViewCaptures;
 	static bool GHooksRegistered = false;
@@ -366,7 +441,7 @@ namespace TacticalRuntimeAnimInspection
 		if (UEnhancedInputLocalPlayerSubsystem* Sub = D->Subsystem.Get())
 		{
 			if (D->bReadinessInjecting) { if (UInputAction* A = D->ReadinessAction.Get()) { Sub->StopContinuousInputInjectionForAction(A); } D->bReadinessInjectionStopped = true; }
-			if (D->bMoveInjecting) { if (UInputAction* A = D->MoveAction.Get()) { Sub->StopContinuousInputInjectionForAction(A); } D->bMoveInjectionStopped = true; }
+			if (D->bMoveInjecting) { if (UInputAction* A = D->MoveAction.Get()) { Sub->StopContinuousInputInjectionForAction(A); D->bMoveStopCalled = true; } D->bMoveInjectionStopped = true; }
 		}
 		D->bReadinessInjecting = false;
 		D->bMoveInjecting = false;
@@ -380,6 +455,130 @@ namespace TacticalRuntimeAnimInspection
 		D->bResolved = true;
 
 		StopDriveInjection(D);
+
+		if (D->bAimHold)
+		{
+			// The A2 finalizer NEVER dereferences the pawn: it can run after identity drift, EndPIE or
+			// world cleanup. Every feedback value -- aim, local control, and roles -- was captured on a
+			// tick whose EXACT identity was proven valid (the success path refreshes them immediately
+			// after the hold completes, while that tick's identity is still proven).
+			// SIGN CONVENTION: errors are TARGET MINUS CURRENT, matching the corrective-injection and
+			// trace convention, so a positive error means the aim must increase along that axis.
+			const double FinalPitchErr = D->TargetPitch - D->FinalAim.Pitch;
+			const double FinalYawErr = FRotator::NormalizeAxis(D->TargetYaw - D->FinalAim.Yaw);
+			const bool bFinalOk = FMath::Abs(FinalPitchErr) <= D->Tolerance && FMath::Abs(FinalYawErr) <= D->Tolerance;
+			const bool bHoldDone = D->HoldEndAt >= 0.0;
+			const double HoldActual = (D->HoldStartAt >= 0.0 && D->HoldEndAt >= 0.0) ? (D->HoldEndAt - D->HoldStartAt) : 0.0;
+			// Injection ownership: "stopped" requires the Stop call to have ACTUALLY run.
+			const bool bAllStopped = !D->bMoveInjecting && (!D->bMoveInjectionStarted || D->bMoveStopCalled);
+			const bool bSpeedUp = D->bMoveRequested && (D->MaxSpeed > D->SpeedBefore + 1.0);
+			const bool bMoveOk = !D->bMoveRequested || (D->bMoveInjectionStarted && D->bMoveStopCalled && bSpeedUp);
+			const bool bCompleted = (StopReason == TEXT("completed"));
+			// Defense in depth: success additionally requires a fully resolved calibration phase, with an
+			// observed response sign for every axis that required one.
+			const bool bCalibrationOk = D->bCalibInitialized && D->bCalibrated
+				&& (!D->bYawCalRequired || D->bYawResponseObserved)
+				&& (!D->bPitchCalRequired || D->bPitchResponseObserved);
+			const bool bSuccess = D->bConverged && bHoldDone && bFinalOk && bAllStopped && bMoveOk && bCompleted && bCalibrationOk;
+
+			// A specific failure reason derived from the criterion that actually failed.
+			FString FailureReason = D->FailureReason;
+			if (!bSuccess && FailureReason.IsEmpty())
+			{
+				if (!bCompleted)                 { FailureReason = StopReason; }
+				else if (!D->bConverged)         { FailureReason = TEXT("did not converge within tolerance"); }
+				else if (!bHoldDone)             { FailureReason = TEXT("hold phase did not complete"); }
+				else if (!bFinalOk)              { FailureReason = TEXT("final aim outside tolerance"); }
+				else if (!bAllStopped)           { FailureReason = TEXT("continuous injection was not verifiably stopped"); }
+				else if (!D->bMoveInjectionStarted) { FailureReason = TEXT("movement injection never started"); }
+				else if (!D->bMoveStopCalled)    { FailureReason = TEXT("movement injection stop was not called"); }
+				else if (!bSpeedUp)              { FailureReason = TEXT("no material 2D speed increase during movement"); }
+				else if (!bCalibrationOk)        { FailureReason = TEXT("response calibration incomplete or a required axis sign was never observed"); }
+				else                             { FailureReason = TEXT("unknown failure"); }
+			}
+
+			FString TraceJson;
+			const int32 N = FMath::Min(D->Steps.Num(), kAimMaxTraceEntries);
+			for (int32 i = 0; i < N; ++i) { TraceJson += FString::Printf(TEXT("%s%s"), (i ? TEXT(",") : TEXT("")), *JStr(D->Steps[i])); }
+
+			const FString IdentityJson = FString::Printf(
+				TEXT("\"pawn\":%s,\"controller\":%s,\"localPlayer\":%s,\"world\":%s,")
+				TEXT("\"lookActionProperty\":%s,\"lookAction\":%s,\"moveActionProperty\":%s,\"moveAction\":%s,")
+				TEXT("\"isLocallyControlled\":%s,\"localRole\":\"%s\",\"remoteRole\":\"%s\""),
+				*JStr(D->PawnPath), *JStr(D->ControllerPath), *JStr(D->LocalPlayerPath), *JStr(D->WorldName),
+				*JStr(D->LookActionProperty), *JStr(D->LookActionPath),
+				*JStr(D->MoveActionProperty), *JStr(D->MoveActionPath),
+				D->bAimLocallyControlled ? TEXT("true") : TEXT("false"),
+				*D->AimLocalRole, *D->AimRemoteRole);
+
+			const FString CriteriaJson = FString::Printf(
+				TEXT("\"converged\":%s,\"convergedAtSeconds\":%.3f,\"iterations\":%d,")
+				TEXT("\"holdSeconds\":%.3f,\"holdActualSeconds\":%.3f,\"holdCompleted\":%s,")
+				TEXT("\"finalPitchError\":%.6f,\"finalYawError\":%.6f,\"finalWithinTolerance\":%s,")
+				TEXT("\"moveRequested\":%s,\"moveInjectionStarted\":%s,\"moveInjectionStopCalled\":%s,")
+				TEXT("\"speedBefore\":%.3f,\"maxSpeed\":%.3f,\"speedIncreased\":%s,\"allInjectionsStopped\":%s"),
+				D->bConverged ? TEXT("true") : TEXT("false"), D->ConvergedAt, D->Iterations,
+				D->HoldSeconds, HoldActual, bHoldDone ? TEXT("true") : TEXT("false"),
+				FinalPitchErr, FinalYawErr, bFinalOk ? TEXT("true") : TEXT("false"),
+				D->bMoveRequested ? TEXT("true") : TEXT("false"),
+				D->bMoveInjectionStarted ? TEXT("true") : TEXT("false"),
+				D->bMoveStopCalled ? TEXT("true") : TEXT("false"),
+				D->SpeedBefore, D->MaxSpeed, bSpeedUp ? TEXT("true") : TEXT("false"),
+				bAllStopped ? TEXT("true") : TEXT("false"))
+				+ FString::Printf(
+					TEXT(",\"calibration\":{\"calibrated\":%s,\"calibrationInitialized\":%s,")
+					TEXT("\"yaw\":{\"required\":%s,\"responseObserved\":%s,\"probeInput\":%.4f,\"observedDeltaDegrees\":%.4f,\"responseSign\":%.0f,\"probeAttempts\":%d},")
+					TEXT("\"pitch\":{\"required\":%s,\"responseObserved\":%s,\"probeInput\":%.4f,\"observedDeltaDegrees\":%.4f,\"responseSign\":%.0f,\"probeAttempts\":%d},")
+					TEXT("\"source\":%s,\"limits\":{\"probeMagnitude\":%.3f,\"minMeasurableResponseDegrees\":%.3f,\"maxProbeAttemptsPerAxis\":%d}}"),
+					D->bCalibrated ? TEXT("true") : TEXT("false"), D->bCalibInitialized ? TEXT("true") : TEXT("false"),
+					D->bYawCalRequired ? TEXT("true") : TEXT("false"), D->bYawResponseObserved ? TEXT("true") : TEXT("false"),
+					D->YawProbeInput, D->YawProbeDelta, D->YawResponseSign, D->YawProbeAttempts,
+					D->bPitchCalRequired ? TEXT("true") : TEXT("false"), D->bPitchResponseObserved ? TEXT("true") : TEXT("false"),
+					D->PitchProbeInput, D->PitchProbeDelta, D->PitchResponseSign, D->PitchProbeAttempts,
+					*JStr(TEXT("empirically observed via bounded InjectInputForAction probes; NOT derived from configuration or deprecated controller scales")),
+					kAimProbeMagnitude, kAimMinMeasurableResponseDeg, kAimMaxProbeAttempts);
+
+			FString Payload = FString::Printf(
+				TEXT("{%s,\"initialAim\":%s,\"targetAim\":{\"pitch\":%.6f,\"yaw\":%.6f},\"achievedAim\":%s,\"finalAim\":%s,")
+				TEXT("\"errorSignConvention\":%s,%s,\"maxPitchErrorDuringHold\":%.6f,\"maxYawErrorDuringHold\":%.6f,")
+				TEXT("\"success\":%s,\"stopReason\":%s,\"failureReason\":%s,\"trace\":[%s],\"traceTruncated\":%s,")
+				TEXT("\"evidenceDropped\":false,\"limits\":{\"maxIterations\":%d,\"maxTraceEntries\":%d,\"maxResponseBytes\":%d}}"),
+				*IdentityJson, *RotJson(D->InitialAim), D->TargetPitch, D->TargetYaw,
+				*RotJson(D->AchievedAim), *RotJson(D->FinalAim),
+				*JStr(TEXT("error = target - current (positive means the aim must increase on that axis)")),
+				*CriteriaJson, D->MaxPitchErrHold, D->MaxYawErrHold,
+				bSuccess ? TEXT("true") : TEXT("false"), *JStr(StopReason),
+				bSuccess ? *JStr(FString()) : *JStr(FailureReason), *TraceJson,
+				(D->bTraceTruncated || D->Steps.Num() > kAimMaxTraceEntries) ? TEXT("true") : TEXT("false"),
+				kAimMaxIterations, kAimMaxTraceEntries, kAimMaxResponseBytes);
+
+			bool bEvidenceDropped = false;
+			if (FTCHARToUTF8(*Payload).Length() > kAimMaxResponseBytes)
+			{
+				// The full payload does not fit. This is a DELIBERATE EVIDENCE DROP, not ordinary
+				// truncation: identity, cleanup proof, success criteria and the failure reason are
+				// preserved; the trace is discarded and the drop is reported explicitly.
+				bEvidenceDropped = true;
+				Payload = FString::Printf(
+					TEXT("{%s,%s,\"success\":%s,\"stopReason\":%s,\"failureReason\":%s,\"trace\":[],\"traceTruncated\":true,")
+					TEXT("\"evidenceDropped\":true,\"evidenceDropReason\":%s,\"limits\":{\"maxResponseBytes\":%d}}"),
+					*IdentityJson, *CriteriaJson, bSuccess ? TEXT("true") : TEXT("false"), *JStr(StopReason),
+					*JStr(bSuccess ? FString(TEXT("response exceeded the cap; trace deliberately discarded")) : FailureReason),
+					*JStr(TEXT("full payload exceeded maxResponseBytes; trace deliberately discarded to preserve identity, cleanup proof and criteria")),
+					kAimMaxResponseBytes);
+			}
+
+			// SetValue ONLY when the computed success result is true; every semantic failure -- and any
+			// deliberate evidence drop -- returns through SetError with the bounded evidence payload.
+			if (D->Result.IsValid())
+			{
+				if (bSuccess && !bEvidenceDropped) { D->Result->SetValue(Payload); }
+				else { D->Result->SetError(Payload); }
+			}
+			D->Result.Reset();
+			GDrives.Remove(D);
+			return;
+		}
 
 		APawn* P = D->Pawn.Get();
 		const FString ReadinessAfter = P ? ReadPropertyAsText(P, TEXT("CombatReadinessState")) : FString();
@@ -647,6 +846,290 @@ namespace TacticalRuntimeAnimInspection
 
 		if (S->Samples.Num() >= S->MaxSamples) { StopSession(S, TEXT("max samples reached")); }
 	}
+	// Shared view-capture phase driver. BOTH CapturePIEPawnViewDeferred and
+	// CapturePIEPawnViewProjectedDeferred run through this SINGLE implementation; projection and
+	// annotation are gated on Vp->bProjection, so the original tool's behaviour is unchanged.
+	static bool RunViewCaptureTick(const TWeakPtr<FViewCaptureSession>& WeakV)
+	{
+	check(IsInGameThread());
+	TSharedPtr<FViewCaptureSession> Vp = WeakV.Pin();
+	if (!Vp.IsValid() || Vp->bResolved) { return false; }
+
+	// ---- Phase 0: resolve pawn/mesh + spawn transient capture rig (numeric bounds already validated) ----
+	if (Vp->Phase == 0)
+	{
+		EnsureHooks();
+		APawn* Pawn = Cast<APawn>(ResolveActor(Vp->PawnPath));
+		if (!IsValid(Pawn)) { FinalizeViewCapture(Vp, false, FString::Printf(TEXT("Pawn not found: %s"), *Vp->PawnPath)); return false; }
+		if (Pawn->IsTemplate()) { FinalizeViewCapture(Vp, false, TEXT("Pawn is a CDO/template.")); return false; }
+		UWorld* World = Pawn->GetWorld();
+		if (!IsPIEWorld(World)) { FinalizeViewCapture(Vp, false, TEXT("Pawn is not in a PIE world (editor/preview rejected).")); return false; }
+
+		USkeletalMeshComponent* Mesh = ResolveMeshComponent(Vp->MeshPath);
+		if (!Mesh) { FinalizeViewCapture(Vp, false, FString::Printf(TEXT("Skeletal-mesh component not found: %s"), *Vp->MeshPath)); return false; }
+		if (!IsUsableMesh(Mesh)) { FinalizeViewCapture(Vp, false, TEXT("Mesh is not a live/registered PIE component (editor/preview/template/pending-kill rejected).")); return false; }
+		if (Mesh->GetOwner() != Pawn) { FinalizeViewCapture(Vp, false, FString::Printf(TEXT("Mesh not owned by the supplied pawn: owner=%s, expected=%s."), *GetPathNameSafe(Mesh->GetOwner()), *Vp->PawnPath)); return false; }
+
+		// SEPARATE transient capture actor in the pawn's world; deliberately NOT owned by the pawn
+		// (so the pawn is not the capture's view owner -> bOwnerNoSee body renders, bOnlyOwnerSee FP hides).
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.ObjectFlags |= RF_Transient;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		const FVector CamPos = Pawn->GetActorLocation() + Vp->CamOffset;
+		AActor* Actor = World->SpawnActor<AActor>(AActor::StaticClass(), FTransform(CamPos), SpawnParams);
+		if (!Actor) { FinalizeViewCapture(Vp, false, TEXT("Failed to spawn transient capture actor.")); return false; }
+
+		USceneCaptureComponent2D* Cap = NewObject<USceneCaptureComponent2D>(Actor, NAME_None, RF_Transient);
+		Actor->SetRootComponent(Cap);
+		Cap->RegisterComponent();
+
+		UTextureRenderTarget2D* RT = NewObject<UTextureRenderTarget2D>(Actor, NAME_None, RF_Transient);
+		RT->RenderTargetFormat = RTF_RGBA8;
+		RT->ClearColor = FLinearColor::Black;
+		RT->bAutoGenerateMips = false;
+		RT->InitCustomFormat(Vp->Width, Vp->Height, PF_B8G8R8A8, /*bForceLinearGamma=*/false);
+		RT->UpdateResourceImmediate(true);
+
+		Cap->TextureTarget = RT;
+		Cap->CaptureSource = SCS_FinalColorLDR;
+		Cap->bCaptureEveryFrame = false;
+		Cap->bCaptureOnMovement = false;
+		Cap->bAlwaysPersistRenderingState = true;
+		Cap->FOVAngle = (float)Vp->Fov;
+
+		const FVector Target = Pawn->GetActorLocation() + Vp->LookAtOffset;
+		Cap->SetWorldLocationAndRotation(CamPos, (Target - CamPos).Rotation());
+
+		Vp->World = World; Vp->Pawn = Pawn; Vp->Mesh = Mesh;
+		Vp->WorldName = World->GetPathName();
+		Vp->CaptureActor = TStrongObjectPtr<AActor>(Actor);
+		Vp->Capture = TStrongObjectPtr<USceneCaptureComponent2D>(Cap);
+		Vp->RT = TStrongObjectPtr<UTextureRenderTarget2D>(RT);
+		Vp->StartTime = FPlatformTime::Seconds();
+		Vp->Phase = 1;
+		Vp->FramesSinceSpawn = 0;
+		return true; // keep ticking
+	}
+
+	// ---- Phase 1: let the world render one frame with the rig present, then capture + read back ----
+	UWorld* World = Vp->World.Get();
+	APawn* Pawn = Vp->Pawn.Get();
+	USkeletalMeshComponent* Mesh = Vp->Mesh.Get();
+	USceneCaptureComponent2D* Cap = Vp->Capture.Get();
+	UTextureRenderTarget2D* RT = Vp->RT.Get();
+	if (!IsPIEWorld(World) || !IsValid(Pawn) || !IsUsableMesh(Mesh) || !Cap || !RT)
+		{ FinalizeViewCapture(Vp, false, TEXT("capture aborted: pawn/mesh/world/target invalidated during capture")); return false; }
+	if ((FPlatformTime::Seconds() - Vp->StartTime) >= Vp->Timeout)
+		{ FinalizeViewCapture(Vp, false, TEXT("timeout")); return false; }
+
+	if (++Vp->FramesSinceSpawn < 2) { return true; }
+
+	// Full revalidation IMMEDIATELY before capture/readback: pawn & mesh still in the ORIGINAL PIE world,
+	// mesh still owned by the pawn and still registered/live, and the stored paths still resolve to these
+	// exact objects. Any drift aborts with a structured reason (never captures a wrong/replaced object).
+	if (Pawn->GetWorld() != World || Mesh->GetWorld() != World
+		|| Mesh->GetOwner() != Pawn || !IsUsableMesh(Mesh)
+		|| ResolveActor(Vp->PawnPath) != Pawn || ResolveMeshComponent(Vp->MeshPath) != Mesh)
+	{ FinalizeViewCapture(Vp, false, TEXT("capture aborted: pawn/mesh identity, world, ownership, or registration changed before capture")); return false; }
+
+	// Re-aim at the pawn's CURRENT location (it may have moved since spawn), then capture one frame.
+	const FVector CamPos = Pawn->GetActorLocation() + Vp->CamOffset;
+	const FVector Target = Pawn->GetActorLocation() + Vp->LookAtOffset;
+	Cap->SetWorldLocationAndRotation(CamPos, (Target - CamPos).Rotation());
+	Cap->CaptureScene();
+	FlushRenderingCommands();
+
+	FTextureRenderTargetResource* RTRes = RT->GameThread_GetRenderTargetResource();
+	if (!RTRes) { FinalizeViewCapture(Vp, false, TEXT("render target resource unavailable")); return false; }
+	TArray<FColor> Bitmap;
+	FReadSurfaceDataFlags ReadFlags(RCM_UNorm, CubeFace_MAX);
+	if (!RTRes->ReadPixels(Bitmap, ReadFlags) || Bitmap.Num() != Vp->Width * Vp->Height)
+		{ FinalizeViewCapture(Vp, false, TEXT("pixel readback failed or size mismatch")); return false; }
+
+	FToolsetImage Img;
+	if (!Img.SetFromBitmap(Bitmap, FIntPoint(Vp->Width, Vp->Height), ERGBFormat::BGRA))
+		{ FinalizeViewCapture(Vp, false, TEXT("PNG encode failed")); return false; }
+	// The cap is on the Base64 image DATA only (ASCII, so Len() == UTF-8 byte count), not the whole JSON.
+	if (Img.Data.Len() > kViewMaxEncodedBytes)
+		{ FinalizeViewCapture(Vp, false, FString::Printf(TEXT("Base64 image data %d bytes exceeds the %d-byte cap."), Img.Data.Len(), kViewMaxEncodedBytes)); return false; }
+
+	// ---- A1: engine-owned projection for this SAME rendered frame -------------------------
+	FString ProjectionJson;
+	if (Vp->bProjection)
+	{
+		// Engine view info -> engine matrices. No hand-rolled camera basis, FOV or aspect math.
+		FMinimalViewInfo ViewInfo;
+		Cap->GetCameraView(0.0f, ViewInfo);
+		FMatrix ViewM, ProjM, ViewProjM;
+		UGameplayStatics::CalculateViewProjectionMatricesFromMinimalView(ViewInfo, TOptional<FMatrix>(), ViewM, ProjM, ViewProjM);
+		const FIntRect ViewRect(0, 0, Vp->Width, Vp->Height);
+
+		auto MatrixRows = [](const FMatrix& M) -> FString
+		{
+			FString Rows;
+			for (int32 R = 0; R < 4; ++R)
+			{
+				Rows += FString::Printf(TEXT("%s[%.9g,%.9g,%.9g,%.9g]"), (R ? TEXT(",") : TEXT("")),
+					M.M[R][0], M.M[R][1], M.M[R][2], M.M[R][3]);
+			}
+			return Rows;
+		};
+
+		// bOk is the ENGINE return value and is kept separate from finiteness / inFront / inView.
+		// A non-finite world position, clip W, or projected pixel is never serialized or drawn.
+		struct FProjPt { FVector2D Pixel = FVector2D::ZeroVector; bool bOk = false; bool bFinite = false; bool bInFront = false; bool bInView = false; };
+		auto ProjectPoint = [&ViewProjM, &ViewRect, Vp](const FVector& WorldPos) -> FProjPt
+		{
+			FProjPt Out;
+			if (WorldPos.ContainsNaN() || !FMath::IsFinite(WorldPos.X) || !FMath::IsFinite(WorldPos.Y) || !FMath::IsFinite(WorldPos.Z))
+			{
+				return Out; // bOk/bFinite false, zeroed pixel
+			}
+			FVector2D Pixel = FVector2D::ZeroVector;
+			Out.bOk = FSceneView::ProjectWorldToScreen(WorldPos, ViewRect, ViewProjM, Pixel, true);
+			const FVector4 Clip = ViewProjM.TransformFVector4(FVector4(WorldPos, 1.0));
+			if (!FMath::IsFinite(Clip.W) || !FMath::IsFinite(Pixel.X) || !FMath::IsFinite(Pixel.Y))
+			{
+				return Out; // engine status preserved in bOk; bFinite stays false, pixel stays zeroed
+			}
+			Out.bFinite = true;
+			Out.Pixel = Pixel;
+			Out.bInFront = Clip.W > 0.0;
+			// Valid raster rectangle is half-open: 0 <= x < Width and 0 <= y < Height.
+			Out.bInView = Out.bInFront && Pixel.X >= 0.0 && Pixel.Y >= 0.0
+				&& Pixel.X < (double)Vp->Width && Pixel.Y < (double)Vp->Height;
+			return Out;
+		};
+		auto PtJson = [](const FProjPt& Pt) -> FString
+		{
+			return FString::Printf(TEXT("{\"x\":%.4f,\"y\":%.4f,\"ok\":%s,\"finite\":%s,\"inFront\":%s,\"inView\":%s}"),
+				Pt.Pixel.X, Pt.Pixel.Y, Pt.bOk ? TEXT("true") : TEXT("false"),
+				Pt.bFinite ? TEXT("true") : TEXT("false"),
+				Pt.bInFront ? TEXT("true") : TEXT("false"), Pt.bInView ? TEXT("true") : TEXT("false"));
+		};
+
+		struct FAnn { FProjPt Origin, AxX, AxY, AxZ; };
+		TArray<FAnn> Anns;
+		FString TargetsJson;
+		for (int32 i = 0; i < Vp->TargetComponentPaths.Num(); ++i)
+		{
+			// Re-resolve and re-validate INSIDE the rendered frame: identity, ownership, world,
+			// registration and socket existence must all still hold at capture time.
+			const FString& CompPath = Vp->TargetComponentPaths[i];
+			const FString& SockName = Vp->TargetSocketNames[i];
+			USceneComponent* Comp = ResolveSceneComponent(CompPath);
+			if (!Comp || !IsValid(Comp) || Comp->IsTemplate() || !Comp->IsRegistered())
+				{ FinalizeViewCapture(Vp, false, FString::Printf(TEXT("projection target component not live/registered at capture time: %s"), *CompPath)); return false; }
+			if (Comp->GetOwner() != Pawn)
+				{ FinalizeViewCapture(Vp, false, FString::Printf(TEXT("projection target component is not owned by the supplied pawn at capture time: %s"), *CompPath)); return false; }
+			if (Comp->GetWorld() != World)
+				{ FinalizeViewCapture(Vp, false, FString::Printf(TEXT("projection target component is in a different world at capture time: %s"), *CompPath)); return false; }
+			const FName SockFName(*SockName);
+			if (!Comp->DoesSocketExist(SockFName))
+				{ FinalizeViewCapture(Vp, false, FString::Printf(TEXT("socket '%s' does not exist on %s at capture time."), *SockName, *CompPath)); return false; }
+
+			const FTransform SockW = Comp->GetSocketTransform(SockFName, RTS_World);
+			if (SockW.ContainsNaN())
+				{ FinalizeViewCapture(Vp, false, FString::Printf(TEXT("socket '%s' on %s produced a non-finite world transform."), *SockName, *CompPath)); return false; }
+			const FVector Origin = SockW.GetLocation();
+			FAnn A;
+			A.Origin = ProjectPoint(Origin);
+			A.AxX = ProjectPoint(Origin + SockW.GetUnitAxis(EAxis::X) * Vp->AxisLength);
+			A.AxY = ProjectPoint(Origin + SockW.GetUnitAxis(EAxis::Y) * Vp->AxisLength);
+			A.AxZ = ProjectPoint(Origin + SockW.GetUnitAxis(EAxis::Z) * Vp->AxisLength);
+			Anns.Add(A);
+
+			TargetsJson += FString::Printf(
+				TEXT("%s{\"component\":%s,\"socket\":%s,\"socketWorldTransform\":%s,\"projected\":%s,\"axes\":{\"x\":%s,\"y\":%s,\"z\":%s}}"),
+				(i ? TEXT(",") : TEXT("")), *JStr(Comp->GetPathName()), *JStr(SockName),
+				*XformJson(SockW), *PtJson(A.Origin), *PtJson(A.AxX), *PtJson(A.AxY), *PtJson(A.AxZ));
+		}
+
+		ProjectionJson = FString::Printf(
+			TEXT(",\"axisLength\":%.4f,\"matrixConvention\":%s,\"viewMatrix\":{\"rows\":[%s]},\"projectionMatrix\":{\"rows\":[%s]},\"viewProjectionMatrix\":{\"rows\":[%s]},\"targets\":[%s]"),
+			Vp->AxisLength,
+			*JStr(TEXT("rows[i][j] == FMatrix::M[i][j]; Unreal row-vector convention (v * M), translation in row 3")),
+			*MatrixRows(ViewM), *MatrixRows(ProjM), *MatrixRows(ViewProjM), *TargetsJson);
+
+		if (FTCHARToUTF8(*ProjectionJson).Length() > kMaxProjectionJsonBytes)
+			{ FinalizeViewCapture(Vp, false, FString::Printf(TEXT("projection JSON exceeds the %d-byte cap."), kMaxProjectionJsonBytes)); return false; }
+
+		// ---- optional annotation via Unreal's supported render-target canvas path ----
+		if (Vp->bAnnotate)
+		{
+			UCanvas* Canvas = nullptr;
+			FVector2D CanvasSize = FVector2D::ZeroVector;
+			FDrawToRenderTargetContext Ctx;
+			UKismetRenderingLibrary::BeginDrawCanvasToRenderTarget(World, RT, Canvas, CanvasSize, Ctx);
+			if (!Canvas)
+			{
+				// Do NOT call EndDrawCanvasToRenderTarget with an invalid context, and never report
+				// annotated:true for an annotation that did not happen.
+				FinalizeViewCapture(Vp, false, TEXT("annotation failed: BeginDrawCanvasToRenderTarget returned a null canvas"));
+				return false;
+			}
+			{
+				const float Thickness = 2.0f;
+				const float Half = 5.0f;
+				for (const FAnn& A : Anns)
+				{
+					// Conservative annotation: only draw coordinates proven to lie inside the raster
+					// rectangle. Finiteness alone is not enough -- a near-plane point can project to an
+					// enormous finite pixel. Reported projection coordinates are unaffected by this.
+					if (!A.Origin.bInView) { continue; }
+					Canvas->K2_DrawBox(FVector2D(A.Origin.Pixel.X - Half, A.Origin.Pixel.Y - Half),
+						FVector2D(Half * 2.0f, Half * 2.0f), Thickness, FLinearColor::White);
+					if (A.AxX.bInView) { Canvas->K2_DrawLine(A.Origin.Pixel, A.AxX.Pixel, Thickness, FLinearColor::Red); }
+					if (A.AxY.bInView) { Canvas->K2_DrawLine(A.Origin.Pixel, A.AxY.Pixel, Thickness, FLinearColor::Green); }
+					if (A.AxZ.bInView) { Canvas->K2_DrawLine(A.Origin.Pixel, A.AxZ.Pixel, Thickness, FLinearColor::Blue); }
+				}
+			}
+			UKismetRenderingLibrary::EndDrawCanvasToRenderTarget(World, Ctx);
+			FlushRenderingCommands();
+
+			TArray<FColor> AnnBitmap;
+			if (!RTRes->ReadPixels(AnnBitmap, ReadFlags) || AnnBitmap.Num() != Vp->Width * Vp->Height)
+				{ FinalizeViewCapture(Vp, false, TEXT("annotated pixel readback failed or size mismatch")); return false; }
+			FToolsetImage AnnImg;
+			if (!AnnImg.SetFromBitmap(AnnBitmap, FIntPoint(Vp->Width, Vp->Height), ERGBFormat::BGRA))
+				{ FinalizeViewCapture(Vp, false, TEXT("annotated PNG encode failed")); return false; }
+			if (AnnImg.Data.Len() > kViewMaxEncodedBytes)
+				{ FinalizeViewCapture(Vp, false, FString::Printf(TEXT("Base64 annotated image data %d bytes exceeds the %d-byte cap."), AnnImg.Data.Len(), kViewMaxEncodedBytes)); return false; }
+			// Exactly ONE image is returned: the annotated render REPLACES the raw one, so the
+			// approved 12 MiB Base64 bound applies to the whole payload, not per image.
+			Img = AnnImg;
+		}
+	}
+
+	const FRotator FinalRot = Cap->GetComponentRotation();
+	const FVector  FinalLoc = Cap->GetComponentLocation();
+	FString Payload = FString::Printf(
+		TEXT("{\"pawn\":%s,\"mesh\":%s,\"world\":%s,\"frameNumber\":%llu,\"worldTimeSeconds\":%.6f,")
+		TEXT("\"cameraTransform\":{\"location\":{\"x\":%.3f,\"y\":%.3f,\"z\":%.3f},\"rotation\":{\"pitch\":%.3f,\"yaw\":%.3f,\"roll\":%.3f}},")
+		TEXT("\"width\":%d,\"height\":%d,\"fov\":%.3f,\"image\":{\"mimeType\":%s,\"data\":%s}}"),
+		*JStr(Vp->PawnPath), *JStr(Vp->MeshPath), *JStr(Vp->WorldName),
+		(unsigned long long)GFrameCounter, World->GetTimeSeconds(),
+		FinalLoc.X, FinalLoc.Y, FinalLoc.Z, FinalRot.Pitch, FinalRot.Yaw, FinalRot.Roll,
+		Vp->Width, Vp->Height, Vp->Fov, *JStr(Img.MimeType), *JStr(Img.Data));
+
+	if (Vp->bProjection)
+	{
+		// Splice the projection block in before the closing brace.
+		Payload = Payload.LeftChop(1) + ProjectionJson
+			+ FString::Printf(TEXT(",\"annotated\":%s,\"limits\":{\"maxProjectionTargets\":%d,\"maxAxisLength\":%.0f,\"maxProjectionJsonBytes\":%d,\"maxImageBytes\":%d,\"maxResponseBytes\":%d}}"),
+				Vp->bAnnotate ? TEXT("true") : TEXT("false"),
+				kMaxProjectionTargets, kMaxAxisLength, kMaxProjectionJsonBytes, kViewMaxEncodedBytes, kMaxResponseBytes);
+
+		// Final bounded-response check BEFORE the result is ever set.
+		const int32 ResponseBytes = FTCHARToUTF8(*Payload).Length();
+		if (ResponseBytes > kMaxResponseBytes)
+			{ FinalizeViewCapture(Vp, false, FString::Printf(TEXT("response %d bytes exceeds the %d-byte cap."), ResponseBytes, kMaxResponseBytes)); return false; }
+	}
+
+	FinalizeViewCapture(Vp, true, Payload);
+	return false;
+	}
+
 } // namespace TacticalRuntimeAnimInspection
 
 using namespace TacticalRuntimeAnimInspection;
@@ -993,6 +1476,600 @@ UToolCallAsyncResultString* UTacticalRuntimeAnimInspectionToolset::DrivePIEInput
 }
 
 // =============================================================================
+// CapturePIEPawnViewProjectedDeferred (A1)
+// =============================================================================
+UToolCallAsyncResultString* UTacticalRuntimeAnimInspectionToolset::CapturePIEPawnViewProjectedDeferred(
+	const FString& PawnPath, const FString& MeshComponentPath,
+	float CameraOffsetX, float CameraOffsetY, float CameraOffsetZ,
+	float LookAtOffsetX, float LookAtOffsetY, float LookAtOffsetZ,
+	int32 Width, int32 Height, float FOV, float TimeoutSeconds,
+	const TArray<FString>& ComponentPaths, const TArray<FString>& SocketNames,
+	float AxisLength, bool bAnnotate)
+{
+	using namespace TacticalRuntimeAnimInspection;
+
+	UToolCallAsyncResultString* Result = NewObject<UToolCallAsyncResultString>();
+
+	// Reject an overlapping call BEFORE any session is allocated or scheduled.
+	if (GViewCaptures.Num() >= kMaxConcurrentViewCaptures)
+	{
+		Result->SetError(FString::Printf(TEXT("A pawn-view capture is already in progress; at most %d concurrent view-capture session(s) allowed."), kMaxConcurrentViewCaptures));
+		return Result;
+	}
+
+	const FVector CamOffset(CameraOffsetX, CameraOffsetY, CameraOffsetZ);
+	const FVector LookAtOffset(LookAtOffsetX, LookAtOffsetY, LookAtOffsetZ);
+
+	// ALL validation happens here, BEFORE any expensive render resource is allocated.
+	{
+		FString Err;
+		if (!FMath::IsFinite(CameraOffsetX) || !FMath::IsFinite(CameraOffsetY) || !FMath::IsFinite(CameraOffsetZ)
+			|| !FMath::IsFinite(LookAtOffsetX) || !FMath::IsFinite(LookAtOffsetY) || !FMath::IsFinite(LookAtOffsetZ))
+			{ Err = TEXT("Camera/look-at offset components must be finite."); }
+		else if (!FMath::IsFinite(FOV)) { Err = TEXT("FOV must be finite."); }
+		else if (!FMath::IsFinite(TimeoutSeconds)) { Err = TEXT("TimeoutSeconds must be finite."); }
+		else if (!FMath::IsFinite(AxisLength)) { Err = TEXT("AxisLength must be finite."); }
+		else if (Width < kViewMinDim || Width > kViewMaxDim || Height < kViewMinDim || Height > kViewMaxDim)
+			{ Err = FString::Printf(TEXT("Width/Height must be in [%d,%d]."), kViewMinDim, kViewMaxDim); }
+		else if ((int64)Width * (int64)Height > kViewMaxPixels)
+			{ Err = FString::Printf(TEXT("Width*Height exceeds %lld pixels."), kViewMaxPixels); }
+		else if ((double)FOV < kViewFovMin || (double)FOV > kViewFovMax)
+			{ Err = FString::Printf(TEXT("FOV must be in [%.0f,%.0f]."), kViewFovMin, kViewFovMax); }
+		else if (CamOffset.GetAbsMax() > kViewOffsetMax || LookAtOffset.GetAbsMax() > kViewOffsetMax)
+			{ Err = FString::Printf(TEXT("An offset component exceeds %.0f."), kViewOffsetMax); }
+		else if ((LookAtOffset - CamOffset).Size() < kViewMinCamTargetDist)
+			{ Err = FString::Printf(TEXT("Camera and look-at are coincident; distance must be >= %.1f."), kViewMinCamTargetDist); }
+		else if ((double)TimeoutSeconds <= 0.0 || (double)TimeoutSeconds > kViewTimeoutMax)
+			{ Err = FString::Printf(TEXT("TimeoutSeconds must be in (0,%.0f]."), kViewTimeoutMax); }
+		else if ((double)AxisLength <= 0.0 || (double)AxisLength > kMaxAxisLength)
+			{ Err = FString::Printf(TEXT("AxisLength must be in (0,%.0f] cm."), kMaxAxisLength); }
+		else if (ComponentPaths.Num() != SocketNames.Num())
+			{ Err = FString::Printf(TEXT("ComponentPaths (%d) and SocketNames (%d) must be the same length."), ComponentPaths.Num(), SocketNames.Num()); }
+		else if (ComponentPaths.Num() == 0)
+			{ Err = TEXT("At least one projection target (component path + socket name) is required."); }
+		else if (ComponentPaths.Num() > kMaxProjectionTargets)
+			{ Err = FString::Printf(TEXT("%d projection targets requested; the maximum is %d."), ComponentPaths.Num(), kMaxProjectionTargets); }
+		if (!Err.IsEmpty()) { Result->SetError(Err); return Result; }
+	}
+
+	// Name/path bounds and duplicate pairs, checked BEFORE any object or FName resolution.
+	{
+		FString Err;
+		TSet<FString> Seen;
+		for (int32 i = 0; i < ComponentPaths.Num(); ++i)
+		{
+			const FString& C = ComponentPaths[i];
+			const FString& N = SocketNames[i];
+			if (C.TrimStartAndEnd().IsEmpty()) { Err = FString::Printf(TEXT("ComponentPaths[%d] is empty."), i); break; }
+			if (C.Len() > kMaxComponentPathLen) { Err = FString::Printf(TEXT("ComponentPaths[%d] is %d characters; the maximum is %d."), i, C.Len(), kMaxComponentPathLen); break; }
+			if (N.TrimStartAndEnd().IsEmpty()) { Err = FString::Printf(TEXT("SocketNames[%d] is empty."), i); break; }
+			if (N.Len() > kMaxSocketNameLenProj) { Err = FString::Printf(TEXT("SocketNames[%d] is %d characters; the maximum is %d."), i, N.Len(), kMaxSocketNameLenProj); break; }
+			const FString Key = C + TEXT("|") + N;
+			if (Seen.Contains(Key)) { Err = FString::Printf(TEXT("Duplicate projection target: %s / %s."), *C, *N); break; }
+			Seen.Add(Key);
+		}
+		if (!Err.IsEmpty()) { Result->SetError(Err); return Result; }
+	}
+
+	// Fail fast on identity/ownership/world/socket problems before spawning the capture rig.
+	// (These are re-validated inside the rendered frame; this pass only avoids wasted work.)
+	{
+		FString Err;
+		APawn* Pawn = Cast<APawn>(ResolveActor(PawnPath));
+		if (!IsValid(Pawn) || Pawn->IsTemplate()) { Err = FString::Printf(TEXT("Pawn not found or is a CDO/template: %s"), *PawnPath); }
+		else if (!IsPIEWorld(Pawn->GetWorld())) { Err = TEXT("Pawn is not in a PIE world (editor/preview rejected)."); }
+		else
+		{
+			UWorld* World = Pawn->GetWorld();
+			for (int32 i = 0; i < ComponentPaths.Num(); ++i)
+			{
+				USceneComponent* Comp = ResolveSceneComponent(ComponentPaths[i]);
+				if (!Comp || !IsValid(Comp) || Comp->IsTemplate() || !Comp->IsRegistered())
+					{ Err = FString::Printf(TEXT("Projection target component not found/usable: %s"), *ComponentPaths[i]); break; }
+				if (Comp->GetOwner() != Pawn)
+					{ Err = FString::Printf(TEXT("Projection target component is not owned by the supplied pawn: %s"), *ComponentPaths[i]); break; }
+				if (Comp->GetWorld() != World)
+					{ Err = FString::Printf(TEXT("Projection target component is in a different world than the pawn: %s"), *ComponentPaths[i]); break; }
+				if (!Comp->DoesSocketExist(FName(*SocketNames[i])))
+					{ Err = FString::Printf(TEXT("Socket '%s' does not exist on %s."), *SocketNames[i], *ComponentPaths[i]); break; }
+			}
+		}
+		if (!Err.IsEmpty()) { Result->SetError(Err); return Result; }
+	}
+
+	TSharedPtr<FViewCaptureSession> V = MakeShared<FViewCaptureSession>();
+	V->Result = TStrongObjectPtr<UToolCallAsyncResultString>(Result);
+	V->PawnPath = PawnPath;
+	V->MeshPath = MeshComponentPath;
+	V->CamOffset = CamOffset;
+	V->LookAtOffset = LookAtOffset;
+	V->Width = Width; V->Height = Height; V->Fov = (double)FOV;
+	V->Timeout = (double)TimeoutSeconds;
+	V->bProjection = true;
+	V->bAnnotate = bAnnotate;
+	V->AxisLength = (double)AxisLength;
+	V->TargetComponentPaths = ComponentPaths;
+	V->TargetSocketNames = SocketNames;
+
+	GViewCaptures.Add(V);
+	TWeakPtr<FViewCaptureSession> WeakV = V;
+
+	// SAME shared phase driver as CapturePIEPawnViewDeferred -- no second capture framework.
+	V->TickHandle = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda(
+		[WeakV](float) -> bool { return TacticalRuntimeAnimInspection::RunViewCaptureTick(WeakV); }), 0.0f);
+
+	return Result;
+}
+
+// =============================================================================
+// DrivePIEAimHoldDeferred (A2)
+// =============================================================================
+UToolCallAsyncResultString* UTacticalRuntimeAnimInspectionToolset::DrivePIEAimHoldDeferred(
+	const FString& PawnPath, const FString& LookActionProperty, const FString& MoveActionProperty,
+	float TargetPitch, float TargetYaw, float ToleranceDegrees, int32 MaxIterations,
+	float HoldSeconds, float MoveX, float MoveY, float TimeoutSeconds)
+{
+	using namespace TacticalRuntimeAnimInspection;
+
+	UToolCallAsyncResultString* Result = NewObject<UToolCallAsyncResultString>();
+	TSharedPtr<FDriveState> D = MakeShared<FDriveState>();
+	D->Result = TStrongObjectPtr<UToolCallAsyncResultString>(Result);
+	D->bAimHold = true;
+
+	auto Fail = [&Result](const FString& Msg) { Result->SetError(Msg); };
+
+	// ---- scalar / string validation, all BEFORE any resolution or injection ----
+	{
+		FString Err;
+		const bool bMoveRequested = !MoveActionProperty.IsEmpty();
+		const FVector2D MoveVec((double)MoveX, (double)MoveY);
+		if (PawnPath.IsEmpty() || PawnPath.Len() > kAimMaxPawnPathLen)
+			{ Err = FString::Printf(TEXT("PawnPath must be non-empty and <= %d characters."), kAimMaxPawnPathLen); }
+		else if (LookActionProperty.IsEmpty() || LookActionProperty.Len() > kAimMaxActionNameLen)
+			{ Err = FString::Printf(TEXT("LookActionProperty is required and must be <= %d characters."), kAimMaxActionNameLen); }
+		else if (bMoveRequested && MoveActionProperty.Len() > kAimMaxActionNameLen)
+			{ Err = FString::Printf(TEXT("MoveActionProperty must be <= %d characters."), kAimMaxActionNameLen); }
+		else if (bMoveRequested && MoveActionProperty == LookActionProperty)
+			{ Err = TEXT("MoveActionProperty must differ from LookActionProperty."); }
+		else if (!FMath::IsFinite(TargetPitch) || FMath::Abs((double)TargetPitch) > kAimMaxAbsPitch)
+			{ Err = FString::Printf(TEXT("TargetPitch must be finite and within [-%.0f,%.0f]."), kAimMaxAbsPitch, kAimMaxAbsPitch); }
+		else if (!FMath::IsFinite(TargetYaw) || FMath::Abs((double)TargetYaw) > kAimMaxAbsYaw)
+			{ Err = FString::Printf(TEXT("TargetYaw must be finite and within [-%.0f,%.0f]."), kAimMaxAbsYaw, kAimMaxAbsYaw); }
+		else if (!FMath::IsFinite(ToleranceDegrees) || (double)ToleranceDegrees < kAimMinTolerance || (double)ToleranceDegrees > kAimMaxTolerance)
+			{ Err = FString::Printf(TEXT("ToleranceDegrees must be within [%.1f,%.0f]."), kAimMinTolerance, kAimMaxTolerance); }
+		else if (MaxIterations < 1 || MaxIterations > kAimMaxIterations)
+			{ Err = FString::Printf(TEXT("MaxIterations must be within [1,%d]."), kAimMaxIterations); }
+		else if (!FMath::IsFinite(HoldSeconds) || (double)HoldSeconds < kAimMinHoldSeconds || (double)HoldSeconds > kAimMaxHoldSeconds)
+			{ Err = FString::Printf(TEXT("HoldSeconds must be within [%.1f,%.0f]."), kAimMinHoldSeconds, kAimMaxHoldSeconds); }
+		else if (!FMath::IsFinite(TimeoutSeconds) || (double)TimeoutSeconds <= 0.0 || (double)TimeoutSeconds > kAimMaxTimeoutSeconds)
+			{ Err = FString::Printf(TEXT("TimeoutSeconds must be within (0,%.0f]."), kAimMaxTimeoutSeconds); }
+		else if ((double)TimeoutSeconds <= (double)HoldSeconds)
+			{ Err = TEXT("TimeoutSeconds must be strictly greater than HoldSeconds."); }
+		else if (!FMath::IsFinite(MoveX) || !FMath::IsFinite(MoveY)
+			|| FMath::Abs((double)MoveX) > 1.0 || FMath::Abs((double)MoveY) > 1.0 || MoveVec.Size() > 1.0 + KINDA_SMALL_NUMBER)
+			{ Err = TEXT("MoveX/MoveY must be finite, each within [-1,1], with vector magnitude <= 1."); }
+		else if (!bMoveRequested && (MoveX != 0.f || MoveY != 0.f))
+			{ Err = TEXT("MoveX and MoveY must both be zero when MoveActionProperty is empty."); }
+		else if (bMoveRequested && MoveVec.IsNearlyZero())
+			{ Err = TEXT("MoveActionProperty was supplied but the movement vector is zero."); }
+		if (!Err.IsEmpty()) { Fail(Err); return Result; }
+	}
+
+	// ---- object / subsystem / action resolution ----
+	APawn* Pawn = Cast<APawn>(ResolveActor(PawnPath));
+	if (!IsValid(Pawn) || Pawn->IsTemplate()) { Fail(FString::Printf(TEXT("Pawn not found or is a CDO/template: %s"), *PawnPath)); return Result; }
+	UWorld* World = Pawn->GetWorld();
+	if (!IsPIEWorld(World)) { Fail(TEXT("Pawn is not in a PIE world (editor/preview rejected).")); return Result; }
+	if (!Pawn->IsLocallyControlled()) { Fail(TEXT("Pawn is not locally controlled; the real input path is unavailable.")); return Result; }
+
+	for (const TSharedPtr<FDriveState>& Existing : GDrives)
+	{
+		if (Existing.IsValid() && !Existing->bResolved && Existing->Pawn.Get() == Pawn)
+			{ Fail(TEXT("A drive sequence is already active on this pawn.")); return Result; }
+	}
+
+	APlayerController* PC = Cast<APlayerController>(Pawn->GetController());
+	ULocalPlayer* LP = PC ? PC->GetLocalPlayer() : nullptr;
+	UEnhancedInputLocalPlayerSubsystem* Sub = LP ? ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LP) : nullptr;
+	if (!PC) { Fail(TEXT("Pawn has no APlayerController.")); return Result; }
+	if (!LP) { Fail(TEXT("Controller has no ULocalPlayer.")); return Result; }
+	if (!Sub) { Fail(TEXT("No EnhancedInput local-player subsystem (real input path unavailable).")); return Result; }
+
+	auto ResolveAction = [Pawn](const FString& PropName) -> UInputAction*
+	{
+		if (PropName.IsEmpty()) { return nullptr; }
+		FObjectProperty* OP = CastField<FObjectProperty>(Pawn->GetClass()->FindPropertyByName(FName(*PropName)));
+		if (!OP) { return nullptr; }
+		return Cast<UInputAction>(OP->GetObjectPropertyValue_InContainer(Pawn));
+	};
+
+	UInputAction* LookAction = ResolveAction(LookActionProperty);
+	if (!LookAction) { Fail(FString::Printf(TEXT("Look action property '%s' not found or not a UInputAction."), *LookActionProperty)); return Result; }
+	if (LookAction->ValueType != EInputActionValueType::Axis2D)
+		{ Fail(FString::Printf(TEXT("Look action '%s' must be Axis2D."), *LookActionProperty)); return Result; }
+
+	const bool bMoveRequested = !MoveActionProperty.IsEmpty();
+	UInputAction* MoveAction = bMoveRequested ? ResolveAction(MoveActionProperty) : nullptr;
+	if (bMoveRequested && !MoveAction) { Fail(FString::Printf(TEXT("Move action property '%s' not found or not a UInputAction."), *MoveActionProperty)); return Result; }
+	if (bMoveRequested && MoveAction->ValueType != EInputActionValueType::Axis2D)
+		{ Fail(FString::Printf(TEXT("Move action '%s' must be Axis2D."), *MoveActionProperty)); return Result; }
+
+	// Never stop an injection this tool did not start.
+	if (Sub->HasContinuousInputInjectionForAction(LookAction))
+		{ Fail(TEXT("A continuous injection is already active for the look action; refusing to interfere.")); return Result; }
+	if (MoveAction && Sub->HasContinuousInputInjectionForAction(MoveAction))
+		{ Fail(TEXT("A continuous injection is already active for the move action; refusing to interfere.")); return Result; }
+
+	// Reject a session that would share this subsystem AND overlap on either action -- including one
+	// still converging before its movement injection starts -- so no session can overwrite or stop
+	// another session's injection.
+	for (const TSharedPtr<FDriveState>& Existing : GDrives)
+	{
+		if (!Existing.IsValid() || Existing->bResolved) { continue; }
+		if (Existing->Subsystem.Get() != Sub) { continue; }
+		// Include the legacy sequence tool's READINESS action too, so A2 can never inject an action
+		// already owned by another drive session on this same Enhanced Input subsystem.
+		UInputAction* EL = Existing->LookAction.Get();
+		UInputAction* EM = Existing->MoveAction.Get();
+		UInputAction* ER = Existing->ReadinessAction.Get();
+		const bool bOverlap = (EL && (EL == LookAction || EL == MoveAction))
+			|| (EM && (EM == LookAction || EM == MoveAction))
+			|| (ER && (ER == LookAction || ER == MoveAction));
+		if (bOverlap)
+			{ Fail(TEXT("Another active drive on this Enhanced Input subsystem already uses one of the requested actions.")); return Result; }
+	}
+
+	D->Pawn = Pawn; D->Controller = PC; D->Subsystem = Sub;
+	D->AimWorld = World; D->LocalPlayer = LP;
+	D->LookActionPath = LookAction->GetPathName();
+	D->MoveActionPath = MoveAction ? MoveAction->GetPathName() : FString();
+	D->LookAction = LookAction; D->MoveAction = MoveAction;
+	D->PawnPath = PawnPath; D->LookActionProperty = LookActionProperty; D->MoveActionProperty = MoveActionProperty;
+	D->ControllerPath = PC->GetPathName(); D->LocalPlayerPath = LP->GetPathName(); D->WorldName = World->GetPathName();
+	D->TargetPitch = (double)TargetPitch; D->TargetYaw = (double)TargetYaw;
+	D->Tolerance = (double)ToleranceDegrees; D->MaxIterations = MaxIterations;
+	D->HoldSeconds = (double)HoldSeconds; D->TimeoutSeconds = (double)TimeoutSeconds;
+	D->MoveX = MoveX; D->MoveY = MoveY; D->bMoveRequested = bMoveRequested;
+	// NOTE ON CONVENTION: the Axis2D COMPONENT mapping (X feeds yaw, Y feeds pitch) is fixed by the
+	// project's Look handler, but the DOWNSTREAM RESPONSE SIGN of each path is never assumed -- it is
+	// calibrated per session from bounded probes and their observed angular deltas.
+	// Reciprocal possession must hold in BOTH directions before anything is captured or injected.
+	if (PC->GetPawn() != Pawn) { Fail(TEXT("Controller does not possess the supplied pawn.")); return Result; }
+
+	// One validated read of the runtime feedback, rejected outright if non-finite so NaN/Inf can never
+	// reach the error math, the trace, the JSON, or Enhanced Input.
+	const FRotator InitialAim = Pawn->GetBaseAimRotation();
+	const double InitialSpeed = (double)Pawn->GetVelocity().Size2D();
+	if (InitialAim.ContainsNaN() || !FMath::IsFinite(InitialAim.Pitch) || !FMath::IsFinite(InitialAim.Yaw) || !FMath::IsFinite(InitialAim.Roll))
+		{ Fail(TEXT("Initial GetBaseAimRotation() is non-finite.")); return Result; }
+	if (!FMath::IsFinite(InitialSpeed)) { Fail(TEXT("Initial horizontal speed is non-finite.")); return Result; }
+
+	D->InitialAim = InitialAim;
+	D->FinalAim = InitialAim;
+	D->SpeedBefore = InitialSpeed;
+	D->MaxSpeed = InitialSpeed;
+	D->bAimLocallyControlled = Pawn->IsLocallyControlled();
+	D->AimLocalRole = NetRoleStr(Pawn->GetLocalRole());
+	D->AimRemoteRole = NetRoleStr(Pawn->GetRemoteRole());
+	D->T0 = FPlatformTime::Seconds();
+	D->Steps.Add(FString::Printf(TEXT("start pitch=%.3f yaw=%.3f target=(%.3f,%.3f) tol=%.3f"),
+		D->InitialAim.Pitch, D->InitialAim.Yaw, D->TargetPitch, D->TargetYaw, D->Tolerance));
+
+	// Register the shared lifecycle hooks deterministically: A2 must not depend on another tool
+	// having run first to install EndPIE / world-cleanup handling.
+	EnsureHooks();
+
+	GDrives.Add(D);
+	TWeakPtr<FDriveState> WeakD = D;
+
+	D->TickHandle = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda(
+		[WeakD](float) -> bool
+		{
+			check(IsInGameThread());
+			TSharedPtr<FDriveState> DS = WeakD.Pin();
+			if (!DS.IsValid() || DS->bResolved) { return false; }
+
+			// ---- EXACT identity revalidation, before any feedback read or injection ----
+			APawn* P = DS->Pawn.Get();
+			UEnhancedInputLocalPlayerSubsystem* SubNow = DS->Subsystem.Get();
+			UInputAction* Look = DS->LookAction.Get();
+			APlayerController* PCNow = DS->Controller.Get();
+			UWorld* WorldNow = DS->AimWorld.Get();
+			ULocalPlayer* LPNow = DS->LocalPlayer.Get();
+
+			auto Drift = [&DS](const TCHAR* Why) -> bool
+			{
+				DS->FailureReason = Why;
+				FinalizeDrive(DS, FString::Printf(TEXT("identity drift: %s"), Why));
+				return false;
+			};
+
+			if (!IsValid(P)) { return Drift(TEXT("pawn invalid")); }
+			if (!WorldNow || !IsPIEWorld(WorldNow)) { return Drift(TEXT("original PIE world gone")); }
+			if (P->GetWorld() != WorldNow) { return Drift(TEXT("pawn left the original PIE world")); }
+			if (!P->IsLocallyControlled()) { return Drift(TEXT("pawn is no longer locally controlled")); }
+			if (!PCNow) { return Drift(TEXT("controller invalid")); }
+			if (P->GetController() != PCNow) { return Drift(TEXT("pawn controller is not the stored controller")); }
+			if (PCNow->GetPawn() != P) { return Drift(TEXT("controller no longer possesses the stored pawn")); }
+			if (!LPNow || PCNow->GetLocalPlayer() != LPNow) { return Drift(TEXT("controller local player changed")); }
+			if (!SubNow || ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LPNow) != SubNow)
+				{ return Drift(TEXT("enhanced input subsystem changed")); }
+			if (!Look) { return Drift(TEXT("look action invalid")); }
+			{
+				auto ResolveNow = [P](const FString& PropName) -> UInputAction*
+				{
+					if (PropName.IsEmpty()) { return nullptr; }
+					FObjectProperty* OP = CastField<FObjectProperty>(P->GetClass()->FindPropertyByName(FName(*PropName)));
+					return OP ? Cast<UInputAction>(OP->GetObjectPropertyValue_InContainer(P)) : nullptr;
+				};
+				if (ResolveNow(DS->LookActionProperty) != Look) { return Drift(TEXT("look action property no longer resolves to the stored action")); }
+				if (DS->bMoveRequested)
+				{
+					UInputAction* MvNow = DS->MoveAction.Get();
+					if (!MvNow || ResolveNow(DS->MoveActionProperty) != MvNow)
+						{ return Drift(TEXT("move action property no longer resolves to the stored action")); }
+				}
+			}
+
+			const double Now = FPlatformTime::Seconds();
+			if (Now - DS->T0 >= DS->TimeoutSeconds) { FinalizeDrive(DS, TEXT("timeout")); return false; }
+
+			// 2D speed only: vertical velocity must never be taken as proof of locomotion.
+			// Feedback is read ONCE here, after exact identity validation and BEFORE any error math,
+			// trace generation, speed accumulation, or injection. Non-finite feedback finalizes
+			// immediately without injecting anything.
+			const FRotator Aim = P->GetBaseAimRotation();
+			const double Speed2D = (double)P->GetVelocity().Size2D();
+			if (Aim.ContainsNaN() || !FMath::IsFinite(Aim.Pitch) || !FMath::IsFinite(Aim.Yaw) || !FMath::IsFinite(Aim.Roll))
+				{ return Drift(TEXT("GetBaseAimRotation() returned a non-finite rotation")); }
+			if (!FMath::IsFinite(Speed2D))
+				{ return Drift(TEXT("horizontal speed is non-finite")); }
+
+			// Only now is it safe to record validated evidence.
+			DS->MaxSpeed = FMath::Max(DS->MaxSpeed, Speed2D);
+			DS->bAimLocallyControlled = P->IsLocallyControlled();
+			DS->AimLocalRole = NetRoleStr(P->GetLocalRole());
+			DS->AimRemoteRole = NetRoleStr(P->GetRemoteRole());
+			DS->FinalAim = Aim;
+			const double PitchErr = DS->TargetPitch - Aim.Pitch;
+			const double YawErr = FRotator::NormalizeAxis(DS->TargetYaw - Aim.Yaw);
+			const bool bWithin = FMath::Abs(PitchErr) <= DS->Tolerance && FMath::Abs(YawErr) <= DS->Tolerance;
+
+			// One bounded, clamped Axis2D correction. The Axis2D COMPONENTS are fixed by the project's
+			// Look handler (component X feeds the yaw path, component Y feeds the pitch path), but the
+			// DOWNSTREAM RESPONSE SIGN of each path is not assumed: it is the empirically calibrated
+			// YawResponseSign / PitchResponseSign measured for this session via bounded probes.
+			auto Correct = [&](const TCHAR* Phase) -> bool
+			{
+				if (DS->Iterations >= DS->MaxIterations) { return false; }
+
+				// Each component is computed INDEPENDENTLY. An axis already within tolerance receives
+				// EXACTLY zero, so a skipped axis can never be nudged by the other axis's correction.
+				const bool bYawOut = FMath::Abs(YawErr) > DS->Tolerance;
+				const bool bPitchOut = FMath::Abs(PitchErr) > DS->Tolerance;
+
+				// Defense in depth: a nonzero correction requires an OBSERVED response sign for that axis.
+				// Calibration should already guarantee this; if it somehow does not, fail explicitly rather
+				// than drive the axis with the placeholder sign.
+				if ((bYawOut && !DS->bYawResponseObserved) || (bPitchOut && !DS->bPitchResponseObserved))
+				{
+					DS->FailureReason = TEXT("correction attempted on an out-of-tolerance axis with no observed response sign");
+					FinalizeDrive(DS, TEXT("response calibration failed"));
+					return false;   // FinalizeDrive is idempotent, so the caller's own finalize is a no-op
+				}
+
+				const double CX = bYawOut ? FMath::Clamp(YawErr * DS->YawResponseSign, -1.0, 1.0) : 0.0;
+				const double CY = bPitchOut ? FMath::Clamp(PitchErr * DS->PitchResponseSign, -1.0, 1.0) : 0.0;
+				if (CX == 0.0 && CY == 0.0) { return true; }   // nothing out of tolerance: inject nothing
+				SubNow->InjectInputForAction(Look, FInputActionValue(FVector2D(CX, CY)), TArray<UInputModifier*>(), TArray<UInputTrigger*>());
+				++DS->Iterations;
+				if (DS->Steps.Num() < kAimMaxTraceEntries)
+				{
+					DS->Steps.Add(FString::Printf(TEXT("%s i=%d pitchErr=%.3f yawErr=%.3f inject=(%.3f,%.3f)"),
+						Phase, DS->Iterations, PitchErr, YawErr, CX, CY));
+				}
+				else { DS->bTraceTruncated = true; }
+				return true;
+			};
+
+			// ---- ONE calibration step; reachable from BOTH the converge and hold phases ----
+			// Returns: 0 = keep ticking (work done this tick), 1 = calibration complete, -1 = finalized/failed.
+			auto CalibrateStep = [&]() -> int32
+			{
+				const bool bYawAxis = (DS->CalAxis == 0);
+				int32& Attempts = bYawAxis ? DS->YawProbeAttempts : DS->PitchProbeAttempts;
+				double& ProbeIn = bYawAxis ? DS->YawProbeInput : DS->PitchProbeInput;
+				double& ProbeDelta = bYawAxis ? DS->YawProbeDelta : DS->PitchProbeDelta;
+				double& Sign = bYawAxis ? DS->YawResponseSign : DS->PitchResponseSign;
+				bool& AxisDone = bYawAxis ? DS->bYawCalDone : DS->bPitchCalDone;
+				bool& Observed = bYawAxis ? DS->bYawResponseObserved : DS->bPitchResponseObserved;
+				const TCHAR* AxisName = bYawAxis ? TEXT("yaw") : TEXT("pitch");
+
+				// A pending probe is ALWAYS measured before anything else, even if the probe itself moved
+				// the aim into tolerance -- its evidence must never be skipped.
+				if (DS->bAwaitingProbe)
+				{
+					const double Delta = bYawAxis
+						? FRotator::NormalizeAxis(Aim.Yaw - DS->ProbeBaseYaw)
+						: (Aim.Pitch - DS->ProbeBasePitch);
+					if (FMath::IsFinite(Delta) && FMath::Abs(Delta) >= kAimMinMeasurableResponseDeg)
+					{
+						ProbeDelta = Delta;
+						Sign = FMath::Sign(Delta) * FMath::Sign(ProbeIn);
+						Observed = true;
+						AxisDone = true;
+						DS->bAwaitingProbe = false;
+						if (DS->Steps.Num() < kAimMaxTraceEntries)
+						{
+							DS->Steps.Add(FString::Printf(TEXT("calibrate %s: probeIn=%.3f delta=%.4f sign=%+.0f attempts=%d"),
+								AxisName, ProbeIn, Delta, Sign, Attempts));
+						}
+						else { DS->bTraceTruncated = true; }
+					}
+					else if (Attempts < kAimMaxProbeAttempts)
+					{
+						// No material response (e.g. axis pinned at a clamp): one bounded opposite probe.
+						DS->bAwaitingProbe = false;
+						if (DS->Steps.Num() < kAimMaxTraceEntries)
+							{ DS->Steps.Add(FString::Printf(TEXT("calibrate %s: no response (delta=%.4f); retrying opposite"), AxisName, Delta)); }
+						else { DS->bTraceTruncated = true; }
+					}
+					else
+					{
+						DS->FailureReason = FString::Printf(TEXT("%s axis produced no measurable response (>= %.3f deg) in either direction"), AxisName, kAimMinMeasurableResponseDeg);
+						FinalizeDrive(DS, TEXT("response calibration failed"));
+						return -1;
+					}
+				}
+
+				if (!AxisDone && !DS->bAwaitingProbe)
+				{
+					if (Attempts >= kAimMaxProbeAttempts)
+					{
+						DS->FailureReason = FString::Printf(TEXT("%s axis exhausted %d calibration probe attempts"), AxisName, kAimMaxProbeAttempts);
+						FinalizeDrive(DS, TEXT("response calibration failed"));
+						return -1;
+					}
+					if (DS->Iterations >= DS->MaxIterations)
+					{
+						DS->FailureReason = TEXT("max corrective iterations reached during response calibration");
+						FinalizeDrive(DS, TEXT("response calibration failed"));
+						return -1;
+					}
+					// Axes are probed SEPARATELY; direction flips on the second attempt for a clamped axis.
+					const double Dir = (Attempts == 0) ? 1.0 : -1.0;
+					ProbeIn = Dir * kAimProbeMagnitude;
+					DS->ProbeBaseYaw = Aim.Yaw;
+					DS->ProbeBasePitch = Aim.Pitch;
+					const FVector2D ProbeVec = bYawAxis ? FVector2D(ProbeIn, 0.0) : FVector2D(0.0, ProbeIn);
+					SubNow->InjectInputForAction(Look, FInputActionValue(ProbeVec), TArray<UInputModifier*>(), TArray<UInputTrigger*>());
+					++Attempts;
+					++DS->Iterations;   // probes count against the MaxIterations ceiling
+					DS->bAwaitingProbe = true;
+					if (DS->Steps.Num() < kAimMaxTraceEntries)
+						{ DS->Steps.Add(FString::Printf(TEXT("probe %s attempt=%d input=%.3f"), AxisName, Attempts, ProbeIn)); }
+					else { DS->bTraceTruncated = true; }
+					return 0;
+				}
+
+				// Move to the next unfinished axis, else calibration is complete.
+				if (!DS->bYawCalDone) { DS->CalAxis = 0; return 0; }
+				if (!DS->bPitchCalDone) { DS->CalAxis = 1; return 0; }
+
+				DS->bCalibrated = true;
+				if (DS->Steps.Num() < kAimMaxTraceEntries)
+				{
+					DS->Steps.Add(FString::Printf(TEXT("calibrated: yaw sign=%+.0f observed=%s | pitch sign=%+.0f observed=%s"),
+						DS->YawResponseSign, DS->bYawResponseObserved ? TEXT("true") : TEXT("false"),
+						DS->PitchResponseSign, DS->bPitchResponseObserved ? TEXT("true") : TEXT("false")));
+				}
+				else { DS->bTraceTruncated = true; }
+				return 1;
+			};
+
+			// Calibration requirements are initialised BEFORE any convergence test, so a probe can never
+			// be bypassed by the aim happening to land inside tolerance.
+			if (!DS->bCalibInitialized)
+			{
+				DS->bYawCalRequired = FMath::Abs(YawErr) > DS->Tolerance;
+				DS->bPitchCalRequired = FMath::Abs(PitchErr) > DS->Tolerance;
+				if (!DS->bYawCalRequired) { DS->bYawCalDone = true; }     // skipped: responseObserved stays false
+				if (!DS->bPitchCalRequired) { DS->bPitchCalDone = true; }
+				DS->CalAxis = DS->bYawCalDone ? 1 : 0;
+				DS->bCalibInitialized = true;
+				if (!DS->bYawCalRequired && !DS->bPitchCalRequired)
+				{
+					DS->bCalibrated = true;   // both axes explicitly skipped / not required
+					if (DS->Steps.Num() < kAimMaxTraceEntries)
+						{ DS->Steps.Add(TEXT("calibration skipped: both axes already within tolerance (no sign observed)")); }
+					else { DS->bTraceTruncated = true; }
+				}
+			}
+
+			if (!DS->bConverged)
+			{
+				if (!DS->bCalibrated)
+				{
+					const int32 CalRes = CalibrateStep();
+					if (CalRes < 0) { return false; }
+					return true;   // never declare convergence on a calibration tick
+				}
+
+				// Defense in depth: convergence requires a fully resolved calibration phase.
+				const bool bCalReady = DS->bCalibInitialized && !DS->bAwaitingProbe
+					&& DS->bYawCalDone && DS->bPitchCalDone
+					&& (!DS->bYawCalRequired || DS->bYawResponseObserved)
+					&& (!DS->bPitchCalRequired || DS->bPitchResponseObserved);
+
+				if (bWithin && bCalReady)
+				{
+					DS->bConverged = true;
+					DS->ConvergedAt = Now - DS->T0;
+					DS->AchievedAim = Aim;
+					DS->HoldStartAt = Now;
+					if (DS->bMoveRequested)
+					{
+						if (UInputAction* Mv = DS->MoveAction.Get())
+						{
+							SubNow->StartContinuousInputInjectionForAction(Mv, FInputActionValue(FVector2D((double)DS->MoveX, (double)DS->MoveY)), TArray<UInputModifier*>(), TArray<UInputTrigger*>());
+							DS->bMoveInjecting = true;
+							DS->bMoveInjectionStarted = true;
+						}
+						else { FinalizeDrive(DS, TEXT("move action became invalid before the hold phase")); return false; }
+					}
+					if (DS->Steps.Num() < kAimMaxTraceEntries)
+						{ DS->Steps.Add(FString::Printf(TEXT("converged at %.3fs after %d iterations; hold begins"), DS->ConvergedAt, DS->Iterations)); }
+					return true;
+				}
+
+				if (!Correct(TEXT("converge"))) { FinalizeDrive(DS, TEXT("max corrective iterations reached before convergence")); return false; }
+				return true;
+			}
+
+			// ---- hold phase: keep measuring; re-correct whenever either error leaves tolerance ----
+			DS->MaxPitchErrHold = FMath::Max(DS->MaxPitchErrHold, FMath::Abs(PitchErr));
+			DS->MaxYawErrHold = FMath::Max(DS->MaxYawErrHold, FMath::Abs(YawErr));
+			if (!bWithin)
+			{
+				// An axis skipped at start has only a PLACEHOLDER sign. If it now needs correcting, it is
+				// calibrated on demand first -- a correction is never applied with an unobserved sign.
+				const bool bYawNeeds = FMath::Abs(YawErr) > DS->Tolerance;
+				const bool bPitchNeeds = FMath::Abs(PitchErr) > DS->Tolerance;
+				if ((bYawNeeds && !DS->bYawResponseObserved) || (bPitchNeeds && !DS->bPitchResponseObserved))
+				{
+					if (bYawNeeds && !DS->bYawResponseObserved) { DS->bYawCalRequired = true; DS->bYawCalDone = false; DS->CalAxis = 0; }
+					else { DS->bPitchCalRequired = true; DS->bPitchCalDone = false; DS->CalAxis = 1; }
+					DS->bCalibrated = false;
+				}
+				if (!DS->bCalibrated)
+				{
+					const int32 CalRes = CalibrateStep();
+					if (CalRes < 0) { return false; }
+					return true;   // calibrate before correcting this axis
+				}
+				if (!Correct(TEXT("hold"))) { FinalizeDrive(DS, TEXT("max corrective iterations reached during hold")); return false; }
+				// Hold completion is NEVER evaluated on a tick that injected a correction: wait for the
+				// next exact-identity-valid, finite-feedback tick so the corrected response is observed.
+				// The requested hold is therefore a MINIMUM; a late correction can push holdActualSeconds
+				// past it until the response settles or a timeout / iteration bound fails the call.
+				return true;
+			}
+			if ((Now - DS->HoldStartAt) >= DS->HoldSeconds)
+			{
+				DS->HoldEndAt = Now;
+				// No second aim read here: DS->FinalAim already holds this tick's single
+				// finite-checked, identity-validated Aim value. Stop movement, then finalize.
+				StopDriveInjection(DS);
+				FinalizeDrive(DS, TEXT("completed"));
+				return false;
+			}
+			return true;
+		}), 0.0f);
+
+	return Result;
+}
+
+// =============================================================================
 // IntrospectPawnWeaponSockets  (one-shot, read-only attachment/socket introspection)
 // =============================================================================
 UToolCallAsyncResultString* UTacticalRuntimeAnimInspectionToolset::IntrospectPawnWeaponSockets(
@@ -1269,124 +2346,7 @@ UToolCallAsyncResultString* UTacticalRuntimeAnimInspectionToolset::CapturePIEPaw
 
 	// Object resolution, spawn, capture, readback, and cleanup all run on the game thread.
 	V->TickHandle = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda(
-		[WeakV](float) -> bool
-		{
-			check(IsInGameThread());
-			TSharedPtr<FViewCaptureSession> Vp = WeakV.Pin();
-			if (!Vp.IsValid() || Vp->bResolved) { return false; }
-
-			// ---- Phase 0: resolve pawn/mesh + spawn transient capture rig (numeric bounds already validated) ----
-			if (Vp->Phase == 0)
-			{
-				EnsureHooks();
-				APawn* Pawn = Cast<APawn>(ResolveActor(Vp->PawnPath));
-				if (!IsValid(Pawn)) { FinalizeViewCapture(Vp, false, FString::Printf(TEXT("Pawn not found: %s"), *Vp->PawnPath)); return false; }
-				if (Pawn->IsTemplate()) { FinalizeViewCapture(Vp, false, TEXT("Pawn is a CDO/template.")); return false; }
-				UWorld* World = Pawn->GetWorld();
-				if (!IsPIEWorld(World)) { FinalizeViewCapture(Vp, false, TEXT("Pawn is not in a PIE world (editor/preview rejected).")); return false; }
-
-				USkeletalMeshComponent* Mesh = ResolveMeshComponent(Vp->MeshPath);
-				if (!Mesh) { FinalizeViewCapture(Vp, false, FString::Printf(TEXT("Skeletal-mesh component not found: %s"), *Vp->MeshPath)); return false; }
-				if (!IsUsableMesh(Mesh)) { FinalizeViewCapture(Vp, false, TEXT("Mesh is not a live/registered PIE component (editor/preview/template/pending-kill rejected).")); return false; }
-				if (Mesh->GetOwner() != Pawn) { FinalizeViewCapture(Vp, false, FString::Printf(TEXT("Mesh not owned by the supplied pawn: owner=%s, expected=%s."), *GetPathNameSafe(Mesh->GetOwner()), *Vp->PawnPath)); return false; }
-
-				// SEPARATE transient capture actor in the pawn's world; deliberately NOT owned by the pawn
-				// (so the pawn is not the capture's view owner -> bOwnerNoSee body renders, bOnlyOwnerSee FP hides).
-				FActorSpawnParameters SpawnParams;
-				SpawnParams.ObjectFlags |= RF_Transient;
-				SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-				const FVector CamPos = Pawn->GetActorLocation() + Vp->CamOffset;
-				AActor* Actor = World->SpawnActor<AActor>(AActor::StaticClass(), FTransform(CamPos), SpawnParams);
-				if (!Actor) { FinalizeViewCapture(Vp, false, TEXT("Failed to spawn transient capture actor.")); return false; }
-
-				USceneCaptureComponent2D* Cap = NewObject<USceneCaptureComponent2D>(Actor, NAME_None, RF_Transient);
-				Actor->SetRootComponent(Cap);
-				Cap->RegisterComponent();
-
-				UTextureRenderTarget2D* RT = NewObject<UTextureRenderTarget2D>(Actor, NAME_None, RF_Transient);
-				RT->RenderTargetFormat = RTF_RGBA8;
-				RT->ClearColor = FLinearColor::Black;
-				RT->bAutoGenerateMips = false;
-				RT->InitCustomFormat(Vp->Width, Vp->Height, PF_B8G8R8A8, /*bForceLinearGamma=*/false);
-				RT->UpdateResourceImmediate(true);
-
-				Cap->TextureTarget = RT;
-				Cap->CaptureSource = SCS_FinalColorLDR;
-				Cap->bCaptureEveryFrame = false;
-				Cap->bCaptureOnMovement = false;
-				Cap->bAlwaysPersistRenderingState = true;
-				Cap->FOVAngle = (float)Vp->Fov;
-
-				const FVector Target = Pawn->GetActorLocation() + Vp->LookAtOffset;
-				Cap->SetWorldLocationAndRotation(CamPos, (Target - CamPos).Rotation());
-
-				Vp->World = World; Vp->Pawn = Pawn; Vp->Mesh = Mesh;
-				Vp->WorldName = World->GetPathName();
-				Vp->CaptureActor = TStrongObjectPtr<AActor>(Actor);
-				Vp->Capture = TStrongObjectPtr<USceneCaptureComponent2D>(Cap);
-				Vp->RT = TStrongObjectPtr<UTextureRenderTarget2D>(RT);
-				Vp->StartTime = FPlatformTime::Seconds();
-				Vp->Phase = 1;
-				Vp->FramesSinceSpawn = 0;
-				return true; // keep ticking
-			}
-
-			// ---- Phase 1: let the world render one frame with the rig present, then capture + read back ----
-			UWorld* World = Vp->World.Get();
-			APawn* Pawn = Vp->Pawn.Get();
-			USkeletalMeshComponent* Mesh = Vp->Mesh.Get();
-			USceneCaptureComponent2D* Cap = Vp->Capture.Get();
-			UTextureRenderTarget2D* RT = Vp->RT.Get();
-			if (!IsPIEWorld(World) || !IsValid(Pawn) || !IsUsableMesh(Mesh) || !Cap || !RT)
-				{ FinalizeViewCapture(Vp, false, TEXT("capture aborted: pawn/mesh/world/target invalidated during capture")); return false; }
-			if ((FPlatformTime::Seconds() - Vp->StartTime) >= Vp->Timeout)
-				{ FinalizeViewCapture(Vp, false, TEXT("timeout")); return false; }
-
-			if (++Vp->FramesSinceSpawn < 2) { return true; }
-
-			// Full revalidation IMMEDIATELY before capture/readback: pawn & mesh still in the ORIGINAL PIE world,
-			// mesh still owned by the pawn and still registered/live, and the stored paths still resolve to these
-			// exact objects. Any drift aborts with a structured reason (never captures a wrong/replaced object).
-			if (Pawn->GetWorld() != World || Mesh->GetWorld() != World
-				|| Mesh->GetOwner() != Pawn || !IsUsableMesh(Mesh)
-				|| ResolveActor(Vp->PawnPath) != Pawn || ResolveMeshComponent(Vp->MeshPath) != Mesh)
-			{ FinalizeViewCapture(Vp, false, TEXT("capture aborted: pawn/mesh identity, world, ownership, or registration changed before capture")); return false; }
-
-			// Re-aim at the pawn's CURRENT location (it may have moved since spawn), then capture one frame.
-			const FVector CamPos = Pawn->GetActorLocation() + Vp->CamOffset;
-			const FVector Target = Pawn->GetActorLocation() + Vp->LookAtOffset;
-			Cap->SetWorldLocationAndRotation(CamPos, (Target - CamPos).Rotation());
-			Cap->CaptureScene();
-			FlushRenderingCommands();
-
-			FTextureRenderTargetResource* RTRes = RT->GameThread_GetRenderTargetResource();
-			if (!RTRes) { FinalizeViewCapture(Vp, false, TEXT("render target resource unavailable")); return false; }
-			TArray<FColor> Bitmap;
-			FReadSurfaceDataFlags ReadFlags(RCM_UNorm, CubeFace_MAX);
-			if (!RTRes->ReadPixels(Bitmap, ReadFlags) || Bitmap.Num() != Vp->Width * Vp->Height)
-				{ FinalizeViewCapture(Vp, false, TEXT("pixel readback failed or size mismatch")); return false; }
-
-			FToolsetImage Img;
-			if (!Img.SetFromBitmap(Bitmap, FIntPoint(Vp->Width, Vp->Height), ERGBFormat::BGRA))
-				{ FinalizeViewCapture(Vp, false, TEXT("PNG encode failed")); return false; }
-			// The cap is on the Base64 image DATA only (ASCII, so Len() == UTF-8 byte count), not the whole JSON.
-			if (Img.Data.Len() > kViewMaxEncodedBytes)
-				{ FinalizeViewCapture(Vp, false, FString::Printf(TEXT("Base64 image data %d bytes exceeds the %d-byte cap."), Img.Data.Len(), kViewMaxEncodedBytes)); return false; }
-
-			const FRotator FinalRot = Cap->GetComponentRotation();
-			const FVector  FinalLoc = Cap->GetComponentLocation();
-			const FString Payload = FString::Printf(
-				TEXT("{\"pawn\":%s,\"mesh\":%s,\"world\":%s,\"frameNumber\":%llu,\"worldTimeSeconds\":%.6f,")
-				TEXT("\"cameraTransform\":{\"location\":{\"x\":%.3f,\"y\":%.3f,\"z\":%.3f},\"rotation\":{\"pitch\":%.3f,\"yaw\":%.3f,\"roll\":%.3f}},")
-				TEXT("\"width\":%d,\"height\":%d,\"fov\":%.3f,\"image\":{\"mimeType\":%s,\"data\":%s}}"),
-				*JStr(Vp->PawnPath), *JStr(Vp->MeshPath), *JStr(Vp->WorldName),
-				(unsigned long long)GFrameCounter, World->GetTimeSeconds(),
-				FinalLoc.X, FinalLoc.Y, FinalLoc.Z, FinalRot.Pitch, FinalRot.Yaw, FinalRot.Roll,
-				Vp->Width, Vp->Height, Vp->Fov, *JStr(Img.MimeType), *JStr(Img.Data));
-
-			FinalizeViewCapture(Vp, true, Payload);
-			return false;
-		}), 0.0f);
+		[WeakV](float) -> bool { return TacticalRuntimeAnimInspection::RunViewCaptureTick(WeakV); }), 0.0f);
 
 	return Result;
 }
