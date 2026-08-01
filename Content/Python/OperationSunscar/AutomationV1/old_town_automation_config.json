@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "expected_project_name": "TacticalMovement",
+  "expected_project_directory_suffix": "/UnrealEngine/_worktrees/map-development/",
+  "expected_level": "/Game/Maps/Blockout/Lvl_Blockout_01",
+  "planning_directory": "Documentation/Maps/OperationSunscar/Planning",
+  "resolved_plan_file": "OLD_TOWN_RESOLVED_PLACEMENT_PLAN_V1.csv",
+  "import_queue_file": "OLD_TOWN_UE_IMPORT_QUEUE_V1.csv",
+  "final_registry_file": "OldTown_FinalAssetRegistry_v1.json",
+  "report_directory": "OperationSunscar/Reports",
+  "connected_slice_sites": [
+    "SS_007",
+    "SS_008",
+    "SS_004",
+    "SS_017",
+    "SS_010"
+  ],
+  "allowed_asset_prefixes": [
+    "/Game/Maps/Sunscar/",
+    "/Game/Maps/Blockout/",
+    "/Game/Fab/Megascans/",
+    "/Game/CitySampleVehicles/",
+    "/Game/Scene_Junkyard/",
+    "/Game/MilitaryTrench/",
+    "/Game/LevelPrototyping/"
+  ],
+  "protected_asset_prefixes": [
+    "/Game/ThirdPerson/",
+    "/Game/Characters/",
+    "/Game/Weapons/",
+    "/Game/Movement/",
+    "/Game/Animation/"
+  ],
+  "sandbag_audit": {
+    "label_terms": ["sandbag"],
+    "mesh_path_terms": ["sandbag", "ydxlcck", "ydznbff"],
+    "tag_terms": [
+      "SunscarQuixelSandbagPassV1",
+      "SunscarQuixelDefensivePassV1"
+    ],
+    "support_tolerance_cm": 12.0,
+    "upper_elevation_review_cm": 250.0,
+    "trace_above_cm": 30.0,
+    "trace_below_cm": 5000.0
+  },
+  "execution": {
+    "apply_changes": false,
+    "approval_token": "",
+    "required_approval_token": "OLD_TOWN_CONNECTED_SLICE_APPLY_APPROVED",
+    "save_current_level": false,
+    "destroy_existing_tagged_actors": false,
+    "placement_tag": "SunscarOldTownConnectedSliceAutomationV1",
+    "placement_folder": "OldTown_AutomationPreview/ConnectedSliceV1",
+    "supported_classes": ["ground", "vegetation", "industrial"]
+  }
+}
