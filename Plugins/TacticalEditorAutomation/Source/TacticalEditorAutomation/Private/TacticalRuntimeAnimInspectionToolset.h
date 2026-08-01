@@ -204,6 +204,80 @@ public:
 	static UToolCallAsyncResultString* IntrospectPawnWeaponSockets(const FString& PawnPath, const FString& MeshComponentPath, const FString& WeaponComponentPath, const FString& CandidateSocketName);
 
 	/*
+	 * Same-frame ENGINE-OWNED projection with an optional annotated non-owner pawn capture (Boundary G).
+	 * REUSES CapturePIEPawnViewDeferred's transient capture actor / USceneCaptureComponent2D / render
+	 * target, its deferred lifecycle, the single-active-view-capture guard, the render + readback path,
+	 * timeout handling, image-size bound, and DestroyViewTransients cleanup. It adds NO second capture
+	 * framework. CapturePIEPawnViewDeferred's PUBLIC SIGNATURE AND OUTPUT CONTRACT are unchanged, but its
+	 * implementation now runs through that shared driver, so A1 validation MUST include a plain-capture
+	 * regression of CapturePIEPawnViewDeferred.
+	 *
+	 * FRAME-COHERENT EVIDENCE: every projection target is a (component path, socket name) PAIR that is
+	 * re-resolved and re-validated INSIDE the rendered capture frame, and each socket's world transform is
+	 * read in that same frame. Caller-supplied world coordinates are deliberately NOT accepted, because a
+	 * coordinate supplied from outside the frame is not frame-coherent evidence.
+	 *
+	 * PROJECTION uses ONLY engine APIs, with no hand-rolled camera math:
+	 *   USceneCaptureComponent2D::GetCameraView -> FMinimalViewInfo
+	 *   UGameplayStatics::CalculateViewProjectionMatricesFromMinimalView -> view/projection/view-projection
+	 *   FSceneView::ProjectWorldToScreen with ViewRect (0,0,Width,Height)
+	 * Axis endpoints are derived from the socket's own world transform via FTransform::GetUnitAxis scaled by
+	 * the explicit AxisLength. There is NO bone-space reconstruction, inferred offset, correction angle,
+	 * socket selection, or acceptance verdict of any kind -- this tool measures and reports, it never judges.
+	 *
+	 * MATRIX SERIALIZATION CONVENTION (documented, not implied): each matrix is emitted as "rows", an array
+	 * of 4 arrays of 4 doubles, where rows[i][j] == FMatrix::M[i][j] in Unreal's row-vector convention (a
+	 * point is transformed as v * M, and translation lives in row 3).
+	 *
+	 * ANNOTATION (optional bAnnotate): draws a marker at each projected socket pixel and RGB X/Y/Z axis
+	 * lines through Unreal's supported render-target canvas path (UKismetRenderingLibrary::
+	 * BeginDrawCanvasToRenderTarget -> UCanvas::K2_DrawBox/K2_DrawLine -> EndDrawCanvasToRenderTarget).
+	 * It draws ONLY from the same projection results returned in the JSON, so image and numbers can never
+	 * disagree. Exactly ONE image is returned -- the raw render when bAnnotate is false, the annotated render
+	 * when it is true -- reported via the `annotated` flag. The approved 12 MiB bound is enforced on the
+	 * COMPLETE returned result (whole payload, UTF-8 bytes), not per image. Annotation draws only
+	 * coordinates proven inView: a marker only when the socket point is inView, and an axis only when
+	 * BOTH its origin and endpoint are inView -- reported projection coordinates are unaffected. If the
+	 * canvas cannot be acquired the call fails with a structured error and never reports annotated:true. It never mutates gameplay cameras, pawn
+	 * or component visibility, component transforms, assets, maps, config, or play settings, and never saves.
+	 *
+	 * HARD BOUNDS (all validated BEFORE any expensive render resource is allocated): at most 32 targets;
+	 * ComponentPaths and SocketNames must be equal-length and non-empty; each component path <= 512 and each
+	 * socket name <= 128 characters, checked BEFORE object/FName resolution; duplicate (component, socket)
+	 * pairs rejected; AxisLength finite and within (0, 200] cm; plus the existing dimension (64..1920,
+	 * Width*Height <= 4,000,000), FOV (5..170), offset, coincident-camera, timeout (0 < t <= 60), single
+	 * concurrent view capture, and 12 MiB Base64 image-data bounds. Rejects malformed, mismatched-length,
+	 * duplicate, missing-socket, cross-world, ownership-mismatch, non-PIE/editor/preview, CDO/template,
+	 * stale/pending-kill, and concurrent-call cases up front with a structured error.
+	 * @param PawnPath Object path of the exact PIE pawn/actor to view.
+	 * @param MeshComponentPath Object path of that pawn's exact USkeletalMeshComponent (must be owned by PawnPath).
+	 * @param CameraOffsetX Camera position offset from the pawn location, X (cm).
+	 * @param CameraOffsetY Camera position offset from the pawn location, Y (cm).
+	 * @param CameraOffsetZ Camera position offset from the pawn location, Z (cm).
+	 * @param LookAtOffsetX Look-at target offset from the pawn location, X (cm).
+	 * @param LookAtOffsetY Look-at target offset from the pawn location, Y (cm).
+	 * @param LookAtOffsetZ Look-at target offset from the pawn location, Z (cm).
+	 * @param Width Render width in pixels (64..1920).
+	 * @param Height Render height in pixels (64..1920).
+	 * @param FOV Horizontal field of view in degrees (5..170).
+	 * @param TimeoutSeconds Wall-clock ceiling for the capture (0 < t <= 60).
+	 * @param ComponentPaths Object paths of the components owning each projection target; must be owned by the pawn and live in its PIE world.
+	 * @param SocketNames Socket names, one per entry in ComponentPaths (equal length); each must exist on its paired component.
+	 * @param AxisLength Length in cm of the projected basis-axis segments (0 < AxisLength <= 200).
+	 * @param bAnnotate True to return the ANNOTATED image INSTEAD OF the raw image, with the socket marker and RGB X/Y/Z axes drawn.
+	 * @return JSON: { pawn, mesh, world, frameNumber, worldTimeSeconds, cameraTransform, width, height, fov,
+	 *                 axisLength, matrixConvention, viewMatrix:{rows}, projectionMatrix:{rows},
+	 *                 viewProjectionMatrix:{rows}, targets:[ { component, socket, socketWorldTransform,
+	 *                 projected:{x,y,ok,finite,inFront,inView}, axes:{ x:{...}, y:{...}, z:{...} } ], limits,
+	 *                 annotated, image:{mimeType,data} }. Projected points report the engine return value
+	 *                 (`ok`) separately from `finite`, `inFront` and `inView`; `inView` requires
+	 *                 0 <= x < Width and 0 <= y < Height. Non-finite points are reported with finite:false
+	 *                 and zeroed coordinates -- NaN/Inf never reach the JSON or the canvas.
+	 */
+	UFUNCTION(meta = (AICallable))
+	static UToolCallAsyncResultString* CapturePIEPawnViewProjectedDeferred(const FString& PawnPath, const FString& MeshComponentPath, float CameraOffsetX, float CameraOffsetY, float CameraOffsetZ, float LookAtOffsetX, float LookAtOffsetY, float LookAtOffsetZ, int32 Width, int32 Height, float FOV, float TimeoutSeconds, const TArray<FString>& ComponentPaths, const TArray<FString>& SocketNames, float AxisLength, bool bAnnotate);
+
+	/*
 	 * Frame-coherent world-transform capture (Boundary G). REUSES the existing capture-session lifecycle and the same
 	 * OnBoneTransformsFinalized callback as StartLinkedAnimInstanceCapture (no second session framework); collect and
 	 * dispose with StopLinkedAnimInstanceCapture(sessionId). On each completed frame of the named CharacterMesh0 it
