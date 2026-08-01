@@ -138,6 +138,127 @@ public:
 	static UToolCallAsyncResultString* DrivePIEInputSequenceDeferred(const FString& PawnPath, const FString& ReadinessActionProperty, const FString& MoveActionProperty, float MoveX, float MoveY, float PreMoveIdleSeconds, float MoveSeconds, float TimeoutSeconds);
 
 	/*
+	 * Bounded CLOSED-LOOP Enhanced Input aim control (Boundary G / A2): drives the project's REAL look
+	 * input until the pawn's aim reaches an ABSOLUTE target pitch/yaw, then HOLDS that aim for a bounded
+	 * duration, optionally with movement running simultaneously.
+	 *
+	 * Closed loop is mandatory because the look axis is a RATE, not an absolute target: one-tick Axis2D
+	 * corrections are injected via InjectInputForAction and the result is re-measured every tick using
+	 * APawn::GetBaseAimRotation() as the ONLY feedback. Pitch error is a direct difference; yaw error is the
+	 * shortest wrapped angular delta.
+	 *
+	 * AXIS COMPONENTS VS RESPONSE SIGNS -- these are different things and only the first is assumed. The
+	 * Axis2D COMPONENT mapping is fixed by the project's Look handler: component X feeds the yaw path and
+	 * component Y feeds the pitch path. The DOWNSTREAM RESPONSE SIGN of each path is NOT assumed and is
+	 * NEVER derived from configuration, project settings, or deprecated controller-scale getters. Instead,
+	 * before convergence begins, each axis that actually needs correction is CALIBRATED IN-SESSION: a
+	 * bounded one-tick probe of magnitude kAimProbeMagnitude (0.25) is injected through the same
+	 * InjectInputForAction path on that axis alone, and the response is remeasured on the next
+	 * exact-identity-valid, finite-feedback tick (shortest wrapped delta for yaw, direct delta for pitch).
+	 * The response sign is sign(observed delta) / sign(probe input). Axes are probed SEPARATELY so each
+	 * axis's evidence is unambiguous. If the first probe yields no response at or above
+	 * kAimMinMeasurableResponseDeg (0.05 deg) -- for example an axis pinned at a pitch clamp -- one bounded
+	 * OPPOSITE-direction probe is allowed (kAimMaxProbeAttempts = 2 per axis); if neither direction produces
+	 * a finite response above that minimum, the call fails through SetError WITHOUT beginning convergence.
+	 * An axis already within tolerance is not probed; it is reported required:false with
+	 * responseObserved:false and retains only a PLACEHOLDER sign of +1 that is NEVER used to correct. If
+	 * such an axis later leaves tolerance during the hold, it is calibrated ON DEMAND before any
+	 * correction is applied, or the call fails -- a sign is never silently assumed. Calibration
+	 * requirements are initialised BEFORE the first convergence test, a pending probe is ALWAYS measured
+	 * and recorded before convergence may be declared (even if the probe itself moved the aim into
+	 * tolerance), and convergence additionally requires that no probe is awaiting measurement, every
+	 * required axis is complete, and every required response sign was actually observed. Success carries
+	 * the same calibration requirement as defense in depth. `responseObserved` is the ONLY proof a sign
+	 * was measured, so a placeholder can never be mistaken for an empirical result. Probes
+	 * use only InjectInputForAction, count against the MaxIterations ceiling, and preserve every identity,
+	 * finiteness, timeout, lifecycle and cleanup check; nothing writes rotation or input settings directly.
+	 * Corrections then use YawError * observed yaw response sign and PitchError * observed pitch response
+	 * sign, each component clamped to [-1,1]. Components are computed INDEPENDENTLY: an axis already
+	 * within tolerance receives EXACTLY zero input, so a skipped axis can never be nudged by the other
+	 * axis's correction, and a nonzero correction on any axis requires responseObserved:true for that
+	 * axis -- otherwise the call fails explicitly rather than using the placeholder sign.
+	 *
+	 * HOLD COMPLETION is never evaluated on a tick that injected a correction. After a hold correction the
+	 * loop waits for the next exact-identity-valid, finite-feedback tick, and only completes on a tick
+	 * where both axes are within tolerance and no corrective input was injected. The requested HoldSeconds
+	 * is therefore a MINIMUM: if a late correction is needed, holdActualSeconds may exceed it until the
+	 * corrected response is observed, or the timeout / MaxIterations bounds fail the call. The hold phase begins only once BOTH axes are within tolerance, and
+	 * during the hold another bounded correction is injected whenever either error leaves tolerance.
+	 *
+	 * Continuous injection (Start/StopContinuousInputInjectionForAction) is used ONLY for the optional
+	 * movement action during the hold phase; look corrections are one-tick and need no stop. Every continuous
+	 * injection this tool starts is stopped on success, failure, timeout, PIE end, world destruction,
+	 * pawn/controller/subsystem invalidation, and module shutdown. It NEVER calls SetControlRotation,
+	 * AddControllerYawInput/AddControllerPitchInput directly, never writes rotation, readiness or animation
+	 * properties, and never touches movement authority -- only the real Enhanced Input path.
+	 *
+	 * It REUSES the existing drive-session container, per-pawn mutual exclusion, action-resolution pattern,
+	 * lifecycle hooks and cleanup machinery; there is NO second drive framework. A call is rejected if the
+	 * pawn already has an active drive, or if the subsystem already has a continuous injection for either
+	 * requested action (this tool never stops an injection it did not start).
+	 *
+	 * VALIDATION before any injection: pawn path non-empty and <= 512 chars; action-property names non-empty
+	 * when used and <= 128 chars, checked BEFORE FName construction; TargetPitch finite in [-89,89];
+	 * TargetYaw finite in [-180,180]; ToleranceDegrees finite in [0.1,10]; MaxIterations in [1,240];
+	 * HoldSeconds finite in [0.1,30]; TimeoutSeconds finite in (0,60] and strictly greater than HoldSeconds;
+	 * MoveX/MoveY finite, each in [-1,1], vector magnitude <= 1; with no move action both must be zero; with
+	 * a move action the vector must be non-zero and the property must differ from LookActionProperty; pawn
+	 * live, non-template, locally controlled and in a PIE world; controller, LocalPlayer, subsystem and both
+	 * action value types (Axis2D) all validated up front.
+	 *
+	 * SUCCESS requires convergence within tolerance, completion of the requested hold, final pitch AND yaw
+	 * within tolerance, and verified cleanup; when movement is requested it also requires injection to start
+	 * and stop and a material speed increase.
+	 *
+	 * RESULT CHANNEL: SetValue is used ONLY when the computed success result is true. Every semantic
+	 * failure returns through SetError carrying the same bounded evidence payload plus a specific
+	 * failureReason derived from the criterion that failed. The trace is capped at 240 entries
+	 * (traceTruncated). If the complete UTF-8 response would exceed 1 MiB, the tool returns a bounded
+	 * SetError result that DELIBERATELY DISCARDS the trace while preserving identity, cleanup proof,
+	 * success criteria and failureReason; that drop is reported explicitly via evidenceDropped and
+	 * evidenceDropReason and is never presented as ordinary successful truncation.
+	 * @param PawnPath Object path of the exact PIE pawn to drive.
+	 * @param LookActionProperty Name of the pawn's UInputAction* look property (required, Axis2D; Boundary G uses 'LookAction' -> IA_Look).
+	 * @param MoveActionProperty Name of the pawn's UInputAction* movement property (optional, Axis2D); empty to hold aim without moving.
+	 * @param TargetPitch Absolute target pitch in degrees, [-89,89].
+	 * @param TargetYaw Absolute target yaw in degrees, [-180,180].
+	 * @param ToleranceDegrees Per-axis convergence tolerance in degrees, [0.1,10].
+	 * @param MaxIterations Maximum bounded corrective injections, [1,240].
+	 * @param HoldSeconds Duration to hold the converged aim, [0.1,30].
+	 * @param MoveX Movement Axis2D X during the hold (0 when no move action).
+	 * @param MoveY Movement Axis2D Y during the hold (0 when no move action).
+	 * @param TimeoutSeconds Overall wall-clock ceiling, (0,60] and > HoldSeconds.
+	 * @return JSON. The FULL evidence payload has the same shape on the SetValue and SetError channels;
+	 *                 the over-cap evidence-drop fallback is the ONE EXCEPTION -- it is deliberately
+	 *                 REDUCED (identity, success criteria, success, stopReason, failureReason, empty
+	 *                 trace, traceTruncated, evidenceDropped, evidenceDropReason and limits only) and
+	 *                 omits initialAim/targetAim/achievedAim/finalAim, errorSignConvention and the
+	 *                 during-hold maxima. Full payload:
+	 *                 { pawn, controller, localPlayer, world,
+	 *                   lookActionProperty, lookAction, moveActionProperty, moveAction,
+	 *                   isLocallyControlled, localRole, remoteRole,
+	 *                   initialAim, targetAim, achievedAim, finalAim, errorSignConvention,
+	 *                   converged, convergedAtSeconds, iterations,
+	 *                   holdSeconds, holdActualSeconds, holdCompleted,
+	 *                   finalPitchError, finalYawError, finalWithinTolerance,
+	 *                   maxPitchErrorDuringHold, maxYawErrorDuringHold,
+	 *                   moveRequested, moveInjectionStarted, moveInjectionStopCalled,
+	 *                   speedBefore, maxSpeed, speedIncreased, allInjectionsStopped,
+	 *                   calibration:{ calibrated, calibrationInitialized,
+	 *                     yaw:{required,responseObserved,probeInput,observedDeltaDegrees,responseSign,
+	 *                     probeAttempts}, pitch:{...}, source, limits:{probeMagnitude,
+	 *                     minMeasurableResponseDegrees,maxProbeAttemptsPerAxis} },
+	 *                   success, stopReason, failureReason, trace, traceTruncated,
+	 *                   evidenceDropped, evidenceDropReason, limits }.
+	 *                 `lookAction`/`moveAction` are resolved UInputAction object paths, distinct from the
+	 *                 `*Property` names. Errors are TARGET MINUS CURRENT. Speeds are horizontal (Size2D).
+	 *                 `moveInjectionStopCalled` is true only when StopContinuousInputInjectionForAction
+	 *                 actually ran. `evidenceDropReason` appears only when evidenceDropped is true.
+	 */
+	UFUNCTION(meta = (AICallable))
+	static UToolCallAsyncResultString* DrivePIEAimHoldDeferred(const FString& PawnPath, const FString& LookActionProperty, const FString& MoveActionProperty, float TargetPitch, float TargetYaw, float ToleranceDegrees, int32 MaxIterations, float HoldSeconds, float MoveX, float MoveY, float TimeoutSeconds);
+
+	/*
 	 * Renders ONE non-owner third-person frame of a specific PIE pawn's skeletal mesh and returns it as a
 	 * base64 PNG plus identity metadata. It spawns a SEPARATE transient capture actor + USceneCaptureComponent2D
 	 * + UTextureRenderTarget2D in the pawn's own PIE world, aims the capture from (pawn location + CameraOffset)
