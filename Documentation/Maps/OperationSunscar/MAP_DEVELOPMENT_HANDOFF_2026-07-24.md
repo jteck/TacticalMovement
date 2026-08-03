@@ -534,3 +534,118 @@ Before beginning final art, the next map-specific decision should be one of:
 
 Movement changes should remain outside this map-development worktree unless a
 separate integration plan is approved.
+
+## 17. 2026-07-25 Old Town art, grounding and elevation update
+
+This section supersedes the earlier actor-count and restart-state values where
+they conflict. The original graybox record above is intentionally preserved.
+
+### Current repository and editor state
+
+- Branch: `feature/map-development`
+- Current committed baseline: `f7c84efbd70cf7340f0a7ce14b4508ede2335403`
+- Current level: `/Game/Maps/Blockout/Lvl_Blockout_01`
+- Current saved actor count: 2,600
+- Unreal bottom status after validation: `All Saved`
+- Current work is map-only and intentionally uncommitted.
+- No commit, push, PR, merge, rebase or production-main update was performed.
+
+### Grounding and surface work completed
+
+- Audited all 20 Old Town sites against the Landscape.
+- Seventeen primary foundations matched terrain within a few centimetres.
+- The raised Detention Annex terrace remained intentionally elevated.
+- Grounded 16 Quixel sandbag render actors and their collision proxies.
+- Added 81 replaceable visual ground/foundation actors in the first pass.
+- Added 44 non-colliding utility-dressing actors.
+- Added 214 actors in the connected ground/elevation V2 pass:
+  - subdivided, terrain-following Old Town road surfaces;
+  - narrow dry-drainage strips;
+  - one additional foundation skirt where the audit found visible daylight;
+  - five colliding access steps at the Detention Annex south entrance.
+
+The road, drainage and site surfaces are non-colliding visual overlays. They
+are deliberately replaceable by final Landscape layers and Landscape Splines.
+Only the five Detention Annex steps use query-and-physics collision.
+
+### Floating-building clarification
+
+Materials do not fix floating geometry. The geometry/terrain relationship was
+audited separately. Visible daylight was corrected with grounding, a terrace
+skirt, one additional site skirt and readable access steps. The current
+surface materials improve visual contact but are still prototype materials,
+not final Quixel ground surfaces.
+
+### Durable automation added
+
+The latest connected road, drainage, foundation and access pass is
+reproducible and idempotent:
+
+`Content/Python/OperationSunscar/old_town_ground_elevation_pass_v2.py`
+
+The official Quixel ground-material and patch placement is also reproducible:
+
+`Content/Python/OperationSunscar/place_quixel_ground_v1.py`
+
+The script:
+
+- refuses to run outside `Lvl_Blockout_01`;
+- removes only actors tagged `SunscarGroundElevationPassV2`;
+- rebuilds the pass from map-owned source meshes and materials;
+- saves only the current map;
+- reports its actor, foundation and step counts to `LogPython`.
+
+The initial run revealed an Unreal Python positional-rotator mismatch that
+pitched road tiles upright. It was caught immediately. The script now uses
+named yaw parameters, removes every earlier V2 actor before rebuilding, and
+the saved level contains only the corrected flat road tiles.
+
+### Validation
+
+- Corrected V2 completion log:
+  `SUNSCAR_GROUND_ELEVATION_V2 actors=214 foundations=1 steps=5`
+- Quixel ground completion log:
+  `SUNSCAR_QX_GROUND imports_saved=14 asphalt=158 patches=16`
+- Top-down editor inspection confirmed connected road and drainage placement.
+- Close inspection confirmed the five Detention Annex steps align to the
+  raised south entrance.
+- Play-In-Editor started successfully with the player pawn and weapon.
+- Play-In-Editor stopped normally and returned to the editor.
+- The level remained saved after PIE.
+- No protected movement, weapon, animation, readiness, config or
+  `Lvl_ThirdPerson` path appeared in the Git scope audit.
+- No content file exceeded 50 MB.
+
+### Fab/Quixel status
+
+Unreal displayed a hidden memory-pressure notification while attempting to
+open Fab; it was dismissed without changing settings. The Content Drawer and
+Fab browser then opened normally.
+
+Three approved, free Quixel Megascans listings were imported at Medium/2K:
+
+- Crushed Asphalt Ground:
+  `88e41c55-6675-4872-ab19-e5757899e549`
+- Sandstone Rocky Ground:
+  `d6c87516-52ea-40d0-a3e5-c1e52d4ad88f`
+- Military Trenches Ground Patch Rock S 04:
+  `d8aded40-25c6-40ec-9d10-6e5e15053222`
+
+The exact 14 dirty packages created by these imports were enumerated before
+saving. No Save All was used. The real Quixel asphalt material now covers 158
+existing asphalt overlay actors without changing their transforms, collision
+or World Partition identity. Sixteen visual-only Quixel rocky-ground meshes
+were placed sparsely around district edges and dead-ground pockets. Nanite was
+enabled on the two imported 3D patch meshes where supported.
+
+### Current Git scope warning
+
+World Partition stores each new actor as an external actor package. The
+working tree therefore contains hundreds of intentional map package entries.
+The latest fully expanded audit reported 675 status entries, consisting of
+the existing map-development scope plus the new level/external-actor packages,
+Fab dependencies, documentation and Python automation. No file exceeded
+50 MB. `.uasset` and `.umap` paths currently have no Git LFS filter attribute,
+so a future checkpoint must continue to enforce the size audit before staging.
+Do not stage broadly. Before any future checkpoint, enumerate and review the
+exact map-only paths again.

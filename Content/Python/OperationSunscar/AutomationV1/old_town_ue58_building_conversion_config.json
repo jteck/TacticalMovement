@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "status": "planning_locked_apply_disabled",
+  "expected_project_directory_suffix": "/UnrealEngine/_worktrees/map-development",
+  "expected_level": "/Game/Maps/Blockout/Lvl_Blockout_01",
+  "pilot_site": "SS_005",
+  "apply_changes": false,
+  "save_changes": false,
+  "visual_kit_ready": false,
+  "collision_policy": {
+    "preserve_verified_gameplay_shell": true,
+    "preserve_opening_dimensions": true,
+    "preserve_traversal_and_cover": true,
+    "scan_mesh_collision": "disabled",
+    "decorative_mesh_collision": "disabled",
+    "interactive_openings": "separate_gameplay_actors"
+  },
+  "rendering_policy": {
+    "mobility": "Static",
+    "replicates": false,
+    "actor_tick_enabled": false,
+    "world_partition_spatially_loaded": true,
+    "group_repeated_modules_after_visual_acceptance": "PackedLevelActor_or_HISM",
+    "build_hlod_after_site_acceptance": true,
+    "nanite": {
+      "opaque_high_detail_static_meshes": "profile_then_enable",
+      "basic_collision_or_simple_modules": false,
+      "glass_or_translucent_meshes": false,
+      "tiny_props": false,
+      "landscape": "profile_before_enable_due_dual_streaming_data"
+    }
+  },
+  "material_policy": {
+    "opaque_shared_masters": true,
+    "material_instances": true,
+    "packed_masks": true,
+    "physical_projection_scale_cm": 200,
+    "avoid_unique_material_per_actor": true,
+    "decal_density": "bounded",
+    "runtime_virtual_texture_dependency": false
+  },
+  "module_acceptance": {
+    "publisher_scope": "Epic_Games_or_Quixel_Megascans",
+    "require_measured_bounds": true,
+    "require_viewport_review": true,
+    "maximum_nonuniform_scale_ratio": 1.25,
+    "maximum_uniform_scale_deviation": 0.15,
+    "require_material_slot_audit": true,
+    "require_collision_audit": true,
+    "require_nanite_audit": true,
+    "require_dependency_audit": true
+  },
+  "pilot_sequence": [
+    "capture_existing_SS_005_geometry_and_openings",
+    "preview_candidate_modules_in_isolated_review_area",
+    "assign_wall_corner_entrance_lintel_parapet_roof_modules",
+    "build_unsaved_visible_art_shell",
+    "hide_but_do_not_delete_existing_visible_primitives",
+    "validate_player_scale_openings_sightlines_cover_and_support",
+    "capture_street_oblique_and_overhead_reviews",
+    "optimize_repetition_with_PackedLevelActor_or_HISM",
+    "assign_HLOD",
+    "profile_before_exact_save"
+  ],
+  "approved_module_paths": {},
+  "stop_conditions": [
+    "wrong_project_or_level",
+    "unexpected_dirty_package",
+    "opening_or_collision_change",
+    "module_scale_outside_policy",
+    "unapproved_asset_dependency_expansion",
+    "protected_system_change",
+    "save_all_or_mass_resave"
+  ]
+}

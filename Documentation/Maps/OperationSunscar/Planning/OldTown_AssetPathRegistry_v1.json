@@ -1,0 +1,435 @@
+{
+  "schemaVersion": 1,
+  "generated": "2026-08-01",
+  "project": "TacticalMovement map-development worktree",
+  "level": "/Game/Maps/Blockout/Lvl_Blockout_01",
+  "policy": {
+    "publisherAllowList": [
+      "Epic Games",
+      "Quixel Megascans",
+      "Map-owned"
+    ],
+    "preserveGrayboxCollisionUntilVerified": true,
+    "unresolvedAssetPathStopsPlacement": true,
+    "fallbackPrimitive": "/Game/LevelPrototyping/Meshes/SM_Cube"
+  },
+  "supportAssetsAlreadyPresent": [
+    "/Game/Fab/Megascans/Surfaces/Crushed_Asphalt_Ground_sjyjcbja/Medium/sjyjcbja_tier_2/Materials/MI_sjyjcbja",
+    "/Game/Fab/Megascans/Surfaces/Weathered_Concrete_Wall_vi4idbm/Medium/vi4idbm_tier_2/Materials/MI_vi4idbm",
+    "/Game/Maps/Sunscar/Art/Quixel/CorrugatedBarrier/SM_ydxnbdns_tier_2/StaticMeshes/SM_ydxnbdns_tier_2",
+    "/Game/Maps/Sunscar/Art/Materials/Instances/MI_OT_WarmStucco",
+    "/Game/Maps/Sunscar/Art/Materials/Instances/MI_OT_PaleStucco",
+    "/Game/Maps/Sunscar/Art/Materials/Instances/MI_OT_Stone",
+    "/Game/Maps/Sunscar/Art/Materials/Instances/MI_OT_Metal",
+    "/Game/Maps/Sunscar/Art/Materials/Instances/MI_OT_Canvas"
+  ],
+  "entries": [
+    {
+      "bomId": "OT_ARCH_001",
+      "role": "Plain wall skins and caps",
+      "source": "MOD_WALL_01-04",
+      "status": "map_owned_definition_ready_asset_path_pending",
+      "assetPaths": [],
+      "verifiedFrom": "OLD_TOWN_MAP_OWNED_MODULAR_KIT.csv or existing primitive fallback"
+    },
+    {
+      "bomId": "OT_ARCH_002",
+      "role": "Door/window frames and leaves",
+      "source": "MOD_OPEN_01-04; MOD_DOOR_01; MOD_WIN_01-03",
+      "status": "map_owned_definition_ready_asset_path_pending",
+      "assetPaths": [],
+      "verifiedFrom": "OLD_TOWN_MAP_OWNED_MODULAR_KIT.csv or existing primitive fallback"
+    },
+    {
+      "bomId": "OT_ARCH_003",
+      "role": "Parapet roof and balcony trims",
+      "source": "MOD_ROOF_01-05",
+      "status": "map_owned_definition_ready_asset_path_pending",
+      "assetPaths": [],
+      "verifiedFrom": "OLD_TOWN_MAP_OWNED_MODULAR_KIT.csv or existing primitive fallback"
+    },
+    {
+      "bomId": "OT_ARCH_004",
+      "role": "Fence bases panels and gates",
+      "source": "MOD_FENCE_01-02; MOD_GATE_01-02",
+      "status": "map_owned_definition_ready_asset_path_pending",
+      "assetPaths": [],
+      "verifiedFrom": "OLD_TOWN_MAP_OWNED_MODULAR_KIT.csv or existing primitive fallback"
+    },
+    {
+      "bomId": "OT_ARCH_005",
+      "role": "Bazaar stall structural modules",
+      "source": "MOD_BAZ_01-05",
+      "status": "map_owned_definition_ready_asset_path_pending",
+      "assetPaths": [],
+      "verifiedFrom": "OLD_TOWN_MAP_OWNED_MODULAR_KIT.csv or existing primitive fallback"
+    },
+    {
+      "bomId": "OT_TAC_001",
+      "role": "Sandbag long barrier",
+      "source": "FAB_P0_003",
+      "status": "resolved_existing_project_asset",
+      "assetPaths": [
+        "/Game/Maps/Sunscar/Art/Quixel/Sandbags/SM_ydxlcck_tier_2/StaticMeshes/SM_ydxlcck_tier_2"
+      ],
+      "verifiedFrom": "existing project files and place_quixel_sandbags_v1.py"
+    },
+    {
+      "bomId": "OT_TAC_002",
+      "role": "Sandbag square/end piece",
+      "source": "FAB_P0_004",
+      "status": "resolved_existing_project_asset",
+      "assetPaths": [
+        "/Game/Maps/Sunscar/Art/Quixel/SandbagsSquare/SM_ydznbff_tier_2/StaticMeshes/SM_ydznbff_tier_2"
+      ],
+      "verifiedFrom": "existing project files and place_quixel_defensive_v1.py"
+    },
+    {
+      "bomId": "OT_TAC_003",
+      "role": "Static vehicle cover",
+      "source": "FAB_P0_002",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    },
+    {
+      "bomId": "OT_TAC_004",
+      "role": "Checkpoint road barriers",
+      "source": "PACK_001 selection",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    },
+    {
+      "bomId": "OT_TAC_005",
+      "role": "Crate and pallet cover",
+      "source": "PACK_004 selection",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    },
+    {
+      "bomId": "OT_TAC_006",
+      "role": "Large hard scrap cover",
+      "source": "PACK_004 selection",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    },
+    {
+      "bomId": "OT_TAC_007",
+      "role": "Existing-cover art skins",
+      "source": "Map-owned plus official materials",
+      "status": "map_owned_definition_ready_asset_path_pending",
+      "assetPaths": [],
+      "verifiedFrom": "OLD_TOWN_MAP_OWNED_MODULAR_KIT.csv or existing primitive fallback"
+    },
+    {
+      "bomId": "OT_UTIL_001",
+      "role": "Small electrical box",
+      "source": "FAB_P1A_002",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    },
+    {
+      "bomId": "OT_UTIL_002",
+      "role": "Medium electrical enclosure",
+      "source": "FAB_P1A_003",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    },
+    {
+      "bomId": "OT_UTIL_003",
+      "role": "Large electrical cabinet",
+      "source": "FAB_P1A_004",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    },
+    {
+      "bomId": "OT_UTIL_004",
+      "role": "Pipe straight/elbow network",
+      "source": "MOD_UTIL_01-02",
+      "status": "map_owned_definition_ready_asset_path_pending",
+      "assetPaths": [],
+      "verifiedFrom": "OLD_TOWN_MAP_OWNED_MODULAR_KIT.csv or existing primitive fallback"
+    },
+    {
+      "bomId": "OT_UTIL_005",
+      "role": "Conduit cable and wall run",
+      "source": "MOD_UTIL_03",
+      "status": "map_owned_definition_ready_asset_path_pending",
+      "assetPaths": [],
+      "verifiedFrom": "OLD_TOWN_MAP_OWNED_MODULAR_KIT.csv or existing primitive fallback"
+    },
+    {
+      "bomId": "OT_UTIL_006",
+      "role": "Drain covers and outlets",
+      "source": "FAB_P1A_005; MOD_UTIL_02",
+      "status": "map_owned_definition_ready_asset_path_pending",
+      "assetPaths": [],
+      "verifiedFrom": "OLD_TOWN_MAP_OWNED_MODULAR_KIT.csv or existing primitive fallback"
+    },
+    {
+      "bomId": "OT_UTIL_007",
+      "role": "Roof vents antenna and masts",
+      "source": "MOD_ROOF_03-05",
+      "status": "map_owned_definition_ready_asset_path_pending",
+      "assetPaths": [],
+      "verifiedFrom": "OLD_TOWN_MAP_OWNED_MODULAR_KIT.csv or existing primitive fallback"
+    },
+    {
+      "bomId": "OT_UTIL_008",
+      "role": "Tanks pumps and secondary equipment",
+      "source": "FAB_P0_021; map-owned",
+      "status": "map_owned_definition_ready_asset_path_pending",
+      "assetPaths": [],
+      "verifiedFrom": "OLD_TOWN_MAP_OWNED_MODULAR_KIT.csv or existing primitive fallback"
+    },
+    {
+      "bomId": "OT_UTIL_009",
+      "role": "Lamps poles and fixtures",
+      "source": "Map-owned modules",
+      "status": "map_owned_definition_ready_asset_path_pending",
+      "assetPaths": [],
+      "verifiedFrom": "OLD_TOWN_MAP_OWNED_MODULAR_KIT.csv or existing primitive fallback"
+    },
+    {
+      "bomId": "OT_FURN_001",
+      "role": "Wooden table",
+      "source": "FAB_P1B_009",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    },
+    {
+      "bomId": "OT_FURN_002",
+      "role": "Metal stool",
+      "source": "FAB_P1B_008",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    },
+    {
+      "bomId": "OT_FURN_003",
+      "role": "Wooden bench",
+      "source": "FAB_P1B_010",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    },
+    {
+      "bomId": "OT_FURN_004",
+      "role": "Tarp shade panels",
+      "source": "FAB_P1B_005; FAB_P1B_006; MOD_BAZ_03-04",
+      "status": "map_owned_definition_ready_asset_path_pending",
+      "assetPaths": [],
+      "verifiedFrom": "OLD_TOWN_MAP_OWNED_MODULAR_KIT.csv or existing primitive fallback"
+    },
+    {
+      "bomId": "OT_FURN_005",
+      "role": "Canopy support poles",
+      "source": "MOD_BAZ_05",
+      "status": "map_owned_definition_ready_asset_path_pending",
+      "assetPaths": [],
+      "verifiedFrom": "OLD_TOWN_MAP_OWNED_MODULAR_KIT.csv or existing primitive fallback"
+    },
+    {
+      "bomId": "OT_FURN_006",
+      "role": "Market containers baskets and goods",
+      "source": "PACK_004 selection; FAB_P0_020",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    },
+    {
+      "bomId": "OT_SCRAP_001",
+      "role": "Decorative vehicle parts and shells",
+      "source": "PACK_004 selection",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    },
+    {
+      "bomId": "OT_SCRAP_002",
+      "role": "Tires single and stacks",
+      "source": "PACK_004 selection",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    },
+    {
+      "bomId": "OT_SCRAP_003",
+      "role": "Rusty barrels",
+      "source": "FAB_P1A_018",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    },
+    {
+      "bomId": "OT_SCRAP_004",
+      "role": "Shovels hand tools and repair tools",
+      "source": "FAB_P1A_019; PACK_004 selection",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    },
+    {
+      "bomId": "OT_SCRAP_005",
+      "role": "Pallets crates and loading clutter",
+      "source": "PACK_004 selection",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    },
+    {
+      "bomId": "OT_SCRAP_006",
+      "role": "Small metal scrap",
+      "source": "PACK_004 selection; FAB_P1A_017",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    },
+    {
+      "bomId": "OT_DECAL_001",
+      "role": "Plaster damage patches",
+      "source": "FAB_P0_011",
+      "status": "resolved_existing_project_asset",
+      "assetPaths": [
+        "/Game/Maps/Sunscar/Art/Quixel/Damage/DamagedPlaster/vdekajsfw_tier_2/StaticMeshes/vdekajsfw_tier_2"
+      ],
+      "verifiedFrom": "existing project files"
+    },
+    {
+      "bomId": "OT_DECAL_002",
+      "role": "Rust grime and utility leaks",
+      "source": "FAB_SUP_001; FAB_SUP_002",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    },
+    {
+      "bomId": "OT_DECAL_003",
+      "role": "Ground breakup and dust edges",
+      "source": "FAB_P1B_013; official surface masks",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    },
+    {
+      "bomId": "OT_DECAL_004",
+      "role": "Signs warning plates and shop boards",
+      "source": "MOD_SIGN_01-02",
+      "status": "map_owned_definition_ready_asset_path_pending",
+      "assetPaths": [],
+      "verifiedFrom": "OLD_TOWN_MAP_OWNED_MODULAR_KIT.csv or existing primitive fallback"
+    },
+    {
+      "bomId": "OT_DECAL_005",
+      "role": "Spawn road and service markings",
+      "source": "Map-owned decal set",
+      "status": "map_owned_definition_ready_asset_path_pending",
+      "assetPaths": [],
+      "verifiedFrom": "OLD_TOWN_MAP_OWNED_MODULAR_KIT.csv or existing primitive fallback"
+    },
+    {
+      "bomId": "OT_DECAL_006",
+      "role": "Oil water and service stains",
+      "source": "FAB_SUP_003",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    },
+    {
+      "bomId": "OT_GROUND_001",
+      "role": "Small rock ground patch",
+      "source": "FAB_P1A_011",
+      "status": "resolved_existing_project_asset",
+      "assetPaths": [
+        "/Game/Fab/Megascans/3D/Military_Trenches_Ground_Patch_Rock_S_04_yd0lfcq/Medium/SM_yd0lfcq_tier_2/StaticMeshes/SM_yd0lfcq_tier_2"
+      ],
+      "verifiedFrom": "existing project files and place_quixel_ground_v1.py"
+    },
+    {
+      "bomId": "OT_GROUND_002",
+      "role": "Corner rubble patch",
+      "source": "FAB_P1A_012",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    },
+    {
+      "bomId": "OT_GROUND_003",
+      "role": "Asphalt fragment pack",
+      "source": "FAB_P1B_014",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    },
+    {
+      "bomId": "OT_GROUND_004",
+      "role": "Desert debris small",
+      "source": "FAB_P1A_017",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    },
+    {
+      "bomId": "OT_GROUND_005",
+      "role": "Medium desert rock",
+      "source": "FAB_P1A_014",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    },
+    {
+      "bomId": "OT_GROUND_006",
+      "role": "Rocky terrain edge",
+      "source": "FAB_P1A_013",
+      "status": "resolved_existing_project_asset",
+      "assetPaths": [
+        "/Game/Fab/Megascans/3D/Sandstone_Rocky_Ground_vmjjfiv/Medium/vmjjfiv_tier_2/StaticMeshes/vmjjfiv_tier_2"
+      ],
+      "verifiedFrom": "existing project files and place_quixel_ground_v1.py"
+    },
+    {
+      "bomId": "OT_GROUND_007",
+      "role": "Small rubble variant set",
+      "source": "PACK_001 selection",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    },
+    {
+      "bomId": "OT_VEG_001",
+      "role": "Dry grass",
+      "source": "FAB_P1A_015",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    },
+    {
+      "bomId": "OT_VEG_002",
+      "role": "Dried grass",
+      "source": "FAB_P1A_016",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    },
+    {
+      "bomId": "OT_VEG_003",
+      "role": "Sparse weed variant set",
+      "source": "FAB_P1A_015; FAB_P1A_016",
+      "status": "acquisition_or_staging_required",
+      "assetPaths": [],
+      "verifiedFrom": "Exact Fab listing or approved official pack"
+    }
+  ],
+  "summary": {
+    "map_owned_definition_ready_asset_path_pending": 16,
+    "resolved_existing_project_asset": 5,
+    "acquisition_or_staging_required": 28
+  }
+}

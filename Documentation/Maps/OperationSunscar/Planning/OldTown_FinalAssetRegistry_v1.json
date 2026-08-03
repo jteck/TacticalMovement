@@ -1,9 +1,33 @@
 {
   "schema_version": 1,
-  "status": "template_unresolved",
-  "warning": "Do not enable connected-slice apply mode until every source:// and map-owned:// reference used by the selected slice has an accepted production /Game path.",
-  "resolved_refs": {},
+  "status": "mechanically_resolved_visual_acceptance_pending",
+  "warning": "These paths are mechanically verified import candidates, not final visual acceptance. Keep connected-slice apply mode disabled until the dry-run and viewport review are complete.",
+  "resolved_refs": {
+    "source://FAB_P0_021/metal_water_tank_wdklears_high": "/Game/Maps/Sunscar/Art/Quixel/Downloaded/FAB_P0_021_wdklears/Metal_Water_Tank_wdklears_High",
+    "source://FAB_P1A_002/electrical_box_tdgecegda_high": "/Game/Maps/Sunscar/Art/Quixel/Downloaded/FAB_P1A_002_tdgecegda/Electrical_Box_tdgecegda_High",
+    "source://FAB_P1A_003/electric_box_ullibjd_high": "/Game/Maps/Sunscar/Art/Quixel/Downloaded/FAB_P1A_003_ullibjd/Electric_Box_ullibjd_High",
+    "source://FAB_P1A_004/electrical_cabinet_ujzfde2_high": "/Game/Maps/Sunscar/Art/Quixel/Downloaded/FAB_P1A_004_ujzfde2/Electrical_Cabinet_ujzfde2_High",
+    "source://FAB_P1A_012/military_trenches_debris_patch_rock_corner_ydyqbjds_high": "/Game/Maps/Sunscar/Art/Quixel/Downloaded/FAB_P1A_012_ydyqbjds/Military_Trenches_Debris_Patch_Rock_Corner_ydyqbjds_High",
+    "source://FAB_P1A_014/desert_western_rock_medium_08_uk4cdch_high": "/Game/Maps/Sunscar/Art/Quixel/Downloaded/FAB_P1A_014_uk4cdch/Desert_Western_Rock_Medium_08_uk4cdch_High",
+    "source://FAB_P1A_015/dry_grass_tbbqejqr_high": "/Game/Maps/Sunscar/Art/Quixel/Downloaded/FAB_P1A_015_tbbqejqr/Dry_Grass_tbbqejqr_High_tbbqejqr_VarA_LOD0",
+    "source://FAB_P1A_018/rusty_metal_barrel_teufceuda_high": "/Game/Maps/Sunscar/Art/Quixel/Downloaded/FAB_P1A_018_teufceuda/Rusty_Metal_Barrel_teufceuda_High",
+    "source://FAB_P1A_019/old_shovel_uckmaibfa_high": "/Game/Maps/Sunscar/Art/Quixel/Downloaded/FAB_P1A_019_uckmaibfa/Old_Shovel_uckmaibfa_High",
+    "source://FAB_P1B_001/old_wooden_door_wbmgdcpdw_high": "/Game/Maps/Sunscar/Art/Quixel/Downloaded/FAB_P1B_001_wbmgdcpdw/Old_Wooden_Door_wbmgdcpdw_High",
+    "source://FAB_P1B_008/old_metal_stool_ukknbeyaw_high": "/Game/Maps/Sunscar/Art/Quixel/Downloaded/FAB_P1B_008_ukknbeyaw/Old_Metal_Stool_ukknbeyaw_High",
+    "source://FAB_P1B_009/wooden_table_veigfjmaw_high": "/Game/Maps/Sunscar/Art/Quixel/Downloaded/FAB_P1B_009_veigfjmaw/Wooden_Table_veigfjmaw_High",
+    "source://FAB_P1B_010/wooden_bench_vlroadt_high": "/Game/Maps/Sunscar/Art/Quixel/Downloaded/FAB_P1B_010_vlroadt/Wooden_Bench_vlroadt_High",
+    "source://FAB_P1B_014/asphalt_debris_pack_tlhjacuva_high": "/Game/Maps/Sunscar/Art/Quixel/Downloaded/FAB_P1B_014_tlhjacuva/tlhjacuva_LOD0_TIER1_000",
+    "map-owned://OT_DESERT_DEBRIS_CARD_01": "/Game/Maps/Sunscar/Art/Quixel/Downloaded/FAB_P1B_014_tlhjacuva/tlhjacuva_LOD0_TIER1_000",
+    "map-owned://OT_DESERT_DEBRIS_CARD_02": "/Game/Maps/Sunscar/Art/Quixel/Downloaded/FAB_P1B_014_tlhjacuva/tlhjacuva_LOD0_TIER1_001",
+    "map-owned://OT_DESERT_DEBRIS_CARD_03": "/Game/Maps/Sunscar/Art/Quixel/Downloaded/FAB_P1B_014_tlhjacuva/tlhjacuva_LOD0_TIER1_002",
+    "map-owned://OT_DESERT_DEBRIS_CARD_04": "/Game/Maps/Sunscar/Art/Quixel/Downloaded/FAB_P1B_014_tlhjacuva/tlhjacuva_LOD0_TIER1_003"
+  },
   "accepted_assets": {},
   "rejected_assets": {},
-  "notes": []
+  "notes": [
+    "2026-08-02: All 35 approved direct Quixel archives imported under /Game/Maps/Sunscar/Art/Quixel/Downloaded with zero import errors.",
+    "2026-08-02: Source references with imported Static Mesh candidates were mechanically mapped. Texture-only surfaces and decals remain unresolved until proper Unreal materials are assembled.",
+    "2026-08-02: OT_DESERT_DEBRIS_CARD candidates temporarily resolve to four meshes from the approved Asphalt Debris Pack; they remain subject to viewport acceptance.",
+    "No asset in resolved_refs is classified as visually accepted by this update."
+  ]
 }

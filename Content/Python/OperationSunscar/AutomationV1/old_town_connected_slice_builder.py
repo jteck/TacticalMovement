@@ -41,20 +41,53 @@ actors = list(actor_system.get_all_level_actors())
 world = common.editor_world()
 landscapes = [actor for actor in actors if "Landscape" in actor.get_class().get_name()]
 non_landscapes = [actor for actor in actors if actor not in landscapes]
+placement_tag = unreal.Name(execution["placement_tag"])
+existing_preview = [actor for actor in actors if placement_tag in list(actor.tags)]
 
 
 def landscape_z(x_cm, y_cm):
-    result = unreal.SystemLibrary.line_trace_single(
+    hit = unreal.SystemLibrary.line_trace_single(
         world,
-        unreal.Vector(x_cm, y_cm, 45000.0),
-        unreal.Vector(x_cm, y_cm, 25000.0),
+        unreal.Vector(x_cm, y_cm, 100000.0),
+        unreal.Vector(x_cm, y_cm, -100000.0),
         unreal.TraceTypeQuery.TRACE_TYPE_QUERY1,
         True,
         non_landscapes,
         unreal.DrawDebugTrace.NONE,
         True,
-    ).to_dict()
+    )
+    if hit is None:
+        return None
+    result = hit.to_dict()
     return result["location"].z if result.get("blocking_hit") else None
+
+
+def visible_surface(x_cm, y_cm, terrain_z):
+    """Return a safe visible support or explain why the coordinate is covered."""
+    hit = unreal.SystemLibrary.line_trace_single(
+        world,
+        unreal.Vector(x_cm, y_cm, 100000.0),
+        unreal.Vector(x_cm, y_cm, -100000.0),
+        unreal.TraceTypeQuery.TRACE_TYPE_QUERY1,
+        True,
+        landscapes + existing_preview,
+        unreal.DrawDebugTrace.NONE,
+        True,
+    )
+    if hit is None:
+        return terrain_z, "Landscape", ""
+    result = hit.to_dict()
+    if not result.get("blocking_hit"):
+        return terrain_z, "Landscape", ""
+    surface_z = result["location"].z
+    surface_actor = result.get("hit_actor")
+    surface_label = surface_actor.get_actor_label() if surface_actor else "Unknown"
+    delta = surface_z - terrain_z
+    if delta > 80.0:
+        return None, surface_label, "coordinate_covered_by_existing_geometry"
+    if delta < -10.0:
+        return terrain_z, "Landscape", ""
+    return max(terrain_z, surface_z), surface_label, ""
 
 
 resolved = []
@@ -100,13 +133,22 @@ for record in slice_records:
         blockers.append(item)
         continue
 
+    support_z, support_actor, support_reason = visible_surface(x_cm, y_cm, terrain_z)
+    item["terrain_z_cm"] = round(terrain_z, 3)
+    item["support_actor"] = support_actor
+    if support_z is None:
+        item["reason"] = support_reason
+        manual_records.append(item)
+        continue
+    item["support_z_cm"] = round(support_z, 3)
+
     bounds = asset.get_bounds()
     scale = float(item["scale"])
     local_min_z = (bounds.origin.z - bounds.box_extent.z) * scale
     item["planned_location_cm"] = {
         "x": round(x_cm, 3),
         "y": round(y_cm, 3),
-        "z": round(terrain_z - local_min_z, 3),
+        "z": round(support_z - local_min_z, 3),
     }
     item["action"] = "ready_to_spawn" if apply_requested else "dry_run_ready"
     resolved.append((item, asset))
@@ -129,12 +171,16 @@ created = []
 if apply_requested:
     if execution.get("destroy_existing_tagged_actors", False):
         raise RuntimeError("SUNSCAR_V1_REFUSES_TAGGED_ACTOR_DESTRUCTION")
+    if existing_preview:
+        raise RuntimeError(
+            "SUNSCAR_V1_REFUSES_DUPLICATE_PREVIEW existing=%d" % len(existing_preview)
+        )
     for item, asset in resolved:
         location = item["planned_location_cm"]
         actor = actor_system.spawn_actor_from_object(
             asset,
             unreal.Vector(location["x"], location["y"], location["z"]),
-            unreal.Rotator(0.0, float(item["yaw_deg"]), 0.0),
+            unreal.Rotator(roll=0.0, pitch=0.0, yaw=float(item["yaw_deg"])),
             transient=False,
         )
         actor.set_actor_label("OT_AUTO_%s" % item["candidate_id"])
@@ -146,6 +192,22 @@ if apply_requested:
         ]
         actor.set_folder_path(unreal.Name("%s/%s" % (execution["placement_folder"], item["site_id"])))
         actor.set_actor_scale3d(unreal.Vector(float(item["scale"]), float(item["scale"]), float(item["scale"])))
+        bounds_origin, bounds_extent = actor.get_actor_bounds(False)
+        bottom_z = bounds_origin.z - bounds_extent.z
+        grounding_offset = item["support_z_cm"] - bottom_z
+        if abs(grounding_offset) > 0.001:
+            actor.set_actor_location(
+                unreal.Vector(location["x"], location["y"], location["z"] + grounding_offset),
+                False,
+                False,
+            )
+        final_location = actor.get_actor_location()
+        item["final_location_cm"] = {
+            "x": round(final_location.x, 3),
+            "y": round(final_location.y, 3),
+            "z": round(final_location.z, 3),
+        }
+        item["grounding_offset_cm"] = round(grounding_offset, 3)
         component = getattr(actor, "static_mesh_component", None)
         if component:
             component.set_collision_enabled(unreal.CollisionEnabled.NO_COLLISION)

@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "generated": "2026-07-26",
+  "status": "planning_only",
+  "level": "/Game/Maps/Blockout/Lvl_Blockout_01",
+  "coordinateSystem": {
+    "origin": "Old Town design origin",
+    "units": "meters",
+    "east": "+X",
+    "north": "+Y",
+    "unrealConversion": "multiply meters by 100"
+  },
+  "sources": {
+    "bom": "OLD_TOWN_PROP_MASTER_BOM.csv",
+    "siteBudgets": "OLD_TOWN_PROP_SITE_BUDGETS.csv",
+    "importBatches": "OLD_TOWN_PROP_IMPORT_BATCHES.csv",
+    "siteRecipes": "OLD_TOWN_SITE_RECIPES.csv",
+    "exactAssignments": "OLD_TOWN_EXACT_SITE_ASSIGNMENTS.csv"
+  },
+  "publisherAllowList": ["Epic Games", "Quixel Megascans", "Map-owned"],
+  "globalExclusions": [
+    "spawn_envelope",
+    "door_clearance",
+    "stair_clearance",
+    "ladder_clearance",
+    "objective_volume",
+    "verified_route_centerline",
+    "vehicle_gate_clearance",
+    "mantle_edge_buffer"
+  ],
+  "placementPolicies": {
+    "architecture_caps": "socket_or_manual",
+    "tactical_cover": "manual_only",
+    "utilities": "socket_or_manual",
+    "furniture_market": "manual_clusters",
+    "industrial_scrap": "large_manual_small_deterministic",
+    "decals_signs": "socket_or_projected",
+    "rubble_ground": "deterministic_scatter_with_exclusions",
+    "vegetation": "deterministic_pcg_with_exclusions"
+  },
+  "sites": [
+    {"id":"SS_001","name":"Attacker Spawn and Extraction","center":[-130,-99],"size":[20,18],"height":0.2,"seed":41001,"counts":{"architecture_caps":4,"tactical_cover":6,"utilities":2,"furniture_market":0,"industrial_scrap":0,"decals_signs":8,"rubble_ground":16,"vegetation":8},"rule":"Keep spawn envelope and first movement path clear"},
+    {"id":"SS_002","name":"Dry Canal Entrance","center":[-126,-19],"size":[7,24],"height":1.5,"seed":41002,"counts":{"architecture_caps":8,"tactical_cover":4,"utilities":6,"furniture_market":0,"industrial_scrap":0,"decals_signs":10,"rubble_ground":32,"vegetation":28},"rule":"Preserve culvert clearance and canal center path"},
+    {"id":"SS_003","name":"Canal Pump Station","center":[-106,-63],"size":[18,15],"height":3.2,"seed":41003,"counts":{"architecture_caps":12,"tactical_cover":2,"utilities":22,"furniture_market":0,"industrial_scrap":4,"decals_signs":12,"rubble_ground":16,"vegetation":8},"rule":"No pipe or equipment climb chain"},
+    {"id":"SS_004","name":"Tea House","center":[-88,-29],"size":[18,16],"height":3.2,"seed":41004,"counts":{"architecture_caps":26,"tactical_cover":4,"utilities":8,"furniture_market":18,"industrial_scrap":0,"decals_signs":14,"rubble_ground":18,"vegetation":6},"rule":"Shade underside at least 2.5 m; doors remain high contrast"},
+    {"id":"SS_005","name":"Old Clinic","center":[-56,-1],"size":[24,19],"height":6.4,"seed":41005,"counts":{"architecture_caps":44,"tactical_cover":2,"utilities":8,"furniture_market":4,"industrial_scrap":0,"decals_signs":22,"rubble_ground":20,"vegetation":8},"rule":"Primary entrance and second-floor openings remain obvious"},
+    {"id":"SS_006","name":"Water Tower Compound","center":[-62,45],"size":[16,16],"height":15,"seed":41006,"counts":{"architecture_caps":34,"tactical_cover":8,"utilities":16,"furniture_market":0,"industrial_scrap":0,"decals_signs":12,"rubble_ground":28,"vegetation":12},"rule":"Preserve ladder platform and landmark silhouette"},
+    {"id":"SS_007","name":"Municipal Hotel","center":[-14,27],"size":[28,22],"height":9.6,"seed":41007,"counts":{"architecture_caps":66,"tactical_cover":2,"utilities":14,"furniture_market":6,"industrial_scrap":0,"decals_signs":30,"rubble_ground":28,"vegetation":10},"rule":"No decorative climb chain or new window sightline"},
+    {"id":"SS_008","name":"Central Courtyard","center":[-18,-31],"size":[34,28],"height":0.2,"seed":41008,"counts":{"architecture_caps":10,"tactical_cover":10,"utilities":4,"furniture_market":6,"industrial_scrap":0,"decals_signs":20,"rubble_ground":42,"vegetation":24},"rule":"Keep 8-12 m central band open"},
+    {"id":"SS_009","name":"Transit Plaza","center":[6,-5],"size":[32,26],"height":0.2,"seed":41009,"counts":{"architecture_caps":8,"tactical_cover":8,"utilities":8,"furniture_market":4,"industrial_scrap":0,"decals_signs":20,"rubble_ground":30,"vegetation":12},"rule":"Maximum three cover clusters; preserve cross-route visibility"},
+    {"id":"SS_010","name":"Detention Annex","center":[22,91],"size":[34,28],"height":6.4,"seed":41010,"counts":{"architecture_caps":50,"tactical_cover":18,"utilities":10,"furniture_market":2,"industrial_scrap":0,"decals_signs":24,"rubble_ground":28,"vegetation":10},"rule":"Preserve differentiated entrances and objective access"},
+    {"id":"SS_011","name":"Checkpoint Office","center":[74,51],"size":[20,17],"height":6.4,"seed":41011,"counts":{"architecture_caps":26,"tactical_cover":16,"utilities":14,"furniture_market":0,"industrial_scrap":2,"decals_signs":14,"rubble_ground":14,"vegetation":4},"rule":"Vehicle gate remains 6-8 m clear"},
+    {"id":"SS_012","name":"Consulate Residence","center":[118,49],"size":[21,18],"height":6.4,"seed":41012,"counts":{"architecture_caps":38,"tactical_cover":4,"utilities":8,"furniture_market":12,"industrial_scrap":0,"decals_signs":12,"rubble_ground":18,"vegetation":10},"rule":"No hidden compound sightline"},
+    {"id":"SS_013","name":"Freight Depot","center":[108,1],"size":[30,24],"height":4.2,"seed":41013,"counts":{"architecture_caps":30,"tactical_cover":12,"utilities":16,"furniture_market":4,"industrial_scrap":28,"decals_signs":16,"rubble_ground":22,"vegetation":6},"rule":"Loading channel remains clear"},
+    {"id":"SS_014","name":"Salvage Yard","center":[74,-17],"size":[44,35],"height":2.4,"seed":41014,"counts":{"architecture_caps":44,"tactical_cover":28,"utilities":8,"furniture_market":0,"industrial_scrap":76,"decals_signs":18,"rubble_ground":52,"vegetation":16},"rule":"Vehicles and large scrap are manual tactical placements"},
+    {"id":"SS_015","name":"Motor Pool","center":[128,-47],"size":[24,20],"height":4.2,"seed":41015,"counts":{"architecture_caps":28,"tactical_cover":18,"utilities":20,"furniture_market":0,"industrial_scrap":42,"decals_signs":16,"rubble_ground":28,"vegetation":8},"rule":"Static vehicles cannot close bypass"},
+    {"id":"SS_016","name":"Power Substation","center":[60,-70],"size":[26,20],"height":3.2,"seed":41016,"counts":{"architecture_caps":26,"tactical_cover":6,"utilities":38,"furniture_market":0,"industrial_scrap":12,"decals_signs":20,"rubble_ground":24,"vegetation":10},"rule":"Equipment and fence collision cannot leak into routes"},
+    {"id":"SS_017","name":"Covered Bazaar","center":[28,-93],"size":[36,17],"height":3.4,"seed":41017,"counts":{"architecture_caps":58,"tactical_cover":10,"utilities":10,"furniture_market":60,"industrial_scrap":8,"decals_signs":28,"rubble_ground":28,"vegetation":8},"rule":"Preserve full central passage and enemy readability"},
+    {"id":"SS_018","name":"Telecom Workshop","center":[-56,-91],"size":[21,18],"height":6.4,"seed":41018,"counts":{"architecture_caps":32,"tactical_cover":4,"utilities":30,"furniture_market":2,"industrial_scrap":8,"decals_signs":24,"rubble_ground":20,"vegetation":8},"rule":"Roof equipment remains non-traversable"},
+    {"id":"SS_019","name":"South Defender Insertion","center":[112,-105],"size":[20,16],"height":0.2,"seed":41019,"counts":{"architecture_caps":4,"tactical_cover":6,"utilities":2,"furniture_market":0,"industrial_scrap":0,"decals_signs":8,"rubble_ground":16,"vegetation":8},"rule":"Keep insertion envelope and first safe path clear"},
+    {"id":"SS_020","name":"North Defender Insertion","center":[118,97],"size":[20,16],"height":0.2,"seed":41020,"counts":{"architecture_caps":18,"tactical_cover":10,"utilities":2,"furniture_market":0,"industrial_scrap":0,"decals_signs":10,"rubble_ground":24,"vegetation":16},"rule":"No overpowered firing position at spawn edge"}
+  ],
+  "totals": {
+    "architecture_caps": 566,
+    "tactical_cover": 178,
+    "utilities": 246,
+    "furniture_market": 118,
+    "industrial_scrap": 180,
+    "decals_signs": 338,
+    "rubble_ground": 504,
+    "vegetation": 220,
+    "all": 2350
+  }
+}

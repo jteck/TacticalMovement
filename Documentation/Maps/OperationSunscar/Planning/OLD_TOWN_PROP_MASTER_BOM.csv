@@ -1,0 +1,51 @@
+bom_id,class,asset_role,source_record_or_pack,publisher,acquisition_state,target_instances,unique_variant_target,scale_min,scale_max,placement,collision,nanite,staging_gate,fallback
+OT_ARCH_001,architecture,Plain wall skins and caps,MOD_WALL_01-04,Map-owned,Ready,240,10,1.00,1.00,Socket/manual,Graybox authoritative,No,None,Existing graybox shell
+OT_ARCH_002,architecture,Door/window frames and leaves,MOD_OPEN_01-04; MOD_DOOR_01; MOD_WIN_01-03,Map-owned,Ready,128,9,1.00,1.00,Socket/manual,Simple proxy,No,None,Existing openings
+OT_ARCH_003,architecture,Parapet roof and balcony trims,MOD_ROOF_01-05,Map-owned,Ready,110,8,0.95,1.05,Socket/manual,Simple or none,Selective,Roof clearance review,Keep graybox roof edge
+OT_ARCH_004,architecture,Fence bases panels and gates,MOD_FENCE_01-02; MOD_GATE_01-02,Map-owned,Ready,58,10,1.00,1.00,Manual,Simple box,No,Gate width review,Existing perimeter
+OT_ARCH_005,architecture,Bazaar stall structural modules,MOD_BAZ_01-05,Map-owned,Ready,30,8,0.95,1.05,Manual,Simple/no collision,No,Passage review,Existing bazaar blocks
+OT_TAC_001,tactical,Sandbag long barrier,FAB_P0_003,Quixel Megascans,Acquire free,26,1,0.95,1.05,Manual,Custom simple,Provisional,Verify pivot and collision,Map-owned barrier
+OT_TAC_002,tactical,Sandbag square/end piece,FAB_P0_004,Quixel Megascans,Acquire free,18,1,0.95,1.05,Manual,Custom simple,Provisional,Verify pivot and collision,Map-owned barrier
+OT_TAC_003,tactical,Static vehicle cover,FAB_P0_002,Epic Games,Acquire free pack,5,4,0.95,1.05,Manual,Simple proxy,Provisional,Select pickup van sedan SUV and record bounds,Existing cover blocks
+OT_TAC_004,tactical,Checkpoint road barriers,PACK_001 selection,Quixel Megascans,Acquire free pack,12,3,0.95,1.05,Manual,Custom simple,Per mesh,Resolve internal mesh paths,Map-owned barrier
+OT_TAC_005,tactical,Crate and pallet cover,PACK_004 selection,Quixel Megascans,Acquire free pack,22,5,0.90,1.10,Manual,Simple boxes,Per mesh,Resolve safe stack variants,Map-owned crates
+OT_TAC_006,tactical,Large hard scrap cover,PACK_004 selection,Quixel Megascans,Acquire free pack,25,5,0.90,1.05,Manual,Simple proxies,Per mesh,Resolve bounds and silhouette,Existing cover blocks
+OT_TAC_007,tactical,Existing-cover art skins,Map-owned plus official materials,Map-owned,Ready,70,8,1.00,1.00,Manual,Graybox authoritative,Selective,Fit to approved cover only,Existing cover blocks
+OT_UTIL_001,utility,Small electrical box,FAB_P1A_002,Quixel Megascans,Acquire free,20,1,0.90,1.05,Socket/manual,None if flush,Unnecessary,Confirm depth orientation,Map-owned box
+OT_UTIL_002,utility,Medium electrical enclosure,FAB_P1A_003,Quixel Megascans,Acquire free,12,1,0.95,1.05,Socket/manual,Simple if reachable,Provisional,Confirm dimension orientation,Map-owned box
+OT_UTIL_003,utility,Large electrical cabinet,FAB_P1A_004,Quixel Megascans,Acquire free,4,1,1.00,1.00,Manual,Simple box,Provisional,Verify 262x139x87 cm bounds,Map-owned cabinet
+OT_UTIL_004,utility,Pipe straight/elbow network,MOD_UTIL_01-02,Map-owned,Ready,70,7,0.90,1.10,Socket/manual,None or capsule,No,Climb-chain review,Simple cylinders
+OT_UTIL_005,utility,Conduit cable and wall run,MOD_UTIL_03,Map-owned,Ready,70,6,0.90,1.10,Socket/scripted,None,No,Wall conformity review,Decal line
+OT_UTIL_006,utility,Drain covers and outlets,FAB_P1A_005; MOD_UTIL_02,Quixel plus map-owned,Acquire free,18,3,0.90,1.10,Socket/manual,None,No,Ground conformity review,Map-owned disc
+OT_UTIL_007,utility,Roof vents antenna and masts,MOD_ROOF_03-05,Map-owned,Ready,20,7,0.90,1.10,Manual,None or simple,No,Roof edge exclusion,Simple roof boxes
+OT_UTIL_008,utility,Tanks pumps and secondary equipment,FAB_P0_021; map-owned,Quixel plus map-owned,Acquire free,12,4,0.95,1.05,Manual,Simple proxy,Provisional,Do not scale tank into hero tower,Map-owned tanks
+OT_UTIL_009,utility,Lamps poles and fixtures,Map-owned modules,Map-owned,Ready,20,5,0.95,1.05,Manual,Simple capsule,No,Travel-path clearance,Unlit simple fixtures
+OT_FURN_001,furniture,Wooden table,FAB_P1B_009,Quixel Megascans,Acquire free,12,1,0.95,1.05,Manual,Simple box,Provisional,Verify pivot,Map-owned table
+OT_FURN_002,furniture,Metal stool,FAB_P1B_008,Quixel Megascans,Acquire free,16,1,0.90,1.05,Manual,None or simple,No,Reachability review,Map-owned stool
+OT_FURN_003,furniture,Wooden bench,FAB_P1B_010,Quixel Megascans,Acquire free,10,1,0.95,1.05,Manual,None,No,Confirm listed low height,Map-owned bench
+OT_FURN_004,furniture,Tarp shade panels,FAB_P1B_005; FAB_P1B_006; MOD_BAZ_03-04,Quixel plus map-owned,Acquire free,10,6,0.95,1.05,Manual,None,Material dependent,Opacity and underside review,Map-owned canopy plane
+OT_FURN_005,furniture,Canopy support poles,MOD_BAZ_05,Map-owned,Ready,20,3,0.95,1.05,Manual,Simple capsule,No,Weapon-view clearance,Map-owned pole
+OT_FURN_006,furniture,Market containers baskets and goods,PACK_004 selection; FAB_P0_020,Quixel Megascans,Acquire free pack,50,8,0.85,1.10,Cluster/manual,None,Per mesh,Resolve small nonmodern variants,Storage-box fallback
+OT_SCRAP_001,industrial,Decorative vehicle parts and shells,PACK_004 selection,Quixel Megascans,Acquire free pack,30,6,0.90,1.10,Manual/cluster,Simple for large pieces,Per mesh,Resolve internal paths and bounds,Map-owned scrap
+OT_SCRAP_002,industrial,Tires single and stacks,PACK_004 selection,Quixel Megascans,Acquire free pack,40,6,0.90,1.10,Cluster/manual,None or simple,Per mesh,Reject race-painted look,Map-owned tire proxy
+OT_SCRAP_003,industrial,Rusty barrels,FAB_P1A_018,Quixel Megascans,Acquire free,22,1,0.90,1.05,Cluster/manual,Simple capsule,Provisional,Verify 59x59x88 cm bounds,Map-owned barrel
+OT_SCRAP_004,industrial,Shovels hand tools and repair tools,FAB_P1A_019; PACK_004 selection,Quixel Megascans,Acquire free,18,5,0.90,1.10,Socket/cluster,None,Per mesh,Resolve tool subset,Map-owned tool silhouettes
+OT_SCRAP_005,industrial,Pallets crates and loading clutter,PACK_004 selection,Quixel Megascans,Acquire free pack,30,6,0.90,1.10,Cluster/manual,Simple for stacks,Per mesh,Resolve stack-safe variants,Map-owned pallets
+OT_SCRAP_006,industrial,Small metal scrap,PACK_004 selection; FAB_P1A_017,Quixel Megascans,Acquire free pack,40,8,0.80,1.15,Deterministic scatter,None,Per mesh,Select nonsharp low-profile pieces,Desert Debris
+OT_DECAL_001,decal,Plaster damage patches,FAB_P0_011,Quixel Megascans,Acquire free,82,1,0.50,2.00,Socket/scripted,None,Not applicable,Facade projection review,None
+OT_DECAL_002,decal,Rust grime and utility leaks,FAB_SUP_001; FAB_SUP_002,Quixel Megascans,Acquire free,106,2,0.50,1.75,Socket/scripted,None,Not applicable,Verify projection material in 5.8,Material vertex tint
+OT_DECAL_003,decal,Ground breakup and dust edges,FAB_P1B_013; official surface masks,Quixel Megascans,Acquire free,64,4,0.75,2.00,Scripted,None,Not applicable,Ground projection review,Material blend
+OT_DECAL_004,decal,Signs warning plates and shop boards,MOD_SIGN_01-02,Map-owned,Ready,48,12,0.90,1.10,Socket/manual,None,No,No real brands or unreadable clutter,Blank sign board
+OT_DECAL_005,decal,Spawn road and service markings,Map-owned decal set,Map-owned,Ready,18,6,0.90,1.10,Manual,None,No,Spawn readability review,None
+OT_DECAL_006,decal,Oil water and service stains,FAB_SUP_003,Quixel Megascans,Acquire free,20,1,0.60,1.60,Socket/scripted,None,Not applicable,Verify projection material in 5.8,Material blend
+OT_GROUND_001,ground,Small rock ground patch,FAB_P1A_011,Quixel Megascans,Already imported,60,1,0.85,1.15,Scripted/manual,None,Provisional,Verify existing asset path,None
+OT_GROUND_002,ground,Corner rubble patch,FAB_P1A_012,Quixel Megascans,Acquire free,76,1,0.85,1.15,Socket/scripted,None,Provisional,Wall-corner conformity,None
+OT_GROUND_003,ground,Asphalt fragment pack,FAB_P1B_014,Quixel Megascans,Acquire free,94,4,0.70,1.20,Deterministic scatter,None,Unnecessary,Route exclusion review,None
+OT_GROUND_004,ground,Desert debris small,FAB_P1A_017,Quixel Megascans,Acquire free,84,4,0.75,1.20,Deterministic scatter,None,Per mesh,Verify no modern trash bias,Ground patch
+OT_GROUND_005,ground,Medium desert rock,FAB_P1A_014,Quixel Megascans,Acquire free,30,1,0.90,1.05,Manual,Simple if tactical,Provisional,Cover and sightline review,Existing rock proxy
+OT_GROUND_006,ground,Rocky terrain edge,FAB_P1A_013,Quixel Megascans,Already imported,20,1,0.95,1.05,Manual,None or simple,Provisional,Verify existing asset path,Existing terrain
+OT_GROUND_007,ground,Small rubble variant set,PACK_001 selection,Quixel Megascans,Acquire free pack,140,6,0.70,1.20,Deterministic scatter,None,Per mesh,Resolve internal mesh paths,Ground patch
+OT_VEG_001,vegetation,Dry grass,FAB_P1A_015,Quixel Megascans,Acquire free,110,1,0.75,1.20,Deterministic PCG,None,Material dependent,Masked material and wind review,None
+OT_VEG_002,vegetation,Dried grass,FAB_P1A_016,Quixel Megascans,Acquire free,74,1,0.75,1.20,Deterministic PCG,None,Material dependent,Masked material and wind review,None
+OT_VEG_003,vegetation,Sparse weed variant set,FAB_P1A_015; FAB_P1A_016,Quixel Megascans,Reuse acquired grass variants,36,2,0.70,1.15,Deterministic PCG,None,Material dependent,Create variation through seed rotation scale and material tint,Use dry-grass variants
+TOTAL,all,Old Town first-round instances,All approved sources,Official/map-owned,Planned,2350,0,0,0,Mixed,Mixed,Mixed,See rows,None

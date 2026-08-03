@@ -24,11 +24,12 @@ world = common.editor_world()
 def is_sandbag_actor(actor):
     label = actor.get_actor_label()
     mesh_path = common.actor_mesh_path(actor)
-    tags = common.actor_tags(actor)
+    normalized_label = label.lower()
     return (
         common.has_any_term(label, audit["label_terms"])
         or common.has_any_term(mesh_path, audit["mesh_path_terms"])
-        or any(tag in audit["tag_terms"] for tag in tags)
+        or normalized_label.startswith("qx_square_")
+        or normalized_label.startswith("col_qx_square_")
     )
 
 
@@ -43,6 +44,8 @@ def trace(start, end, ignored):
         unreal.DrawDebugTrace.NONE,
         True,
     )
+    if result is None:
+        return {}
     return result.to_dict()
 
 
@@ -64,6 +67,7 @@ for actor in sandbags:
     parent_class = parent.get_class().get_name() if parent else ""
     mesh_path = common.actor_mesh_path(actor)
     tags = common.actor_tags(actor)
+    is_collision_proxy = label.startswith("COL_")
 
     support_result = trace(
         unreal.Vector(origin.x, origin.y, bottom_z + audit["trace_above_cm"]),
@@ -87,16 +91,15 @@ for actor in sandbags:
     flags = []
     if parent:
         flags.append("attached_to_actor")
-    if support_gap_cm is None:
+    if support_gap_cm is None and not is_collision_proxy:
         flags.append("no_support_hit")
-    elif support_gap_cm > audit["support_tolerance_cm"]:
+    elif support_gap_cm is not None and support_gap_cm > audit["support_tolerance_cm"] and not is_collision_proxy:
         flags.append("support_gap")
     if above_terrain_cm is not None and above_terrain_cm > audit["upper_elevation_review_cm"]:
         flags.append("upper_elevation_review")
     if support_actor and support_actor != parent and parent:
         flags.append("attachment_support_mismatch")
-    if any(tag in audit["tag_terms"] for tag in tags):
-        flags.append("created_by_known_sandbag_script")
+    known_script_provenance = any(tag in audit["tag_terms"] for tag in tags)
 
     records.append(
         {
@@ -105,6 +108,8 @@ for actor in sandbags:
             "mesh_path": mesh_path,
             "folder": common.actor_folder(actor),
             "tags": ";".join(tags),
+            "known_script_provenance": known_script_provenance,
+            "is_collision_proxy": is_collision_proxy,
             "location_x_cm": round(location.x, 3),
             "location_y_cm": round(location.y, 3),
             "location_z_cm": round(location.z, 3),
@@ -140,7 +145,7 @@ if median_bottom is not None:
             record["review_required"] = True
 
 headers = [
-    "label", "class", "mesh_path", "folder", "tags",
+    "label", "class", "mesh_path", "folder", "tags", "known_script_provenance", "is_collision_proxy",
     "location_x_cm", "location_y_cm", "location_z_cm", "bottom_z_cm",
     "rotation_pitch", "rotation_yaw", "rotation_roll", "scale_x", "scale_y", "scale_z",
     "parent_label", "parent_class", "support_label", "support_class",

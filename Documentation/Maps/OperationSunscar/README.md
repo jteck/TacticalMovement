@@ -1,6 +1,6 @@
 # Operation Sunscar Documentation Index
 
-Last updated: 2026-07-24
+Last updated: 2026-07-25
 Repository branch: `feature/map-development`
 
 ## Current map
@@ -12,21 +12,32 @@ Repository branch: `feature/map-development`
   `a0c07027a573d886975c9903a99db3c5bc679332`
 - Production base:
   `881c891df41ca4b7ad81ddd706baf6e22ff9da94`
+- Current committed map-development baseline:
+  `f7c84efbd70cf7340f0a7ce14b4508ede2335403`
+- Current saved Old Town actor count: 2,600
+- Current map work after the baseline is intentionally uncommitted.
 
 ## Start here
 
-1. `MAP_DEVELOPMENT_HANDOFF_2026-07-24.md` — graybox state, map scope,
+1. `OLD_TOWN_PAUSE_HANDOFF_2026-07-25.md` — exact saved stopping state,
+   current uncommitted Git scope, validation and safe-resume sequence.
+2. `MAP_DEVELOPMENT_HANDOFF_2026-07-24.md` — graybox state, map scope,
    validation and safe reopening instructions.
-2. `Planning/OLD_TOWN_UE_EXECUTION_PACKET.md` — build sequence, Unreal
+3. `Planning/OLD_TOWN_UE_EXECUTION_PACKET.md` — build sequence, Unreal
    folder contract, naming, Nanite, collision and completion criteria.
-3. `Planning/OLD_TOWN_MASTER_ACQUISITION_PLAN.md` — official Epic/Quixel
+4. `Planning/OLD_TOWN_MASTER_ACQUISITION_PLAN.md` — official Epic/Quixel
    source strategy and paid-upgrade gates.
-4. `Planning/OLD_TOWN_EXACT_SITE_ASSIGNMENTS.csv` — exact source assignments
+5. `Planning/OLD_TOWN_EXACT_SITE_ASSIGNMENTS.csv` — exact source assignments
    for all 20 Old Town sites.
-5. `Planning/OLD_TOWN_MAP_OWNED_MODULAR_KIT.csv` — 33 map-owned modules with
+6. `Planning/OLD_TOWN_MAP_OWNED_MODULAR_KIT.csv` — 33 map-owned modules with
    dimensions and collision rules.
-6. `Planning/OLD_TOWN_UE_STAGING_MANIFEST.csv` — staging limits and
+7. `Planning/OLD_TOWN_UE_STAGING_MANIFEST.csv` — staging limits and
    exclusions for all 37 selected free sources.
+8. `Content/Python/OperationSunscar/old_town_ground_elevation_pass_v2.py` —
+   idempotent connected roads, drainage, foundation-skirt and Detention
+   entrance-step pass.
+9. `Content/Python/OperationSunscar/place_quixel_ground_v1.py` — exact
+   Quixel asphalt replacement and visual-only rocky-ground placement pass.
 
 ## Design and geography
 

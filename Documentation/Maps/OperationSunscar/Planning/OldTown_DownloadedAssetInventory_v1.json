@@ -1,0 +1,1119 @@
+{
+  "schemaVersion": 1,
+  "generated": "2026-08-01",
+  "scope": "Old Town approved Epic Games and Quixel acquisition set",
+  "facts": {
+    "approvedFreeListings": 38,
+    "downloadedDirectArchives": 35,
+    "downloadedOfficialPacks": 3,
+    "deferredPaidListings": 2,
+    "directArchiveBytes": 1918463027,
+    "packLocalBytes": 22875180100
+  },
+  "classificationPolicy": {
+    "verifiedFact": "Derived from local files, archive metadata, Launcher manifests/logs or explicit publisher records",
+    "offlineCandidate": "Selected from exact package paths and semantic naming; not yet visually approved",
+    "unrealRequired": "Bounds, pivot, rendered appearance, collision, dependency and Nanite state require UE 5.8 inspection"
+  },
+  "directAssets": [
+    {
+      "recordId": "FAB_P0_003",
+      "listingName": "Military Trenches Barrier Sandbag Canvas Worn",
+      "listingId": "a5ad6a23-7e37-4b3c-ae91-063e8a4e0fd2",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_3d_high_fbx",
+      "localArchive": "Assets/FabDownloads/Quixel_High_FBX/military_trenches_barrier_sandbag_canvas_worn_ydxlcck_high.zip",
+      "archiveBytes": 25035032,
+      "sha256": "9a4893748d9230bbd197942d8088b7ab3a7a5d22f74303c3a29f3092aca0d0ea",
+      "megascansId": "ydxlcck",
+      "dimensionsMeters": {
+        "length": "3.21m",
+        "width": "0.39m",
+        "height": "0.87m",
+        "semanticMin": 0.39,
+        "semanticMax": 3.21
+      },
+      "highFbxTriangles": null,
+      "includedFileCount": 12,
+      "extensionCounts": {
+        "fbx": 1,
+        "jpg": 10,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": true,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P0_004",
+      "listingName": "Military Trenches Barrier Sandbag Canvas Square 02",
+      "listingId": "1cc000de-5422-4ae9-8b54-ed0e53cdbb94",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_3d_high_fbx",
+      "localArchive": "Assets/FabDownloads/Quixel_High_FBX/military_trenches_barrier_sandbag_canvas_square_02_ydznbff_high.zip",
+      "archiveBytes": 23276983,
+      "sha256": "4b67e640bff24bb8e3dc7589c1ff386df14aa0edc0063f3f2f98bb080b13320a",
+      "megascansId": "ydznbff",
+      "dimensionsMeters": {
+        "length": "1.77m",
+        "width": "1.02m",
+        "height": "0.55m",
+        "semanticMin": 0.55,
+        "semanticMax": 1.77
+      },
+      "highFbxTriangles": null,
+      "includedFileCount": 11,
+      "extensionCounts": {
+        "fbx": 1,
+        "jpg": 9,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": true,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P0_005",
+      "listingName": "Military Trenches Wall Metal Corrugated 06",
+      "listingId": "b303f5a1-42da-460c-a14c-4022f447f8dd",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_3d_high_fbx",
+      "localArchive": "Assets/FabDownloads/Quixel_High_FBX/military_trenches_wall_metal_corrugated_06_ydxnbdns_high.zip",
+      "archiveBytes": 22621239,
+      "sha256": "21aeab197895dea43a602c75a30202965a4c160a8efbb613933a971451e05ba4",
+      "megascansId": "ydxnbdns",
+      "dimensionsMeters": {
+        "length": "2.19m",
+        "width": "0.39m",
+        "height": "1.54m",
+        "semanticMin": 0.39,
+        "semanticMax": 2.19
+      },
+      "highFbxTriangles": null,
+      "includedFileCount": 13,
+      "extensionCounts": {
+        "fbx": 1,
+        "jpg": 11,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": true,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P0_010",
+      "listingName": "Weathered Concrete Wall",
+      "listingId": "9485cd8b-02f5-42c0-9cfd-097b5b7b7f55",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_surface_or_decal_4k",
+      "localArchive": "Assets/FabDownloads/Quixel_4K_Textures/weathered_concrete_wall_vi4idbm_4k.zip",
+      "archiveBytes": 56075578,
+      "sha256": "935e0c99ac713c85d6421420cf79676cd8af9be4e4ab2f8728981e7d06264861",
+      "megascansId": "vi4idbm",
+      "metadataName": "Weathered Concrete Wall",
+      "dimensionsMeters": {
+        "length": null,
+        "width": null,
+        "height": "0.016 m",
+        "semanticMin": 1,
+        "semanticMax": 2
+      },
+      "highFbxTriangles": null,
+      "includedFileCount": 10,
+      "extensionCounts": {
+        "jpg": 9,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": null,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P0_011",
+      "listingName": "Damaged Plaster Patch",
+      "listingId": "261cf6b0-2810-4482-9c90-a0a175c7815f",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_surface_or_decal_4k",
+      "localArchive": "Assets/FabDownloads/Quixel_4K_Textures/damaged_plaster_patch_vdekajsfw_4k.zip",
+      "archiveBytes": 60539874,
+      "sha256": "249f3d58234810ad6fdb53990b4619755a8d8fe309f99a26a7389f8865b06b45",
+      "megascansId": "vdekajsfw",
+      "metadataName": "Damaged Plaster Patch",
+      "dimensionsMeters": {
+        "length": null,
+        "width": null,
+        "height": "0.017 m",
+        "semanticMin": 1,
+        "semanticMax": 1
+      },
+      "highFbxTriangles": null,
+      "includedFileCount": 11,
+      "extensionCounts": {
+        "jpg": 10,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": null,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P0_020",
+      "listingName": "Military Trenches Storage Box Wood S",
+      "listingId": "435cdebc-39e3-459b-80e6-9b949b98de39",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_3d_high_fbx",
+      "localArchive": "Assets/FabDownloads/Quixel_High_FBX/military_trenches_storage_box_wood_s_vlqjdfd_high.zip",
+      "archiveBytes": 14235362,
+      "sha256": "72482f9ec7c72398bbd29a7a03bbfb8d17d09a0a2f674bf72d35f4158192af6b",
+      "megascansId": "vlqjdfd",
+      "dimensionsMeters": {
+        "length": "0.26m",
+        "width": "0.25m",
+        "height": "0.13m",
+        "semanticMin": 0.13,
+        "semanticMax": 0.26
+      },
+      "highFbxTriangles": null,
+      "includedFileCount": 13,
+      "extensionCounts": {
+        "fbx": 1,
+        "jpg": 11,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": true,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P0_021",
+      "listingName": "Metal Water Tank",
+      "listingId": "d5439ef4-1863-45d1-a441-7ead394a805e",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_3d_high_fbx",
+      "localArchive": "Assets/FabDownloads/Quixel_High_FBX/metal_water_tank_wdklears_high.zip",
+      "archiveBytes": 42238168,
+      "sha256": "d4bf22cb79c5ea3adeabebe29cd4b5f2c7162bb553aff00c4ee2026ca10239d8",
+      "megascansId": "wdklears",
+      "metadataName": "Metal Water Tank",
+      "dimensionsMeters": {
+        "length": "2.15m",
+        "width": "0.65m",
+        "height": "0.71m",
+        "semanticMin": 0.65,
+        "semanticMax": 2.15
+      },
+      "highFbxTriangles": null,
+      "includedFileCount": 11,
+      "extensionCounts": {
+        "fbx": 1,
+        "jpg": 9,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": true,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P1A_002",
+      "listingName": "Electrical Box",
+      "listingId": "70113afd-ffec-42ca-87eb-75b90e5b1962",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_3d_high_fbx",
+      "localArchive": "Assets/FabDownloads/Quixel_High_FBX/electrical_box_tdgecegda_high.zip",
+      "archiveBytes": 40538056,
+      "sha256": "66c05c264bc2ef9b14be45e4e2773004cf0eafd8a7403ee8445feff9b618b08a",
+      "megascansId": "tdgecegda",
+      "metadataName": "Electrical Box",
+      "dimensionsMeters": {
+        "length": "0.38m",
+        "width": "0.43m",
+        "height": "0.26m",
+        "semanticMin": 0.26,
+        "semanticMax": 0.43
+      },
+      "highFbxTriangles": 13549,
+      "includedFileCount": 11,
+      "extensionCounts": {
+        "fbx": 1,
+        "jpg": 9,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": true,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P1A_003",
+      "listingName": "Electric Box",
+      "listingId": "ba988202-afd9-4a98-94d0-4c4b7644b51f",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_3d_high_fbx",
+      "localArchive": "Assets/FabDownloads/Quixel_High_FBX/electric_box_ullibjd_high.zip",
+      "archiveBytes": 49836994,
+      "sha256": "1b1591e7c1f2375d9c850618a3209813d045ad31ce5955068497396af3e8f634",
+      "megascansId": "ullibjd",
+      "metadataName": "Electric Box",
+      "dimensionsMeters": {
+        "length": "1.02m",
+        "width": "0.24m",
+        "height": "0.98m",
+        "semanticMin": 0.24,
+        "semanticMax": 1.02
+      },
+      "highFbxTriangles": null,
+      "includedFileCount": 12,
+      "extensionCounts": {
+        "fbx": 1,
+        "jpg": 10,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": true,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P1A_004",
+      "listingName": "Electrical Cabinet",
+      "listingId": "252bd8cb-2469-4e2f-9e39-5ddaf9324539",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_3d_high_fbx",
+      "localArchive": "Assets/FabDownloads/Quixel_High_FBX/electrical_cabinet_ujzfde2_high.zip",
+      "archiveBytes": 46963307,
+      "sha256": "7be0fd996fcf57da388a4cd928b81bd7db32bf5e80d581f12dd79f7e30f3b560",
+      "megascansId": "ujzfde2",
+      "metadataName": "Electrical Cabinet",
+      "dimensionsMeters": {
+        "length": "2.62m",
+        "width": "0.87m",
+        "height": "1.39m",
+        "semanticMin": 0.87,
+        "semanticMax": 2.62
+      },
+      "highFbxTriangles": 10024,
+      "includedFileCount": 11,
+      "extensionCounts": {
+        "fbx": 1,
+        "jpg": 9,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": true,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P1A_005",
+      "listingName": "Round Drain Cover",
+      "listingId": "16f36535-a188-4989-8d1c-5bb790290378",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_surface_or_decal_4k",
+      "localArchive": "Assets/FabDownloads/Quixel_4K_Textures/round_drain_cover_sdus0qk_4k.zip",
+      "archiveBytes": 63026881,
+      "sha256": "a89dc6b6bad950027ef406b7b5d7d658ff016d67dcedc4f3ca477506784c323a",
+      "megascansId": "sdus0qk",
+      "metadataName": "Round Drain Cover",
+      "dimensionsMeters": {
+        "length": null,
+        "width": null,
+        "height": "0.009 m",
+        "semanticMin": 0.5,
+        "semanticMax": 0.5
+      },
+      "highFbxTriangles": null,
+      "includedFileCount": 11,
+      "extensionCounts": {
+        "jpg": 10,
+        "json": 1
+      },
+      "highestAvailableResolution": 4096,
+      "ueFnCompatible": null,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P1A_011",
+      "listingName": "Military Trenches Ground Patch Rock S 04",
+      "listingId": "d8aded40-25c6-40ec-9d10-6e5e15053222",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_3d_high_fbx",
+      "localArchive": "Assets/FabDownloads/Quixel_High_FBX/military_trenches_ground_patch_rock_s_04_yd0lfcq_high.zip",
+      "archiveBytes": 19075214,
+      "sha256": "f4c8bd8a141f682cf842b7dfc537491b282e81eadaddbe79c0bac575389e4e68",
+      "megascansId": "yd0lfcq",
+      "dimensionsMeters": {
+        "length": "0.82m",
+        "width": "0.75m",
+        "height": "0.07m",
+        "semanticMin": 0.07,
+        "semanticMax": 0.82
+      },
+      "highFbxTriangles": null,
+      "includedFileCount": 11,
+      "extensionCounts": {
+        "fbx": 1,
+        "jpg": 9,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": true,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P1A_012",
+      "listingName": "Military Trenches Debris Patch Rock Corner",
+      "listingId": "9c255b4f-d759-4504-bb68-3371d657d23f",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_3d_high_fbx",
+      "localArchive": "Assets/FabDownloads/Quixel_High_FBX/military_trenches_debris_patch_rock_corner_ydyqbjds_high.zip",
+      "archiveBytes": 18269533,
+      "sha256": "57d8d1dce7bc4790fcb1e9bf183a4550d1623b828c94bc9457a0d5928ef05f0d",
+      "megascansId": "ydyqbjds",
+      "dimensionsMeters": {
+        "length": "0.55m",
+        "width": "0.65m",
+        "height": "0.12m",
+        "semanticMin": 0.12,
+        "semanticMax": 0.65
+      },
+      "highFbxTriangles": null,
+      "includedFileCount": 11,
+      "extensionCounts": {
+        "fbx": 1,
+        "jpg": 9,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": true,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P1A_013",
+      "listingName": "Sandstone Rocky Ground",
+      "listingId": "d6c87516-52ea-40d0-a3e5-c1e52d4ad88f",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_3d_high_fbx",
+      "localArchive": "Assets/FabDownloads/Quixel_High_FBX/sandstone_rocky_ground_vmjjfiv_high.zip",
+      "archiveBytes": 63201296,
+      "sha256": "70f3acb0c3dadf6da9be28235d0e60966f795bb17d01914e3df2a5b5af20f77b",
+      "megascansId": "vmjjfiv",
+      "metadataName": "Sandstone Rocky Ground",
+      "dimensionsMeters": {
+        "length": "3.04m",
+        "width": "2.13m",
+        "height": "0.61m",
+        "semanticMin": 0.61,
+        "semanticMax": 3.04
+      },
+      "highFbxTriangles": 18952,
+      "includedFileCount": 11,
+      "extensionCounts": {
+        "fbx": 1,
+        "jpg": 9,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": true,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P1A_014",
+      "listingName": "Desert Western Rock Medium 08",
+      "listingId": "11700737-077c-416b-a005-53d0b5e1e285",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_3d_high_fbx",
+      "localArchive": "Assets/FabDownloads/Quixel_High_FBX/desert_western_rock_medium_08_uk4cdch_high.zip",
+      "archiveBytes": 58909395,
+      "sha256": "0bd6d64c52ce7a2ea18ab3c8a973d94f9c1e4b797087c7b9bc0f233bed5a0530",
+      "megascansId": "uk4cdch",
+      "metadataName": "Desert Western Rock Medium 08",
+      "dimensionsMeters": {
+        "length": "2.62m",
+        "width": "1.35m",
+        "height": "0.82m",
+        "semanticMin": 0.82,
+        "semanticMax": 2.62
+      },
+      "highFbxTriangles": 10335,
+      "includedFileCount": 11,
+      "extensionCounts": {
+        "fbx": 1,
+        "jpg": 9,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": true,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P1A_015",
+      "listingName": "Dry Grass",
+      "listingId": "472c99c7-2d67-4190-9ad4-3bb04cfc80f3",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_3d_high_fbx",
+      "localArchive": "Assets/FabDownloads/Quixel_High_FBX/dry_grass_tbbqejqr_high.zip",
+      "archiveBytes": 28144467,
+      "sha256": "9aa29e85c48799de3d8880c0611ba4db1ac6f5062d970583960962a70238a181",
+      "megascansId": "tbbqejqr",
+      "metadataName": "Dry Grass",
+      "dimensionsMeters": {
+        "length": null,
+        "width": null,
+        "height": null,
+        "semanticMin": "",
+        "semanticMax": ""
+      },
+      "highFbxTriangles": 2251,
+      "includedFileCount": 31,
+      "extensionCounts": {
+        "fbx": 15,
+        "jpg": 15,
+        "json": 1
+      },
+      "highestAvailableResolution": null,
+      "ueFnCompatible": null,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P1A_016",
+      "listingName": "Dried Grass",
+      "listingId": "1b83d08e-77fd-4885-9dce-32d8658b5559",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_surface_or_decal_4k",
+      "localArchive": "Assets/FabDownloads/Quixel_4K_Textures/dried_grass_xbrgaba_4k.zip",
+      "archiveBytes": 162064160,
+      "sha256": "1124eb527dd076b34239fd04dc07df9789d522c50ad92ce473fabd612da33847",
+      "megascansId": "xbrgaba",
+      "metadataName": "Dried Grass",
+      "dimensionsMeters": {
+        "length": null,
+        "width": null,
+        "height": "0.026 m",
+        "semanticMin": 2,
+        "semanticMax": 2
+      },
+      "highFbxTriangles": null,
+      "includedFileCount": 10,
+      "extensionCounts": {
+        "jpg": 9,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": null,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P1A_017",
+      "listingName": "Desert Debris",
+      "listingId": "5502b77c-2ffa-40b6-9101-6010e062f09c",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_surface_or_decal_4k",
+      "localArchive": "Assets/FabDownloads/Quixel_4K_Textures/desert_debris_pblacidh2_4k.zip",
+      "archiveBytes": 31331177,
+      "sha256": "7c5732bdeaad2e62fe6dee386b5ae504e013d1dbc5fa190bdb63e92922d91e01",
+      "megascansId": "pblacidh2",
+      "metadataName": "Desert Debris",
+      "dimensionsMeters": {
+        "length": null,
+        "width": null,
+        "height": "0.015 m",
+        "semanticMin": 0.33,
+        "semanticMax": 0.33
+      },
+      "highFbxTriangles": null,
+      "includedFileCount": 12,
+      "extensionCounts": {
+        "jpg": 11,
+        "json": 1
+      },
+      "highestAvailableResolution": 4096,
+      "ueFnCompatible": null,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P1A_018",
+      "listingName": "Rusty Metal Barrel",
+      "listingId": "0e8e7e30-23e3-47ec-86a0-fc69ea0b8d65",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_3d_high_fbx",
+      "localArchive": "Assets/FabDownloads/Quixel_High_FBX/rusty_metal_barrel_teufceuda_high.zip",
+      "archiveBytes": 43958988,
+      "sha256": "439f9201090187eead78ba284b96c0fe37052a07947152d3316c370dc5c31847",
+      "megascansId": "teufceuda",
+      "metadataName": "Rusty Metal Barrel",
+      "dimensionsMeters": {
+        "length": "0.59m",
+        "width": "0.59m",
+        "height": "0.88m",
+        "semanticMin": 0.59,
+        "semanticMax": 0.88
+      },
+      "highFbxTriangles": 9493,
+      "includedFileCount": 11,
+      "extensionCounts": {
+        "fbx": 1,
+        "jpg": 9,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": true,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P1A_019",
+      "listingName": "Old Shovel",
+      "listingId": "37895234-35a6-4998-9c80-0f1290f0c3e4",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_3d_high_fbx",
+      "localArchive": "Assets/FabDownloads/Quixel_High_FBX/old_shovel_uckmaibfa_high.zip",
+      "archiveBytes": 53749887,
+      "sha256": "41534fa41fdc6a5594e1b4f609f61dcda237b7e655468152c26c25ffb8a46847",
+      "megascansId": "uckmaibfa",
+      "metadataName": "Old Shovel",
+      "dimensionsMeters": {
+        "length": "1.68m",
+        "width": "0.25m",
+        "height": "0.1m",
+        "semanticMin": 0.1,
+        "semanticMax": 1.68
+      },
+      "highFbxTriangles": null,
+      "includedFileCount": 12,
+      "extensionCounts": {
+        "fbx": 1,
+        "jpg": 10,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": true,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P1B_001",
+      "listingName": "Old Wooden Door",
+      "listingId": "df0f97f7-8482-4a67-b31c-a4c9fb5db017",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_3d_high_fbx",
+      "localArchive": "Assets/FabDownloads/Quixel_High_FBX/old_wooden_door_wbmgdcpdw_high.zip",
+      "archiveBytes": 36105052,
+      "sha256": "ab2abea223ce0b72735dd91f491c948e6fe135992ac6c7c207248be77f1412b6",
+      "megascansId": "wbmgdcpdw",
+      "metadataName": "Old Wooden Door",
+      "dimensionsMeters": {
+        "length": "1.2m",
+        "width": "0.16m",
+        "height": "2.43m",
+        "semanticMin": 0.16,
+        "semanticMax": 2.43
+      },
+      "highFbxTriangles": 9308,
+      "includedFileCount": 11,
+      "extensionCounts": {
+        "fbx": 1,
+        "jpg": 9,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": false,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P1B_004",
+      "listingName": "Garage Door",
+      "listingId": "8d31d799-0d73-4786-9937-174b68facded",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_surface_or_decal_4k",
+      "localArchive": "Assets/FabDownloads/Quixel_4K_Textures/garage_door_tmnobhhya_4k.zip",
+      "archiveBytes": 88501365,
+      "sha256": "d1e72f800a900d4310baee93ac955fb20cd6dfa4bfcaa3c8d5226ad73c921e36",
+      "megascansId": "tmnobhhya",
+      "metadataName": "Garage Door",
+      "dimensionsMeters": {
+        "length": null,
+        "width": null,
+        "height": "0.029 m",
+        "semanticMin": 2,
+        "semanticMax": 2
+      },
+      "highFbxTriangles": null,
+      "includedFileCount": 10,
+      "extensionCounts": {
+        "jpg": 9,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": null,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P1B_008",
+      "listingName": "Old Metal Stool",
+      "listingId": "468006bf-c2b0-4b3f-a88a-3aa793b04749",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_3d_high_fbx",
+      "localArchive": "Assets/FabDownloads/Quixel_High_FBX/old_metal_stool_ukknbeyaw_high.zip",
+      "archiveBytes": 52914839,
+      "sha256": "81d07e3e2be1783c054a1204750973290875caacb27223b60bd9405060fbf140",
+      "megascansId": "ukknbeyaw",
+      "metadataName": "Old Metal Stool",
+      "dimensionsMeters": {
+        "length": "0.39m",
+        "width": "0.35m",
+        "height": "0.58m",
+        "semanticMin": 0.35,
+        "semanticMax": 0.58
+      },
+      "highFbxTriangles": null,
+      "includedFileCount": 12,
+      "extensionCounts": {
+        "fbx": 1,
+        "jpg": 10,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": true,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P1B_009",
+      "listingName": "Wooden Table",
+      "listingId": "d69f8adb-3357-4d67-bdde-1235045a8072",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_3d_high_fbx",
+      "localArchive": "Assets/FabDownloads/Quixel_High_FBX/wooden_table_veigfjmaw_high.zip",
+      "archiveBytes": 49335139,
+      "sha256": "1495f1ce1386b81bd28dd93ed9c919949d766797c36fe35da94a35f801a24826",
+      "megascansId": "veigfjmaw",
+      "metadataName": "Wooden Table",
+      "dimensionsMeters": {
+        "length": "0.93m",
+        "width": "0.53m",
+        "height": "0.65m",
+        "semanticMin": 0.53,
+        "semanticMax": 0.93
+      },
+      "highFbxTriangles": 14176,
+      "includedFileCount": 11,
+      "extensionCounts": {
+        "fbx": 1,
+        "jpg": 9,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": true,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P1B_010",
+      "listingName": "Wooden Bench",
+      "listingId": "98dd22d3-e329-4e35-ae5c-11b46e51c0cd",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_3d_high_fbx",
+      "localArchive": "Assets/FabDownloads/Quixel_High_FBX/wooden_bench_vlroadt_high.zip",
+      "archiveBytes": 39534493,
+      "sha256": "59c5af20aae753e43794b2a415644024c6cf264b854ad3118da901ef21d27a0c",
+      "megascansId": "vlroadt",
+      "metadataName": "Wooden Bench",
+      "dimensionsMeters": {
+        "length": "1.24m",
+        "width": "0.2m",
+        "height": "0.28m",
+        "semanticMin": 0.2,
+        "semanticMax": 1.24
+      },
+      "highFbxTriangles": 9999,
+      "includedFileCount": 11,
+      "extensionCounts": {
+        "fbx": 1,
+        "jpg": 9,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": true,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P1B_011",
+      "listingName": "Asphalt Fresh",
+      "listingId": "d656c99c-e792-4880-b832-7835dd450395",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_surface_or_decal_4k",
+      "localArchive": "Assets/FabDownloads/Quixel_4K_Textures/asphalt_fresh_sfrofg0a_4k.zip",
+      "archiveBytes": 134660565,
+      "sha256": "fe663c070a61c2be538b339f351a467c0a64a7453d940aa8b8e604f1b1308523",
+      "megascansId": "sfrofg0a",
+      "metadataName": "Asphalt Fresh",
+      "dimensionsMeters": {
+        "length": null,
+        "width": null,
+        "height": "0.027 m",
+        "semanticMin": 2,
+        "semanticMax": 2
+      },
+      "highFbxTriangles": null,
+      "includedFileCount": 10,
+      "extensionCounts": {
+        "jpg": 9,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": null,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P1B_012",
+      "listingName": "Crushed Asphalt Ground",
+      "listingId": "88e41c55-6675-4872-ab19-e5757899e549",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_surface_or_decal_4k",
+      "localArchive": "Assets/FabDownloads/Quixel_4K_Textures/crushed_asphalt_ground_sjyjcbja_4k.zip",
+      "archiveBytes": 123828818,
+      "sha256": "4c8d28a0601900aee8393560502c4895f42f7f77eea11c111a1fd0c7b2e54b44",
+      "megascansId": "sjyjcbja",
+      "metadataName": "Crushed Asphalt Ground",
+      "dimensionsMeters": {
+        "length": null,
+        "width": null,
+        "height": "0.131 m",
+        "semanticMin": 2,
+        "semanticMax": 2
+      },
+      "highFbxTriangles": null,
+      "includedFileCount": 10,
+      "extensionCounts": {
+        "jpg": 9,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": null,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P1B_013",
+      "listingName": "Cracked Asphalt",
+      "listingId": "3aab93f6-c82b-45c8-883f-04bec06d6915",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_surface_or_decal_4k",
+      "localArchive": "Assets/FabDownloads/Quixel_4K_Textures/cracked_asphalt_tjmgfelew_4k.zip",
+      "archiveBytes": 130618474,
+      "sha256": "217f2c1bd4a816fbfaa1d5c4f59998d914b5968a9d7b783095e31a2152529d22",
+      "megascansId": "tjmgfelew",
+      "metadataName": "Cracked Asphalt",
+      "dimensionsMeters": {
+        "length": null,
+        "width": null,
+        "height": "0.009 m",
+        "semanticMin": 2,
+        "semanticMax": 2
+      },
+      "highFbxTriangles": null,
+      "includedFileCount": 10,
+      "extensionCounts": {
+        "jpg": 9,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": null,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P1B_014",
+      "listingName": "Asphalt Debris Pack",
+      "listingId": "00f021df-e2f7-45ba-b3df-5dd40f671fe6",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_3d_high_fbx",
+      "localArchive": "Assets/FabDownloads/Quixel_High_FBX/asphalt_debris_pack_tlhjacuva_high.zip",
+      "archiveBytes": 53844694,
+      "sha256": "62ad1b92c54894ae6fecd9571f22550813e89cd4f8a577c82838b309acfcdcfd",
+      "megascansId": "tlhjacuva",
+      "metadataName": "Asphalt Debris Pack",
+      "dimensionsMeters": {
+        "length": "0.16m",
+        "width": "0.14m",
+        "height": "0.04m",
+        "semanticMin": 0.04,
+        "semanticMax": 0.16
+      },
+      "highFbxTriangles": 25150,
+      "includedFileCount": 10,
+      "extensionCounts": {
+        "fbx": 1,
+        "jpg": 8,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": true,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P1B_015",
+      "listingName": "Wall Paint",
+      "listingId": "cfdcd26b-db70-413c-aa5c-e71ca8e43a7a",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_surface_or_decal_4k",
+      "localArchive": "Assets/FabDownloads/Quixel_4K_Textures/wall_paint_qj2luvs0_4k.zip",
+      "archiveBytes": 17117207,
+      "sha256": "95a64c9c170658fe28abeed0e90b55291f6da7585de28394ddf65e7b9a8ce7ab",
+      "megascansId": "qj2luvs0",
+      "metadataName": "Wall Paint",
+      "dimensionsMeters": {
+        "length": null,
+        "width": null,
+        "height": "0.002 m",
+        "semanticMin": 0.41,
+        "semanticMax": 0.41
+      },
+      "highFbxTriangles": null,
+      "includedFileCount": 10,
+      "extensionCounts": {
+        "jpg": 9,
+        "json": 1
+      },
+      "highestAvailableResolution": 4096,
+      "ueFnCompatible": null,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P1B_016",
+      "listingName": "Stucco Wall",
+      "listingId": "e2f69285-c695-4aa8-851c-1b6492b79b74",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_surface_or_decal_4k",
+      "localArchive": "Assets/FabDownloads/Quixel_4K_Textures/stucco_wall_vigrejf_4k.zip",
+      "archiveBytes": 98798840,
+      "sha256": "3f2125cc0fb3bc045a947b7622aa3a8ffe30c851e9c3635484e17e3cdcc73fd4",
+      "megascansId": "vigrejf",
+      "metadataName": "Stucco Wall",
+      "dimensionsMeters": {
+        "length": null,
+        "width": null,
+        "height": "0.013 m",
+        "semanticMin": 2,
+        "semanticMax": 2
+      },
+      "highFbxTriangles": null,
+      "includedFileCount": 10,
+      "extensionCounts": {
+        "jpg": 9,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": null,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_P1B_017",
+      "listingName": "Flaked Paint Wall",
+      "listingId": "42731ac6-bc7e-4855-9c91-b1b73e2cc0fc",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_surface_or_decal_4k",
+      "localArchive": "Assets/FabDownloads/Quixel_4K_Textures/flaked_paint_wall_vhqkeff_4k.zip",
+      "archiveBytes": 78024323,
+      "sha256": "2d097f83737b31662c02a075b3b3b0d2b8dfc7f104ddcec61f601e520c949922",
+      "megascansId": "vhqkeff",
+      "metadataName": "Flaked Paint Wall",
+      "dimensionsMeters": {
+        "length": null,
+        "width": null,
+        "height": "0.02 m",
+        "semanticMin": 2,
+        "semanticMax": 2
+      },
+      "highFbxTriangles": null,
+      "includedFileCount": 10,
+      "extensionCounts": {
+        "jpg": 9,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": null,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_SUP_001",
+      "listingName": "Military Trenches Decal Metal Rust 01",
+      "listingId": "4320f370-adab-4253-8662-927185e238fd",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_surface_or_decal_4k",
+      "localArchive": "Assets/FabDownloads/Quixel_4K_Textures/military_trenches_decal_metal_rust_01_ydzmbgd_4k.zip",
+      "archiveBytes": 4049944,
+      "sha256": "a4ce3c572368c0ec8bf2cf656e51f3e43db419d1b967e2cf85f6ff6746a79c73",
+      "megascansId": "ydzmbgd",
+      "dimensionsMeters": {
+        "length": null,
+        "width": null,
+        "height": "0.002 m",
+        "semanticMin": 0,
+        "semanticMax": 0.25
+      },
+      "highFbxTriangles": null,
+      "includedFileCount": 11,
+      "extensionCounts": {
+        "jpg": 10,
+        "json": 1
+      },
+      "highestAvailableResolution": 4096,
+      "ueFnCompatible": null,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_SUP_002",
+      "listingName": "Mud Stain",
+      "listingId": "d943a805-9e06-435c-9691-06890fc8cb12",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_surface_or_decal_4k",
+      "localArchive": "Assets/FabDownloads/Quixel_4K_Textures/mud_stain_wbhtagkv_4k.zip",
+      "archiveBytes": 39050890,
+      "sha256": "ff94f795d424504f1604defa6d8c11abc77b5f02af817db20ecc2558f36e180e",
+      "megascansId": "wbhtagkv",
+      "metadataName": "Mud Stain",
+      "dimensionsMeters": {
+        "length": null,
+        "width": null,
+        "height": "0 m",
+        "semanticMin": 0.25,
+        "semanticMax": 0.25
+      },
+      "highFbxTriangles": null,
+      "includedFileCount": 4,
+      "extensionCounts": {
+        "jpg": 3,
+        "json": 1
+      },
+      "highestAvailableResolution": 8192,
+      "ueFnCompatible": null,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    },
+    {
+      "recordId": "FAB_SUP_003",
+      "listingName": "Oil Stain",
+      "listingId": "4b57dc17-0bdd-40d2-85b2-84fef6eedd0c",
+      "publisher": "Quixel Megascans",
+      "packageKind": "megascans_surface_or_decal_4k",
+      "localArchive": "Assets/FabDownloads/Quixel_4K_Textures/oil_stain_sdjmigi_4k.zip",
+      "archiveBytes": 48986793,
+      "sha256": "5fbbb136569d80bcf9ef3ebbc383f0234ce6d865af36d509215ca52cccb37ed3",
+      "megascansId": "sdjmigi",
+      "metadataName": "Oil Stain",
+      "dimensionsMeters": {
+        "length": null,
+        "width": null,
+        "height": "0.011 m",
+        "semanticMin": 0.25,
+        "semanticMax": 0.5
+      },
+      "highFbxTriangles": null,
+      "includedFileCount": 11,
+      "extensionCounts": {
+        "jpg": 10,
+        "json": 1
+      },
+      "highestAvailableResolution": 4096,
+      "ueFnCompatible": null,
+      "status": "downloaded_archive_metadata_verified",
+      "remainingGate": "Import into UE 5.8 staging; verify bounds, pivot, material result, Nanite and collision before production placement"
+    }
+  ],
+  "packs": [
+    {
+      "recordId": "FAB_P0_001",
+      "listingName": "Military Trench Megascans Sample",
+      "publisher": "Quixel Megascans",
+      "enginePackage": "launcher_project",
+      "selectedVersion": "Launcher-installed version; exact engine build requires Unreal inspection",
+      "directory": "/Users/jasonteck/Documents/UE FPS Project/MapDesign/Desert_Glory_Inspired/Assets/FabDownloads/UnrealPacks/MilitaryTrenchMegascansSa",
+      "contentRoot": "/Game/MilitaryTrench",
+      "purpose": "Selected sandbags, crates, corrugated pieces, rubble and sparse dry vegetation only",
+      "localDirectory": "Assets/FabDownloads/UnrealPacks/MilitaryTrenchMegascansSa",
+      "bytes": 11315069589,
+      "files": 2030,
+      "uassets": 2001,
+      "staticMeshes": 179,
+      "status": "downloaded_local_staging_verified",
+      "remainingGate": "Open with UE 5.8 staging workflow and measure selected assets before dependency-safe migration"
+    },
+    {
+      "recordId": "FAB_P0_002",
+      "listingName": "City Sample Vehicles",
+      "publisher": "Epic Games",
+      "enginePackage": "launcher_content_pack",
+      "selectedVersion": "5.3 selection; Launcher manifest build labeled 5.4.0",
+      "directory": "/Users/jasonteck/Documents/UE FPS Project/MapDesign/Desert_Glory_Inspired/Assets/FabDownloads/UnrealPacks/OfficialAssetStaging/Content/CitySampleVehicles",
+      "contentRoot": "/Game/CitySampleVehicles",
+      "purpose": "Five static render-mesh candidates only; exclude traffic, Chaos, Mass AI, maps, audio and gameplay Blueprints",
+      "localDirectory": "Assets/FabDownloads/UnrealPacks/OfficialAssetStaging/Content/CitySampleVehicles",
+      "bytes": 7943748524,
+      "files": 1405,
+      "uassets": 1404,
+      "staticMeshes": 117,
+      "status": "downloaded_local_staging_verified",
+      "remainingGate": "Open with UE 5.8 staging workflow and measure selected assets before dependency-safe migration"
+    },
+    {
+      "recordId": "FAB_P1A_001",
+      "listingName": "Junkyard",
+      "publisher": "Quixel Megascans",
+      "enginePackage": "launcher_content_pack",
+      "selectedVersion": "5.6",
+      "directory": "/Users/jasonteck/Documents/UE FPS Project/MapDesign/Desert_Glory_Inspired/Assets/FabDownloads/UnrealPacks/OfficialAssetStaging/Content/Scene_Junkyard",
+      "contentRoot": "/Game/Scene_Junkyard",
+      "purpose": "Maximum twenty selected salvage assets; exclude demo map, sequences, lighting and VisualFrameWork",
+      "localDirectory": "Assets/FabDownloads/UnrealPacks/OfficialAssetStaging/Content/Scene_Junkyard",
+      "bytes": 3616361987,
+      "files": 487,
+      "uassets": 472,
+      "staticMeshes": 61,
+      "status": "downloaded_local_staging_verified",
+      "remainingGate": "Open with UE 5.8 staging workflow and measure selected assets before dependency-safe migration"
+    }
+  ],
+  "deferred": [
+    {
+      "recordId": "FAB_P1B_005",
+      "listingName": "Tarp",
+      "publisher": "Quixel Megascans",
+      "status": "deferred_price_changed",
+      "note": "Fab now shows license prices from $0.99 to $9.99; not purchased",
+      "replacement": "Use map-owned canopy plane with existing MI_OT_Canvas unless a verified-free official alternative is later selected"
+    },
+    {
+      "recordId": "FAB_P1B_006",
+      "listingName": "Tarp",
+      "publisher": "Quixel Megascans",
+      "status": "deferred_price_changed",
+      "note": "Fab now shows license prices from $0.99 to $9.99; not purchased",
+      "replacement": "Use map-owned canopy plane with existing MI_OT_Canvas unless a verified-free official alternative is later selected"
+    }
+  ]
+}

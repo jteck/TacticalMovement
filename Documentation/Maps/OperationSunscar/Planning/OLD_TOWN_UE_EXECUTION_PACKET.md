@@ -29,6 +29,9 @@ Broad layout, asset-family selection and site roles are already fixed.
 | `OLD_TOWN_MAP_OWNED_MODULAR_KIT.csv` | Geometry created by the map project |
 | `OLD_TOWN_MATERIAL_INSTANCE_PLAN.csv` | Material names, palette and coverage |
 | `OLD_TOWN_BUILD_CHECKPOINTS.csv` | Stop/go validation gates |
+| `OldTown_DownloadedAssetInventory_v1.json` | Verified local archives, checksums, pack contents and acquisition state |
+| `OldTown_ResolvedPlacementPlan_v1.json` | All 2,350 candidate records joined to deterministic asset references |
+| `OLD_TOWN_ASSET_SELECTION_MATRIX_V1.csv` | Site-by-site asset-family and planned-instance allocation |
 
 ## Unreal folder contract
 
@@ -88,13 +91,17 @@ dependency-safe migration or duplication.
 
 ## Execution sequence
 
-### Phase 0 — staging
+### Phase 0 — staging inspection and selective migration
 
-1. Create a clean UE 5.8 staging project outside TacticalMovement.
-2. Record empty-project disk size and editor memory.
-3. Add free sources in master-acquisition order.
-4. Never import an entire sample scene into the production project.
-5. For each source, record:
+The acquisition step is complete. The 35 direct archives and three official
+packs are recorded in `OldTown_DownloadedAssetInventory_v1.json`. Do not
+download or add the sources again.
+
+1. Create or reuse a clean UE 5.8 staging copy outside TacticalMovement.
+2. Inspect only the candidates referenced by
+   `OldTown_ResolvedPlacementPlan_v1.json`.
+3. Never import an entire sample scene into the production project.
+4. For each selected source, record:
    - Unreal asset path.
    - Bounds in centimetres.
    - Pivot and forward axis.
@@ -104,7 +111,9 @@ dependency-safe migration or duplication.
    - Collision state.
    - Direct dependencies.
    - Approximate disk contribution.
-6. Mark each inspected asset accepted, alternate, rejected or deferred.
+5. Mark each inspected asset accepted, alternate, rejected or deferred.
+6. Migrate only accepted assets and their dependency closure into dedicated
+   Old Town art folders.
 
 ### Phase 1 — connected visual slice
 

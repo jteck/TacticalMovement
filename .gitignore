@@ -22,3 +22,10 @@ TacticalMovement (Mac).xcworkspace/
 *.suo
 *.opensdf
 *.sdf
+
+# Official source packs remain local. The verified Old Town dependency closure
+# is force-added explicitly; unused pack content must not enter Git history.
+/Content/CitySampleVehicles/
+/Content/Fab/
+/Content/MilitaryTrench/
+/Content/Scene_Junkyard/

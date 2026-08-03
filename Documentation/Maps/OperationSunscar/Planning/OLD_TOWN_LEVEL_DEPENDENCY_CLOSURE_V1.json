@@ -1,0 +1,3014 @@
+{
+  "schema_version": 1,
+  "status": "read_only_level_dependency_closure_complete",
+  "context": {
+    "project": "TacticalMovement",
+    "project_directory": "/Users/jasonteck/UnrealEngine/_worktrees/map-development",
+    "level": "/Game/Maps/Blockout/Lvl_Blockout_01",
+    "write_requested": false,
+    "verified_at_utc": "2026-08-03T03:49:06Z"
+  },
+  "actor_count": 1813,
+  "direct_package_count": 2022,
+  "visited_package_count": 4181,
+  "dependency_edge_count": 14190,
+  "required_pack_package_count": 494,
+  "required_map_package_count": 3675,
+  "required_pack_summary": {
+    "/Game/CitySampleVehicles/": {
+      "package_count": 247,
+      "file_count": 247,
+      "bytes": 1219734111,
+      "files_over_100mb": 0
+    },
+    "/Game/Fab/": {
+      "package_count": 19,
+      "file_count": 19,
+      "bytes": 47230086,
+      "files_over_100mb": 0
+    },
+    "/Game/MilitaryTrench/": {
+      "package_count": 120,
+      "file_count": 120,
+      "bytes": 807774759,
+      "files_over_100mb": 0
+    },
+    "/Game/Scene_Junkyard/": {
+      "package_count": 108,
+      "file_count": 108,
+      "bytes": 1218857735,
+      "files_over_100mb": 0
+    }
+  },
+  "required_pack_packages": [
+    "/Game/CitySampleVehicles/AssetGuidelines/CitySampleVehicleGuideline_VT",
+    "/Game/CitySampleVehicles/Material/MF_UnpackTrafficVehicleInstanceCustomData",
+    "/Game/CitySampleVehicles/Material/MI/MI_Veh_Bulb",
+    "/Game/CitySampleVehicles/Material/MI/MI_Veh_Caliper",
+    "/Game/CitySampleVehicles/Material/MI/MI_Veh_CarPaint",
+    "/Game/CitySampleVehicles/Material/MI/MI_Veh_Engine",
+    "/Game/CitySampleVehicles/Material/MI/MI_Veh_Glass",
+    "/Game/CitySampleVehicles/Material/MI/MI_Veh_GlassThin",
+    "/Game/CitySampleVehicles/Material/MI/MI_Veh_GlassThin_Amber",
+    "/Game/CitySampleVehicles/Material/MI/MI_Veh_GlassThin_Red",
+    "/Game/CitySampleVehicles/Material/MI/MI_Veh_Glass_Amber",
+    "/Game/CitySampleVehicles/Material/MI/MI_Veh_Glass_Clear",
+    "/Game/CitySampleVehicles/Material/MI/MI_Veh_Glass_Red",
+    "/Game/CitySampleVehicles/Material/MI/MI_Veh_Glass_Window",
+    "/Game/CitySampleVehicles/Material/MI/MI_Veh_Glass_Windshield",
+    "/Game/CitySampleVehicles/Material/MI/MI_Veh_Interior",
+    "/Game/CitySampleVehicles/Material/MI/MI_Veh_LicensePlate",
+    "/Game/CitySampleVehicles/Material/MI/MI_Veh_Light",
+    "/Game/CitySampleVehicles/Material/MI/MI_Veh_Metal_Chrome",
+    "/Game/CitySampleVehicles/Material/MI/MI_Veh_Metal_Steel",
+    "/Game/CitySampleVehicles/Material/MI/MI_Veh_Plastic_Gloss",
+    "/Game/CitySampleVehicles/Material/MI/MI_Veh_Plastic_Matte",
+    "/Game/CitySampleVehicles/Material/MI/MI_Veh_Rim",
+    "/Game/CitySampleVehicles/Material/MI/MI_Veh_Rubber_Smooth",
+    "/Game/CitySampleVehicles/Material/MI/MI_Veh_Tire",
+    "/Game/CitySampleVehicles/Material/MI/MI_Veh_Undercar",
+    "/Game/CitySampleVehicles/Material/MPC/MPC_GlobalTextureControls",
+    "/Game/CitySampleVehicles/Material/M_Refraction",
+    "/Game/CitySampleVehicles/Material/M_Veh_CarPaint",
+    "/Game/CitySampleVehicles/Material/M_Veh_FullTexture",
+    "/Game/CitySampleVehicles/Material/M_Veh_Glass",
+    "/Game/CitySampleVehicles/Material/M_Veh_GlassThin",
+    "/Game/CitySampleVehicles/Material/M_Veh_Opaque",
+    "/Game/CitySampleVehicles/Material/MaterialFunction/ColorCorrectHSV",
+    "/Game/CitySampleVehicles/Material/MaterialFunction/DistanceRampOpacity",
+    "/Game/CitySampleVehicles/Material/MaterialFunction/HSV_Modulate",
+    "/Game/CitySampleVehicles/Material/MaterialFunction/HSVtoRGB_v2",
+    "/Game/CitySampleVehicles/Material/MaterialFunction/LocalPositionMasks",
+    "/Game/CitySampleVehicles/Material/MaterialFunction/MF_Imperfections",
+    "/Game/CitySampleVehicles/Material/MaterialFunction/MF_MaskEdge",
+    "/Game/CitySampleVehicles/Material/MaterialFunction/MF_NormalStrength",
+    "/Game/CitySampleVehicles/Material/MaterialFunction/RGBtoHSV_v2",
+    "/Game/CitySampleVehicles/Material/MaterialFunction/VehicleEmissive",
+    "/Game/CitySampleVehicles/Material/MaterialFunction/VehicleGraphics",
+    "/Game/CitySampleVehicles/Material/MaterialFunction/VehicleImperfection",
+    "/Game/CitySampleVehicles/Material/MaterialFunction/VehiclePost",
+    "/Game/CitySampleVehicles/Material/MaterialFunction/VehicleUV",
+    "/Game/CitySampleVehicles/Texture/CrumpleCarMetal/Hi/CrumpleCarMetal_Hi_AOMRD",
+    "/Game/CitySampleVehicles/Texture/CrumpleCarMetal/Hi/CrumpleCarMetal_Hi_Normal",
+    "/Game/CitySampleVehicles/Texture/CrumpleCarMetal/Low/CrumpleCarMetal_Low_AOMRD",
+    "/Game/CitySampleVehicles/Texture/CrumpleCarMetal/Low/CrumpleCarMetal_Low_Normal",
+    "/Game/CitySampleVehicles/Texture/CrumpleCarMetal/Mid/CrumpleCarMetal_Mid_Normal",
+    "/Game/CitySampleVehicles/Texture/Gradient/CarPaint_Gradient",
+    "/Game/CitySampleVehicles/Texture/Imperfection/T_MetalWear_Wear03_R_VT",
+    "/Game/CitySampleVehicles/Texture/LicensePlate/T_LicensePlate_AORM",
+    "/Game/CitySampleVehicles/Texture/LicensePlate/T_LicensePlate_C",
+    "/Game/CitySampleVehicles/Texture/LicensePlate/T_LicensePlate_N",
+    "/Game/CitySampleVehicles/Texture/LicensePlate/T_LicensePlate_Police_AORM",
+    "/Game/CitySampleVehicles/Texture/LicensePlate/T_LicensePlate_Police_C",
+    "/Game/CitySampleVehicles/Texture/LicensePlate/T_LicensePlate_Police_N",
+    "/Game/CitySampleVehicles/Texture/Surface/T_Bump_N",
+    "/Game/CitySampleVehicles/Texture/Surface/T_Flakes_D3_Data",
+    "/Game/CitySampleVehicles/Texture/Surface/T_Flakes_D3_Normal",
+    "/Game/CitySampleVehicles/Texture/Surface/T_Imperfections_Dust_01_Mask",
+    "/Game/CitySampleVehicles/Texture/Surface/T_Imperfections_FingerPrints_Mask2",
+    "/Game/CitySampleVehicles/Texture/Surface/T_Imperfections_Stains_Mask",
+    "/Game/CitySampleVehicles/Texture/Surface/T_Imperfections_Wipe_Mask",
+    "/Game/CitySampleVehicles/Texture/Surface/T_Metal_Painted_R_VT",
+    "/Game/CitySampleVehicles/Texture/Surface/T_Metal_Steel_BC_VT",
+    "/Game/CitySampleVehicles/Texture/Surface/T_Metal_Steel_N_VT",
+    "/Game/CitySampleVehicles/Texture/Surface/T_Metal_Steel_R_VT",
+    "/Game/CitySampleVehicles/Texture/Surface/T_OrangePeel_N",
+    "/Game/CitySampleVehicles/Texture/Surface/T_ReflectorHexagon_N",
+    "/Game/CitySampleVehicles/Texture/Surface/T_Rubber_01_N_VT",
+    "/Game/CitySampleVehicles/Texture/Surface/T_Rubber_03_R_VT",
+    "/Game/CitySampleVehicles/Texture/T_Black_BC4_VT",
+    "/Game/CitySampleVehicles/Texture/T_Black_BC7_Linear_VT1",
+    "/Game/CitySampleVehicles/Texture/T_Black_BC7_sRGB",
+    "/Game/CitySampleVehicles/Texture/T_Black_Mask_VT",
+    "/Game/CitySampleVehicles/Texture/T_Flat_Normal_VT",
+    "/Game/CitySampleVehicles/Texture/T_Gray_Linear_VT",
+    "/Game/CitySampleVehicles/Texture/T_Grey_Interior_VT",
+    "/Game/CitySampleVehicles/Texture/T_UDIMCheckSmall",
+    "/Game/CitySampleVehicles/Texture/T_White_Color_VT",
+    "/Game/CitySampleVehicles/Texture/TextureCube/pano_NW_02_expCorrect_cube",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_0",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_1",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_10",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_11",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_12",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_13",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_14",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_15",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_16",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_17",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_18",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_19",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_2",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_20",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_21",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_22",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_23",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_3",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_4",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_5",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_6",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_7",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_8",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_9",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_bulb",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_caliper",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_carPaint",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_engine",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_glass",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_glass_amber",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_glass_amber_inner",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_glass_inner",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_glass_red",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_glass_red_inner",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_interior",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_licensePlate",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_light",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_metal_chrome",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_metal_steel",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_mirror",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_plastic_gloss",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_plastic_matte",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_rim",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_rubber_smooth",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_tire",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_undercar",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_window",
+    "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_windshield",
+    "/Game/CitySampleVehicles/vehicle01_Van/Mesh/SM_vehVan_vehicle01_LOD",
+    "/Game/CitySampleVehicles/vehicle01_Van/Texture/T_vehVan_vehicle01_AORM",
+    "/Game/CitySampleVehicles/vehicle01_Van/Texture/T_vehVan_vehicle01_C",
+    "/Game/CitySampleVehicles/vehicle01_Van/Texture/T_vehVan_vehicle01_Emissive",
+    "/Game/CitySampleVehicles/vehicle01_Van/Texture/T_vehVan_vehicle01_Grime",
+    "/Game/CitySampleVehicles/vehicle01_Van/Texture/T_vehVan_vehicle01_N",
+    "/Game/CitySampleVehicles/vehicle02_Car/Texture/T_vehCar_vehicle02_reverseLightMask",
+    "/Game/CitySampleVehicles/vehicle03_Car/Texture/T_vehCar_vehicle03_AORM",
+    "/Game/CitySampleVehicles/vehicle03_Car/Texture/T_vehCar_vehicle03_C",
+    "/Game/CitySampleVehicles/vehicle03_Car/Texture/T_vehCar_vehicle03_N",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_0",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_1",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_10",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_11",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_12",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_13",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_14",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_15",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_16",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_17",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_18",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_19",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_2",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_20",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_21",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_22",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_3",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_4",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_5",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_6",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_7",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_9",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_carPaint",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_engine",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_glass_amber",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_glass_amber_inner",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_glass_inner",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_glass_red",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_glass_red_inner",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_interior",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_licensePlate",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_light",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_metal_chrome",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_metal_steel",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_mirror",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_plastic_gloss",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_plastic_matte",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_rim",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_rubber_smooth",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_tire",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_undercar",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_window",
+    "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_windshield",
+    "/Game/CitySampleVehicles/vehicle09_Van/Mesh/SM_vehVan_vehicle09_LOD",
+    "/Game/CitySampleVehicles/vehicle09_Van/Texture/T_vehVan_vehicle09_AORM",
+    "/Game/CitySampleVehicles/vehicle09_Van/Texture/T_vehVan_vehicle09_C",
+    "/Game/CitySampleVehicles/vehicle09_Van/Texture/T_vehVan_vehicle09_Emissive",
+    "/Game/CitySampleVehicles/vehicle09_Van/Texture/T_vehVan_vehicle09_Graphic",
+    "/Game/CitySampleVehicles/vehicle09_Van/Texture/T_vehVan_vehicle09_GraphicR",
+    "/Game/CitySampleVehicles/vehicle09_Van/Texture/T_vehVan_vehicle09_Grime",
+    "/Game/CitySampleVehicles/vehicle09_Van/Texture/T_vehVan_vehicle09_N",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_0",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_1",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_10",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_11",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_12",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_13",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_14",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_15",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_16",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_17",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_18",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_19",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_2",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_20",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_21",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_22",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_23",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_3",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_5",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_6",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_7",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_8",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_9",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_carPaint",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_engine",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_glass",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_glass_amber",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_glass_amber_inner",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_glass_inner",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_glass_red",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_glass_red_inner",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_interior",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_licensePlate",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_light",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_metal_chrome",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_metal_steel",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_mirror",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_plastic_gloss",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_plastic_matte",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_rim",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_rubber_smooth",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_tire",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_undercar",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_window",
+    "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_windshield",
+    "/Game/CitySampleVehicles/vehicle13_Car/Mesh/SM_vehCar_vehicle13_LOD",
+    "/Game/CitySampleVehicles/vehicle13_Car/Texture/T_vehCar_vehicle13_AORM",
+    "/Game/CitySampleVehicles/vehicle13_Car/Texture/T_vehCar_vehicle13_C",
+    "/Game/CitySampleVehicles/vehicle13_Car/Texture/T_vehCar_vehicle13_Emissive",
+    "/Game/CitySampleVehicles/vehicle13_Car/Texture/T_vehCar_vehicle13_Graphic",
+    "/Game/CitySampleVehicles/vehicle13_Car/Texture/T_vehCar_vehicle13_GraphicR",
+    "/Game/CitySampleVehicles/vehicle13_Car/Texture/T_vehCar_vehicle13_Grime",
+    "/Game/CitySampleVehicles/vehicle13_Car/Texture/T_vehCar_vehicle13_N",
+    "/Game/Fab/MaterialFunctions/QMF_AOAdjustments",
+    "/Game/Fab/MaterialFunctions/QMF_BaseColorAdjustments",
+    "/Game/Fab/MaterialFunctions/QMF_NormalAdjustments",
+    "/Game/Fab/MaterialFunctions/QMF_RoughnessAdjustments",
+    "/Game/Fab/Materials/Standard/M_MS_Base",
+    "/Game/Fab/Megascans/3D/Military_Trenches_Ground_Patch_Rock_S_04_yd0lfcq/Medium/SM_yd0lfcq_tier_2/Materials/MI_yd0lfcq",
+    "/Game/Fab/Megascans/3D/Military_Trenches_Ground_Patch_Rock_S_04_yd0lfcq/Medium/SM_yd0lfcq_tier_2/StaticMeshes/SM_yd0lfcq_tier_2",
+    "/Game/Fab/Megascans/3D/Military_Trenches_Ground_Patch_Rock_S_04_yd0lfcq/Medium/SM_yd0lfcq_tier_2/Textures/T_yd0lfcq_2k_B",
+    "/Game/Fab/Megascans/3D/Military_Trenches_Ground_Patch_Rock_S_04_yd0lfcq/Medium/SM_yd0lfcq_tier_2/Textures/T_yd0lfcq_2k_N",
+    "/Game/Fab/Megascans/3D/Military_Trenches_Ground_Patch_Rock_S_04_yd0lfcq/Medium/SM_yd0lfcq_tier_2/Textures/T_yd0lfcq_2k_ORM",
+    "/Game/Fab/Megascans/3D/Sandstone_Rocky_Ground_vmjjfiv/Medium/vmjjfiv_tier_2/Materials/MI_vmjjfiv",
+    "/Game/Fab/Megascans/3D/Sandstone_Rocky_Ground_vmjjfiv/Medium/vmjjfiv_tier_2/StaticMeshes/vmjjfiv_tier_2",
+    "/Game/Fab/Megascans/3D/Sandstone_Rocky_Ground_vmjjfiv/Medium/vmjjfiv_tier_2/Textures/T_vmjjfiv_2K_B",
+    "/Game/Fab/Megascans/3D/Sandstone_Rocky_Ground_vmjjfiv/Medium/vmjjfiv_tier_2/Textures/T_vmjjfiv_2K_N",
+    "/Game/Fab/Megascans/3D/Sandstone_Rocky_Ground_vmjjfiv/Medium/vmjjfiv_tier_2/Textures/T_vmjjfiv_2K_ORM",
+    "/Game/Fab/Textures/Standard/T_DefaultColor",
+    "/Game/Fab/Textures/Standard/T_DefaultDisplacement",
+    "/Game/Fab/Textures/Standard/T_DefaultMasks",
+    "/Game/Fab/Textures/Standard/T_DefaultNormal",
+    "/Game/MilitaryTrench/Assets/3D/Ind_Mine_Tool_Shovel_Old_01/Materials/MI_Ind_Mine_Tool_Shovel_Old_01",
+    "/Game/MilitaryTrench/Assets/3D/Ind_Mine_Tool_Shovel_Old_01/StaticMeshes/SM_Ind_Mine_Tool_Shovel_Old_01",
+    "/Game/MilitaryTrench/Assets/3D/Ind_Mine_Tool_Shovel_Old_01/Textures/T_Ind_Mine_Tool_Shovel_Old_01_B",
+    "/Game/MilitaryTrench/Assets/3D/Ind_Mine_Tool_Shovel_Old_01/Textures/T_Ind_Mine_Tool_Shovel_Old_01_H",
+    "/Game/MilitaryTrench/Assets/3D/Ind_Mine_Tool_Shovel_Old_01/Textures/T_Ind_Mine_Tool_Shovel_Old_01_N",
+    "/Game/MilitaryTrench/Assets/3D/Ind_Mine_Tool_Shovel_Old_01/Textures/T_Ind_Mine_Tool_Shovel_Old_01_ORM",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_01/Materials/MI_Mil_Trench_Scatter_Rock_S_01",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_01/StaticMeshes/SM_Mil_Trench_Scatter_Rock_S_01",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_01/Textures/T_Mil_Trench_Scatter_Rock_S_01_B",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_01/Textures/T_Mil_Trench_Scatter_Rock_S_01_N",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_01/Textures/T_Mil_Trench_Scatter_Rock_S_01_ORM",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_02/Materials/MI_Mil_Trench_Scatter_Rock_S_02",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_02/StaticMeshes/SM_Mil_Trench_Scatter_Rock_S_02",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_02/Textures/T_Mil_Trench_Scatter_Rock_S_02_B",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_02/Textures/T_Mil_Trench_Scatter_Rock_S_02_N",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_02/Textures/T_Mil_Trench_Scatter_Rock_S_02_ORM",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_03/Materials/MI_Mil_Trench_Scatter_Rock_S_03",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_03/StaticMeshes/SM_Mil_Trench_Scatter_Rock_S_03",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_03/Textures/T_Mil_Trench_Scatter_Rock_S_03_B",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_03/Textures/T_Mil_Trench_Scatter_Rock_S_03_N",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_03/Textures/T_Mil_Trench_Scatter_Rock_S_03_ORM",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_04/Materials/MI_Mil_Trench_Scatter_Rock_S_04",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_04/StaticMeshes/SM_Mil_Trench_Scatter_Rock_S_04",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_04/Textures/T_Mil_Trench_Scatter_Rock_S_04_B",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_04/Textures/T_Mil_Trench_Scatter_Rock_S_04_N",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_04/Textures/T_Mil_Trench_Scatter_Rock_S_04_ORM",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_05/Materials/MI_Mil_Trench_Scatter_Rock_S_05",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_05/StaticMeshes/SM_Mil_Trench_Scatter_Rock_S_05",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_05/Textures/T_Mil_Trench_Scatter_Rock_S_05_B",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_05/Textures/T_Mil_Trench_Scatter_Rock_S_05_N",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_05/Textures/T_Mil_Trench_Scatter_Rock_S_05_ORM",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Metal_S/Materials/MI_Mil_Trench_Storage_Box_Metal_S",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Metal_S/StaticMeshes/SM_Mil_Trench_Storage_Box_Metal_S",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Metal_S/Textures/T_Mil_Trench_Storage_Box_Metal_S_B",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Metal_S/Textures/T_Mil_Trench_Storage_Box_Metal_S_N",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Metal_S/Textures/T_Mil_Trench_Storage_Box_Metal_S_ORM",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Wood_S/Materials/MI_Mil_Trench_Storage_Box_Wood_S_A",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Wood_S/StaticMeshes/SM_Mil_Trench_Storage_Box_Wood_S",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Wood_S/Textures/T_Mil_Trench_Storage_Box_Wood_S_B",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Wood_S/Textures/T_Mil_Trench_Storage_Box_Wood_S_N",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Wood_S/Textures/T_Mil_Trench_Storage_Box_Wood_S_ORM",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_01/Materials/MI_Mil_Trench_Storage_Crate_Wood_M_01",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_01/StaticMeshes/SM_Mil_Trench_Storage_Crate_Wood_M_01",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_01/Textures/T_Mil_Trench_Storage_Crate_Wood_M_01_B",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_01/Textures/T_Mil_Trench_Storage_Crate_Wood_M_01_N",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_01/Textures/T_Mil_Trench_Storage_Crate_Wood_M_01_ORM",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_02/Materials/MI_Mil_Trench_Storage_Crate_Wood_M_02",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_02/StaticMeshes/SM_Mil_Trench_Storage_Crate_Wood_M_02_A",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_02/StaticMeshes/SM_Mil_Trench_Storage_Crate_Wood_M_02_B",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_02/Textures/T_Mil_Trench_Storage_Crate_Wood_M_02_B",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_02/Textures/T_Mil_Trench_Storage_Crate_Wood_M_02_N",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_02/Textures/T_Mil_Trench_Storage_Crate_Wood_M_02_ORM",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_01/Materials/MI_Mil_Trench_Storage_Crate_Wood_S_01",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_01/StaticMeshes/SM_Mil_Trench_Storage_Crate_Wood_S_01_A",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_01/Textures/T_Mil_Trench_Storage_Crate_Wood_S_01_B",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_01/Textures/T_Mil_Trench_Storage_Crate_Wood_S_01_N",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_01/Textures/T_Mil_Trench_Storage_Crate_Wood_S_01_ORM",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_02/Materials/MI_Mil_Trench_Storage_Crate_Wood_S_02",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_02/StaticMeshes/SM_Mil_Trench_Storage_Crate_Wood_S_02",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_02/Textures/T_Mil_Trench_Storage_Crate_Wood_S_02_B",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_02/Textures/T_Mil_Trench_Storage_Crate_Wood_S_02_N",
+    "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_02/Textures/T_Mil_Trench_Storage_Crate_Wood_S_02_ORM",
+    "/Game/MilitaryTrench/Assets/3D/Plants/Des_West_Grass_Wild_01/Materials/MI_Des_West_Grass_Wild_01",
+    "/Game/MilitaryTrench/Assets/3D/Plants/Des_West_Grass_Wild_01/Materials/MI_Des_West_Grass_Wild_01_Billboard",
+    "/Game/MilitaryTrench/Assets/3D/Plants/Des_West_Grass_Wild_01/StaticMeshes/SM_Des_West_Grass_Wild_01_A",
+    "/Game/MilitaryTrench/Assets/3D/Plants/Des_West_Grass_Wild_01/StaticMeshes/SM_Des_West_Grass_Wild_01_B",
+    "/Game/MilitaryTrench/Assets/3D/Plants/Des_West_Grass_Wild_01/Textures/T_Des_West_Grass_Wild_01_B",
+    "/Game/MilitaryTrench/Assets/3D/Plants/Des_West_Grass_Wild_01/Textures/T_Des_West_Grass_Wild_01_Billboard_B-O",
+    "/Game/MilitaryTrench/Assets/3D/Plants/Des_West_Grass_Wild_01/Textures/T_Des_West_Grass_Wild_01_Billboard_N-T",
+    "/Game/MilitaryTrench/Assets/3D/Plants/Des_West_Grass_Wild_01/Textures/T_Des_West_Grass_Wild_01_N",
+    "/Game/MilitaryTrench/Assets/3D/Plants/Des_West_Grass_Wild_01/Textures/T_Des_West_Grass_Wild_01_ORT",
+    "/Game/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/Materials/MI_Urb_Street_Grass_Dry_01",
+    "/Game/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/Materials/MI_Urb_Street_Grass_Dry_01_Billboard",
+    "/Game/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/StaticMeshes/SM_Urb_Street_Grass_Dry_01_A",
+    "/Game/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/StaticMeshes/SM_Urb_Street_Grass_Dry_01_B",
+    "/Game/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/StaticMeshes/SM_Urb_Street_Grass_Dry_01_C",
+    "/Game/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/StaticMeshes/SM_Urb_Street_Grass_Dry_01_D",
+    "/Game/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/Textures/T_Urb_Street_Grass_Dry_01_B",
+    "/Game/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/Textures/T_Urb_Street_Grass_Dry_01_Billboard_B-O",
+    "/Game/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/Textures/T_Urb_Street_Grass_Dry_01_Billboard_N-T",
+    "/Game/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/Textures/T_Urb_Street_Grass_Dry_01_N",
+    "/Game/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/Textures/T_Urb_Street_Grass_Dry_01_ORT",
+    "/Game/MilitaryTrench/Assets/Decals/Ind_Decal_Leak_02/MI_Ind_Decal_Leak_02_A",
+    "/Game/MilitaryTrench/Assets/Decals/Ind_Decal_Leak_02/MI_Ind_Decal_Leak_02_B",
+    "/Game/MilitaryTrench/Assets/Decals/Ind_Decal_Leak_02/T_Ind_Decal_Leak_02_B-O",
+    "/Game/MilitaryTrench/Assets/Decals/Ind_Decal_Leak_10/MI_Ind_Decal_Leak_10",
+    "/Game/MilitaryTrench/Assets/Decals/Ind_Decal_Leak_10/T_Ind_Decal_Leak_10_B-O",
+    "/Game/MilitaryTrench/Assets/Surfaces/Mil_Trench_Ground_Dirt_Fine_02/Textures/T_Mil_Trench_Ground_Dirt_Fine_02_B",
+    "/Game/MilitaryTrench/Assets/Surfaces/Mil_Trench_Ground_Dirt_Fine_02/Textures/T_Mil_Trench_Ground_Dirt_Fine_02_N",
+    "/Game/MilitaryTrench/Assets/Surfaces/Mil_Trench_Ground_Dirt_Fine_02/Textures/T_Mil_Trench_Ground_Dirt_Fine_02_ORM",
+    "/Game/MilitaryTrench/Assets/Surfaces/Mil_Trench_Ground_Dirt_Rough_02/Textures/T_Mil_Trench_Ground_Dirt_Rough_02_B",
+    "/Game/MilitaryTrench/Assets/Surfaces/Mil_Trench_Ground_Dirt_Rough_02/Textures/T_Mil_Trench_Ground_Dirt_Rough_02_N",
+    "/Game/MilitaryTrench/Assets/Surfaces/Mil_Trench_Ground_Dirt_Rough_02/Textures/T_Mil_Trench_Ground_Dirt_Rough_02_ORM",
+    "/Game/MilitaryTrench/Assets/Surfaces/Urb_Wall_Plaster_Old_09/T_Urb_Wall_Plaster_Old_09_B",
+    "/Game/MilitaryTrench/Materials/MPC/QMPC_GlobalFoliageActor",
+    "/Game/MilitaryTrench/Materials/MSPresets/MSVTTextures/DefaultDiffuse",
+    "/Game/MilitaryTrench/Materials/MSPresets/MSVTTextures/Placeholder_Normal",
+    "/Game/MilitaryTrench/Materials/MSPresets/MSVTTextures/T_DefaultMasks_VT",
+    "/Game/MilitaryTrench/Materials/MasterMaterials/M_Decal_Masking",
+    "/Game/MilitaryTrench/Materials/MasterMaterials/M_MS_Base_VT",
+    "/Game/MilitaryTrench/Materials/MasterMaterials/M_MS_Billboard_VT",
+    "/Game/MilitaryTrench/Materials/MasterMaterials/M_MS_Foliage_VT",
+    "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_AOAdjustments",
+    "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_AdjustTwoSidedBaseColor",
+    "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_AdjustTwoSidedNormal",
+    "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_BaseColorAdjustments",
+    "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_DistanceBasedGradient",
+    "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_DistanceBasedOpacity",
+    "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_GenerateBranchMask_Plants",
+    "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_GenerateTranslucency",
+    "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_GenerateTwoSidedSpecular",
+    "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_GrowthEffect",
+    "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_HealthSeason",
+    "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_NormalAdjustments",
+    "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_PerInstanceActorRandom",
+    "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_RoughnessAdjustments",
+    "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_TwoSidedRoughness",
+    "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_WindAnimation",
+    "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_WindGust",
+    "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_WorldspaceColorVariation",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Blue_01/MI_Ind_Aba_Storage_Barrel_Metal_Blue_01",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Blue_01/SM_Ind_Aba_Storage_Barrel_Metal_Blue_01",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Blue_01/T_Ind_Aba_Storage_Barrel_Metal_Blue_01_D",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Blue_01/T_Ind_Aba_Storage_Barrel_Metal_Blue_01_DpR",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Blue_01/T_Ind_Aba_Storage_Barrel_Metal_Blue_01_N",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Buckled_01/MI_Ind_Aba_Storage_Barrel_Metal_Buckled_01",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Buckled_01/SM_Ind_Aba_Storage_Barrel_Metal_Buckled_01",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Buckled_01/T_Ind_Aba_Storage_Barrel_Metal_Buckled_01_D",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Buckled_01/T_Ind_Aba_Storage_Barrel_Metal_Buckled_01_DpR",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Buckled_01/T_Ind_Aba_Storage_Barrel_Metal_Buckled_01_N",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Green_01/MI_Ind_Aba_Storage_Barrel_Metal_Green_01",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Green_01/SM_Ind_Aba_Storage_Barrel_Metal_Green_01",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Green_01/T_Ind_Aba_Storage_Barrel_Metal_Green_01_D",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Green_01/T_Ind_Aba_Storage_Barrel_Metal_Green_01_DpR",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Green_01/T_Ind_Aba_Storage_Barrel_Metal_Green_01_N",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Con_Oil_Plastic_Pack_02/MI_Ind_Con_Oil_Plastic_Pack_02",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Con_Oil_Plastic_Pack_02/SM_Ind_Con_Oil_Plastic_Pack_02_A",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Con_Oil_Plastic_Pack_02/T_Ind_Con_Oil_Plastic_Pack_02_D",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Con_Oil_Plastic_Pack_02/T_Ind_Con_Oil_Plastic_Pack_02_DpR",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Con_Oil_Plastic_Pack_02/T_Ind_Con_Oil_Plastic_Pack_02_N",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Cover_Metal_Painted_05/MI_Ind_Jun_Cover_Metal_Painted_05_A",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Cover_Metal_Painted_05/SM_Ind_Jun_Cover_Metal_Painted_05",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Cover_Metal_Painted_05/T_Ind_Jun_Cover_Metal_Painted_05_D",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Cover_Metal_Painted_05/T_Ind_Jun_Cover_Metal_Painted_05_DpR",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Cover_Metal_Painted_05/T_Ind_Jun_Cover_Metal_Painted_05_N",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Car_Metal_Rusty_05/MI_Ind_Jun_Exhaust_Car_Metal_Rusty_05",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Car_Metal_Rusty_05/SM_Ind_Jun_Exhaust_Car_Metal_Rusty_05",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Car_Metal_Rusty_05/T_Ind_Jun_Exhaust_Car_Metal_Rusty_05_D",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Car_Metal_Rusty_05/T_Ind_Jun_Exhaust_Car_Metal_Rusty_05_DpR",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Car_Metal_Rusty_05/T_Ind_Jun_Exhaust_Car_Metal_Rusty_05_N",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Metal_Rusty_02/MI_Ind_Jun_Exhaust_Metal_Rusty_02",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Metal_Rusty_02/SM_Ind_Jun_Exhaust_Metal_Rusty_02",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Metal_Rusty_02/T_Ind_Jun_Exhaust_Metal_Rusty_02_D",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Metal_Rusty_02/T_Ind_Jun_Exhaust_Metal_Rusty_02_DpR",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Metal_Rusty_02/T_Ind_Jun_Exhaust_Metal_Rusty_02_N",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Fan_Metal_Rusty_01/MI_Ind_Jun_Fan_Metal_Rusty_01",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Fan_Metal_Rusty_01/SM_Ind_Jun_Fan_Metal_Rusty_01",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Fan_Metal_Rusty_01/T_Ind_Jun_Fan_Metal_Rusty_01_D",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Fan_Metal_Rusty_01/T_Ind_Jun_Fan_Metal_Rusty_01_DpR",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Fan_Metal_Rusty_01/T_Ind_Jun_Fan_Metal_Rusty_01_N",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Spring_Metal_Rusty_01/MI_Ind_Jun_Spring_Metal_Rusty_01",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Spring_Metal_Rusty_01/SM_Ind_Jun_Spring_Metal_Rusty_01",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Spring_Metal_Rusty_01/T_Ind_Jun_Spring_Metal_Rusty_01_D",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Spring_Metal_Rusty_01/T_Ind_Jun_Spring_Metal_Rusty_01_DpR",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Spring_Metal_Rusty_01/T_Ind_Jun_Spring_Metal_Rusty_01_N",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Crate_Metal_Rusty_01/MI_Ind_Jun_Storage_Crate_Metal_Rusty_01",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Crate_Metal_Rusty_01/SM_Ind_Jun_Storage_Crate_Metal_Rusty_01",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Crate_Metal_Rusty_01/T_Ind_Jun_Storage_Crate_Metal_Rusty_01_D",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Crate_Metal_Rusty_01/T_Ind_Jun_Storage_Crate_Metal_Rusty_01_DpR",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Crate_Metal_Rusty_01/T_Ind_Jun_Storage_Crate_Metal_Rusty_01_N",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Pallet_Wood_Trap_01/MI_Ind_Jun_Storage_Pallet_Wood_Trap_01",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Pallet_Wood_Trap_01/SM_Ind_Jun_Storage_Pallet_Wood_Trap_01",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Pallet_Wood_Trap_01/T_Ind_Jun_Storage_Pallet_Wood_Trap_01_D",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Pallet_Wood_Trap_01/T_Ind_Jun_Storage_Pallet_Wood_Trap_01_DpR",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Pallet_Wood_Trap_01/T_Ind_Jun_Storage_Pallet_Wood_Trap_01_N",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Support_Stand_Metal_Rusty_01/MI_Ind_Jun_Support_Stand_Metal_Rusty_01",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Support_Stand_Metal_Rusty_01/SM_Ind_Jun_Support_Stand_Metal_Rusty_01",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Support_Stand_Metal_Rusty_01/T_Ind_Jun_Support_Stand_Metal_Rusty_01_D",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Support_Stand_Metal_Rusty_01/T_Ind_Jun_Support_Stand_Metal_Rusty_01_DpR",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Support_Stand_Metal_Rusty_01/T_Ind_Jun_Support_Stand_Metal_Rusty_01_N",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_War_Container_Jerrycan_Metal_Red_03/MI_Ind_War_Container_Jerrycan_Metal_Red_03",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_War_Container_Jerrycan_Metal_Red_03/SM_Ind_War_Container_Jerrycan_Metal_Red_03",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_War_Container_Jerrycan_Metal_Red_03/T_Ind_War_Container_Jerrycan_Metal_Red_03_D",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_War_Container_Jerrycan_Metal_Red_03/T_Ind_War_Container_Jerrycan_Metal_Red_03_DpR",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_War_Container_Jerrycan_Metal_Red_03/T_Ind_War_Container_Jerrycan_Metal_Red_03_N",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_War_Storage_Tray_Plastic_Green_01/MI_Ind_War_Storage_Tray_Plastic_Green_01_A",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_War_Storage_Tray_Plastic_Green_01/SM_Ind_War_Storage_Tray_Plastic_Green_01",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_War_Storage_Tray_Plastic_Green_01/T_Ind_War_Storage_Tray_Plastic_Green_01_D",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_War_Storage_Tray_Plastic_Green_01/T_Ind_War_Storage_Tray_Plastic_Green_01_DpR",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Ind_War_Storage_Tray_Plastic_Green_01/T_Ind_War_Storage_Tray_Plastic_Green_01_N",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Res_Jun_Wheel_Metal_Weathered_01/MI_Res_Jun_Wheel_Metal_Weathered_01_A",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Res_Jun_Wheel_Metal_Weathered_01/SM_Res_Jun_Wheel_Metal_Weathered_01",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Res_Jun_Wheel_Metal_Weathered_01/T_Res_Jun_Wheel_Metal_Weathered_01_D",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Res_Jun_Wheel_Metal_Weathered_01/T_Res_Jun_Wheel_Metal_Weathered_01_DpR",
+    "/Game/Scene_Junkyard/Assets/MS/3D/Res_Jun_Wheel_Metal_Weathered_01/T_Res_Jun_Wheel_Metal_Weathered_01_N",
+    "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Dirt_01/MI_Decal_Debris_Dirt_01_A",
+    "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Dirt_01/MI_Decal_Debris_Dirt_01_B",
+    "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Dirt_01/T_Decal_Debris_Dirt_01_D",
+    "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Dirt_01/T_Decal_Debris_Dirt_01_DpRA",
+    "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Dirt_01/T_Decal_Debris_Dirt_01_N",
+    "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Pile_Rubble_01/MI_Decal_Debris_Pile_Rubble_01",
+    "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Pile_Rubble_01/T_Decal_Debris_Pile_Rubble_01_D",
+    "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Pile_Rubble_01/T_Decal_Debris_Pile_Rubble_01_DpRA",
+    "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Pile_Rubble_01/T_Decal_Debris_Pile_Rubble_01_N",
+    "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Pile_Rubble_02/MI_Decal_Debris_Pile_Rubble_02",
+    "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Pile_Rubble_02/T_Decal_Debris_Pile_Rubble_02_D",
+    "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Pile_Rubble_02/T_Decal_Debris_Pile_Rubble_02_DpRA",
+    "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Pile_Rubble_02/T_Decal_Debris_Pile_Rubble_02_N",
+    "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Edge_Garbage_Tiling_01/MI_Decal_Edge_Garbage_Tiling_01_A",
+    "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Edge_Garbage_Tiling_01/T_Decal_Edge_Garbage_Tiling_01_D",
+    "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Edge_Garbage_Tiling_01/T_Decal_Edge_Garbage_Tiling_01_DpRA",
+    "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Edge_Garbage_Tiling_01/T_Decal_Edge_Garbage_Tiling_01_N",
+    "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Leak_Dirt_01/MI_Decal_Leak_Dirt_01_A",
+    "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Leak_Dirt_01/MI_Decal_Leak_Dirt_01_B",
+    "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Leak_Dirt_01/T_Decal_Leak_Dirt_01_D",
+    "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Leak_Dirt_01/T_Decal_Leak_Dirt_01_DpRA",
+    "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Pile_Wood_Splinters_01/MI_Decal_Pile_Wood_Splinters_01",
+    "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Pile_Wood_Splinters_01/T_Decal_Pile_Wood_Splinters_01_D",
+    "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Pile_Wood_Splinters_01/T_Decal_Pile_Wood_Splinters_01_DpRA",
+    "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Pile_Wood_Splinters_01/T_Decal_Pile_Wood_Splinters_01_N",
+    "/Game/Scene_Junkyard/Materials/MSPresets/MSVTTextures/BlackPlaceholder",
+    "/Game/Scene_Junkyard/Materials/MSPresets/MSVTTextures/DefaultDiffuse",
+    "/Game/Scene_Junkyard/Materials/MSPresets/MSVTTextures/Placeholder_Normal",
+    "/Game/Scene_Junkyard/Materials/MSPresets/MSVTTextures/WhitePlaceholder",
+    "/Game/Scene_Junkyard/Materials/MSPresets/M_MS_Decal_Material_VT/MF_QuixelDecalPOM",
+    "/Game/Scene_Junkyard/Materials/MSPresets/M_MS_Decal_Material_VT/M_MS_Decal_Material_VT",
+    "/Game/Scene_Junkyard/Materials/MSPresets/M_MS_Default_Material/Functions/MF_ObjAdjustments",
+    "/Game/Scene_Junkyard/Materials/MSPresets/M_MS_Default_Material_VT/M_MS_Default_Material_VT"
+  ],
+  "required_pack_files": [
+    {
+      "package": "/Game/CitySampleVehicles/AssetGuidelines/CitySampleVehicleGuideline_VT",
+      "file": "Content/CitySampleVehicles/AssetGuidelines/CitySampleVehicleGuideline_VT.uasset",
+      "bytes": 6687
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MF_UnpackTrafficVehicleInstanceCustomData",
+      "file": "Content/CitySampleVehicles/Material/MF_UnpackTrafficVehicleInstanceCustomData.uasset",
+      "bytes": 33933
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MI/MI_Veh_Bulb",
+      "file": "Content/CitySampleVehicles/Material/MI/MI_Veh_Bulb.uasset",
+      "bytes": 8988
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MI/MI_Veh_Caliper",
+      "file": "Content/CitySampleVehicles/Material/MI/MI_Veh_Caliper.uasset",
+      "bytes": 14590
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MI/MI_Veh_CarPaint",
+      "file": "Content/CitySampleVehicles/Material/MI/MI_Veh_CarPaint.uasset",
+      "bytes": 18965
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MI/MI_Veh_Engine",
+      "file": "Content/CitySampleVehicles/Material/MI/MI_Veh_Engine.uasset",
+      "bytes": 12199
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MI/MI_Veh_Glass",
+      "file": "Content/CitySampleVehicles/Material/MI/MI_Veh_Glass.uasset",
+      "bytes": 9408
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MI/MI_Veh_GlassThin",
+      "file": "Content/CitySampleVehicles/Material/MI/MI_Veh_GlassThin.uasset",
+      "bytes": 9311
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MI/MI_Veh_GlassThin_Amber",
+      "file": "Content/CitySampleVehicles/Material/MI/MI_Veh_GlassThin_Amber.uasset",
+      "bytes": 12780
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MI/MI_Veh_GlassThin_Red",
+      "file": "Content/CitySampleVehicles/Material/MI/MI_Veh_GlassThin_Red.uasset",
+      "bytes": 7684
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MI/MI_Veh_Glass_Amber",
+      "file": "Content/CitySampleVehicles/Material/MI/MI_Veh_Glass_Amber.uasset",
+      "bytes": 11547
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MI/MI_Veh_Glass_Clear",
+      "file": "Content/CitySampleVehicles/Material/MI/MI_Veh_Glass_Clear.uasset",
+      "bytes": 7990
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MI/MI_Veh_Glass_Red",
+      "file": "Content/CitySampleVehicles/Material/MI/MI_Veh_Glass_Red.uasset",
+      "bytes": 9247
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MI/MI_Veh_Glass_Window",
+      "file": "Content/CitySampleVehicles/Material/MI/MI_Veh_Glass_Window.uasset",
+      "bytes": 7586
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MI/MI_Veh_Glass_Windshield",
+      "file": "Content/CitySampleVehicles/Material/MI/MI_Veh_Glass_Windshield.uasset",
+      "bytes": 12500
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MI/MI_Veh_Interior",
+      "file": "Content/CitySampleVehicles/Material/MI/MI_Veh_Interior.uasset",
+      "bytes": 13092
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MI/MI_Veh_LicensePlate",
+      "file": "Content/CitySampleVehicles/Material/MI/MI_Veh_LicensePlate.uasset",
+      "bytes": 14584
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MI/MI_Veh_Light",
+      "file": "Content/CitySampleVehicles/Material/MI/MI_Veh_Light.uasset",
+      "bytes": 25467
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MI/MI_Veh_Metal_Chrome",
+      "file": "Content/CitySampleVehicles/Material/MI/MI_Veh_Metal_Chrome.uasset",
+      "bytes": 12892
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MI/MI_Veh_Metal_Steel",
+      "file": "Content/CitySampleVehicles/Material/MI/MI_Veh_Metal_Steel.uasset",
+      "bytes": 11631
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MI/MI_Veh_Plastic_Gloss",
+      "file": "Content/CitySampleVehicles/Material/MI/MI_Veh_Plastic_Gloss.uasset",
+      "bytes": 12673
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MI/MI_Veh_Plastic_Matte",
+      "file": "Content/CitySampleVehicles/Material/MI/MI_Veh_Plastic_Matte.uasset",
+      "bytes": 14074
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MI/MI_Veh_Rim",
+      "file": "Content/CitySampleVehicles/Material/MI/MI_Veh_Rim.uasset",
+      "bytes": 10448
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MI/MI_Veh_Rubber_Smooth",
+      "file": "Content/CitySampleVehicles/Material/MI/MI_Veh_Rubber_Smooth.uasset",
+      "bytes": 14170
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MI/MI_Veh_Tire",
+      "file": "Content/CitySampleVehicles/Material/MI/MI_Veh_Tire.uasset",
+      "bytes": 10142
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MI/MI_Veh_Undercar",
+      "file": "Content/CitySampleVehicles/Material/MI/MI_Veh_Undercar.uasset",
+      "bytes": 12207
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MPC/MPC_GlobalTextureControls",
+      "file": "Content/CitySampleVehicles/Material/MPC/MPC_GlobalTextureControls.uasset",
+      "bytes": 7354
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/M_Refraction",
+      "file": "Content/CitySampleVehicles/Material/M_Refraction.uasset",
+      "bytes": 25946
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/M_Veh_CarPaint",
+      "file": "Content/CitySampleVehicles/Material/M_Veh_CarPaint.uasset",
+      "bytes": 160157
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/M_Veh_FullTexture",
+      "file": "Content/CitySampleVehicles/Material/M_Veh_FullTexture.uasset",
+      "bytes": 83655
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/M_Veh_Glass",
+      "file": "Content/CitySampleVehicles/Material/M_Veh_Glass.uasset",
+      "bytes": 40270
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/M_Veh_GlassThin",
+      "file": "Content/CitySampleVehicles/Material/M_Veh_GlassThin.uasset",
+      "bytes": 39301
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/M_Veh_Opaque",
+      "file": "Content/CitySampleVehicles/Material/M_Veh_Opaque.uasset",
+      "bytes": 55123
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MaterialFunction/ColorCorrectHSV",
+      "file": "Content/CitySampleVehicles/Material/MaterialFunction/ColorCorrectHSV.uasset",
+      "bytes": 16867
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MaterialFunction/DistanceRampOpacity",
+      "file": "Content/CitySampleVehicles/Material/MaterialFunction/DistanceRampOpacity.uasset",
+      "bytes": 16693
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MaterialFunction/HSV_Modulate",
+      "file": "Content/CitySampleVehicles/Material/MaterialFunction/HSV_Modulate.uasset",
+      "bytes": 19690
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MaterialFunction/HSVtoRGB_v2",
+      "file": "Content/CitySampleVehicles/Material/MaterialFunction/HSVtoRGB_v2.uasset",
+      "bytes": 54044
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MaterialFunction/LocalPositionMasks",
+      "file": "Content/CitySampleVehicles/Material/MaterialFunction/LocalPositionMasks.uasset",
+      "bytes": 95051
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MaterialFunction/MF_Imperfections",
+      "file": "Content/CitySampleVehicles/Material/MaterialFunction/MF_Imperfections.uasset",
+      "bytes": 103768
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MaterialFunction/MF_MaskEdge",
+      "file": "Content/CitySampleVehicles/Material/MaterialFunction/MF_MaskEdge.uasset",
+      "bytes": 13218
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MaterialFunction/MF_NormalStrength",
+      "file": "Content/CitySampleVehicles/Material/MaterialFunction/MF_NormalStrength.uasset",
+      "bytes": 73626
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MaterialFunction/RGBtoHSV_v2",
+      "file": "Content/CitySampleVehicles/Material/MaterialFunction/RGBtoHSV_v2.uasset",
+      "bytes": 101950
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MaterialFunction/VehicleEmissive",
+      "file": "Content/CitySampleVehicles/Material/MaterialFunction/VehicleEmissive.uasset",
+      "bytes": 171326
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MaterialFunction/VehicleGraphics",
+      "file": "Content/CitySampleVehicles/Material/MaterialFunction/VehicleGraphics.uasset",
+      "bytes": 21952
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MaterialFunction/VehicleImperfection",
+      "file": "Content/CitySampleVehicles/Material/MaterialFunction/VehicleImperfection.uasset",
+      "bytes": 85046
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MaterialFunction/VehiclePost",
+      "file": "Content/CitySampleVehicles/Material/MaterialFunction/VehiclePost.uasset",
+      "bytes": 29256
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Material/MaterialFunction/VehicleUV",
+      "file": "Content/CitySampleVehicles/Material/MaterialFunction/VehicleUV.uasset",
+      "bytes": 79200
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/CrumpleCarMetal/Hi/CrumpleCarMetal_Hi_AOMRD",
+      "file": "Content/CitySampleVehicles/Texture/CrumpleCarMetal/Hi/CrumpleCarMetal_Hi_AOMRD.uasset",
+      "bytes": 28536904
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/CrumpleCarMetal/Hi/CrumpleCarMetal_Hi_Normal",
+      "file": "Content/CitySampleVehicles/Texture/CrumpleCarMetal/Hi/CrumpleCarMetal_Hi_Normal.uasset",
+      "bytes": 28460949
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/CrumpleCarMetal/Low/CrumpleCarMetal_Low_AOMRD",
+      "file": "Content/CitySampleVehicles/Texture/CrumpleCarMetal/Low/CrumpleCarMetal_Low_AOMRD.uasset",
+      "bytes": 22846347
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/CrumpleCarMetal/Low/CrumpleCarMetal_Low_Normal",
+      "file": "Content/CitySampleVehicles/Texture/CrumpleCarMetal/Low/CrumpleCarMetal_Low_Normal.uasset",
+      "bytes": 17011879
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/CrumpleCarMetal/Mid/CrumpleCarMetal_Mid_Normal",
+      "file": "Content/CitySampleVehicles/Texture/CrumpleCarMetal/Mid/CrumpleCarMetal_Mid_Normal.uasset",
+      "bytes": 4824327
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/Gradient/CarPaint_Gradient",
+      "file": "Content/CitySampleVehicles/Texture/Gradient/CarPaint_Gradient.uasset",
+      "bytes": 4393
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/Imperfection/T_MetalWear_Wear03_R_VT",
+      "file": "Content/CitySampleVehicles/Texture/Imperfection/T_MetalWear_Wear03_R_VT.uasset",
+      "bytes": 30155199
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/LicensePlate/T_LicensePlate_AORM",
+      "file": "Content/CitySampleVehicles/Texture/LicensePlate/T_LicensePlate_AORM.uasset",
+      "bytes": 3599903
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/LicensePlate/T_LicensePlate_C",
+      "file": "Content/CitySampleVehicles/Texture/LicensePlate/T_LicensePlate_C.uasset",
+      "bytes": 2387182
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/LicensePlate/T_LicensePlate_N",
+      "file": "Content/CitySampleVehicles/Texture/LicensePlate/T_LicensePlate_N.uasset",
+      "bytes": 498267
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/LicensePlate/T_LicensePlate_Police_AORM",
+      "file": "Content/CitySampleVehicles/Texture/LicensePlate/T_LicensePlate_Police_AORM.uasset",
+      "bytes": 3523158
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/LicensePlate/T_LicensePlate_Police_C",
+      "file": "Content/CitySampleVehicles/Texture/LicensePlate/T_LicensePlate_Police_C.uasset",
+      "bytes": 1458236
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/LicensePlate/T_LicensePlate_Police_N",
+      "file": "Content/CitySampleVehicles/Texture/LicensePlate/T_LicensePlate_Police_N.uasset",
+      "bytes": 507561
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/Surface/T_Bump_N",
+      "file": "Content/CitySampleVehicles/Texture/Surface/T_Bump_N.uasset",
+      "bytes": 2839110
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/Surface/T_Flakes_D3_Data",
+      "file": "Content/CitySampleVehicles/Texture/Surface/T_Flakes_D3_Data.uasset",
+      "bytes": 34222023
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/Surface/T_Flakes_D3_Normal",
+      "file": "Content/CitySampleVehicles/Texture/Surface/T_Flakes_D3_Normal.uasset",
+      "bytes": 28873856
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/Surface/T_Imperfections_Dust_01_Mask",
+      "file": "Content/CitySampleVehicles/Texture/Surface/T_Imperfections_Dust_01_Mask.uasset",
+      "bytes": 11855224
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/Surface/T_Imperfections_FingerPrints_Mask2",
+      "file": "Content/CitySampleVehicles/Texture/Surface/T_Imperfections_FingerPrints_Mask2.uasset",
+      "bytes": 15498217
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/Surface/T_Imperfections_Stains_Mask",
+      "file": "Content/CitySampleVehicles/Texture/Surface/T_Imperfections_Stains_Mask.uasset",
+      "bytes": 18300213
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/Surface/T_Imperfections_Wipe_Mask",
+      "file": "Content/CitySampleVehicles/Texture/Surface/T_Imperfections_Wipe_Mask.uasset",
+      "bytes": 19843293
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/Surface/T_Metal_Painted_R_VT",
+      "file": "Content/CitySampleVehicles/Texture/Surface/T_Metal_Painted_R_VT.uasset",
+      "bytes": 12146165
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/Surface/T_Metal_Steel_BC_VT",
+      "file": "Content/CitySampleVehicles/Texture/Surface/T_Metal_Steel_BC_VT.uasset",
+      "bytes": 2162053
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/Surface/T_Metal_Steel_N_VT",
+      "file": "Content/CitySampleVehicles/Texture/Surface/T_Metal_Steel_N_VT.uasset",
+      "bytes": 5367
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/Surface/T_Metal_Steel_R_VT",
+      "file": "Content/CitySampleVehicles/Texture/Surface/T_Metal_Steel_R_VT.uasset",
+      "bytes": 9136969
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/Surface/T_OrangePeel_N",
+      "file": "Content/CitySampleVehicles/Texture/Surface/T_OrangePeel_N.uasset",
+      "bytes": 60290316
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/Surface/T_ReflectorHexagon_N",
+      "file": "Content/CitySampleVehicles/Texture/Surface/T_ReflectorHexagon_N.uasset",
+      "bytes": 565333
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/Surface/T_Rubber_01_N_VT",
+      "file": "Content/CitySampleVehicles/Texture/Surface/T_Rubber_01_N_VT.uasset",
+      "bytes": 5359
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/Surface/T_Rubber_03_R_VT",
+      "file": "Content/CitySampleVehicles/Texture/Surface/T_Rubber_03_R_VT.uasset",
+      "bytes": 10273847
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/T_Black_BC4_VT",
+      "file": "Content/CitySampleVehicles/Texture/T_Black_BC4_VT.uasset",
+      "bytes": 5314
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/T_Black_BC7_Linear_VT1",
+      "file": "Content/CitySampleVehicles/Texture/T_Black_BC7_Linear_VT1.uasset",
+      "bytes": 5341
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/T_Black_BC7_sRGB",
+      "file": "Content/CitySampleVehicles/Texture/T_Black_BC7_sRGB.uasset",
+      "bytes": 5277
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/T_Black_Mask_VT",
+      "file": "Content/CitySampleVehicles/Texture/T_Black_Mask_VT.uasset",
+      "bytes": 5245
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/T_Flat_Normal_VT",
+      "file": "Content/CitySampleVehicles/Texture/T_Flat_Normal_VT.uasset",
+      "bytes": 6074
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/T_Gray_Linear_VT",
+      "file": "Content/CitySampleVehicles/Texture/T_Gray_Linear_VT.uasset",
+      "bytes": 4781
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/T_Grey_Interior_VT",
+      "file": "Content/CitySampleVehicles/Texture/T_Grey_Interior_VT.uasset",
+      "bytes": 5070
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/T_UDIMCheckSmall",
+      "file": "Content/CitySampleVehicles/Texture/T_UDIMCheckSmall.uasset",
+      "bytes": 523072
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/T_White_Color_VT",
+      "file": "Content/CitySampleVehicles/Texture/T_White_Color_VT.uasset",
+      "bytes": 4810
+    },
+    {
+      "package": "/Game/CitySampleVehicles/Texture/TextureCube/pano_NW_02_expCorrect_cube",
+      "file": "Content/CitySampleVehicles/Texture/TextureCube/pano_NW_02_expCorrect_cube.uasset",
+      "bytes": 111464
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_0",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_0.uasset",
+      "bytes": 6868
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_1",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_1.uasset",
+      "bytes": 6886
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_10",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_10.uasset",
+      "bytes": 10158
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_11",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_11.uasset",
+      "bytes": 6766
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_12",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_12.uasset",
+      "bytes": 6632
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_13",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_13.uasset",
+      "bytes": 10087
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_14",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_14.uasset",
+      "bytes": 7206
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_15",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_15.uasset",
+      "bytes": 9472
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_16",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_16.uasset",
+      "bytes": 7147
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_17",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_17.uasset",
+      "bytes": 89493
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_18",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_18.uasset",
+      "bytes": 9477
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_19",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_19.uasset",
+      "bytes": 7171
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_2",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_2.uasset",
+      "bytes": 71328
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_20",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_20.uasset",
+      "bytes": 6587
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_21",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_21.uasset",
+      "bytes": 9418
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_22",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_22.uasset",
+      "bytes": 9105
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_23",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_23.uasset",
+      "bytes": 6648
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_3",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_3.uasset",
+      "bytes": 10773
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_4",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_4.uasset",
+      "bytes": 10691
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_5",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_5.uasset",
+      "bytes": 10204
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_6",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_6.uasset",
+      "bytes": 7346
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_7",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_7.uasset",
+      "bytes": 14282
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_8",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_8.uasset",
+      "bytes": 10333
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_9",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/MI/MI_vehVan_vehicle01_9.uasset",
+      "bytes": 10180
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_bulb",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/M_veh_bulb.uasset",
+      "bytes": 69580
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_caliper",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/M_veh_caliper.uasset",
+      "bytes": 5354
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_carPaint",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/M_veh_carPaint.uasset",
+      "bytes": 5955
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_engine",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/M_veh_engine.uasset",
+      "bytes": 6012
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_glass",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/M_veh_glass.uasset",
+      "bytes": 5637
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_glass_amber",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/M_veh_glass_amber.uasset",
+      "bytes": 56637
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_glass_amber_inner",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/M_veh_glass_amber_inner.uasset",
+      "bytes": 8038
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_glass_inner",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/M_veh_glass_inner.uasset",
+      "bytes": 8021
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_glass_red",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/M_veh_glass_red.uasset",
+      "bytes": 6564
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_glass_red_inner",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/M_veh_glass_red_inner.uasset",
+      "bytes": 7489
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_interior",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/M_veh_interior.uasset",
+      "bytes": 6034
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_licensePlate",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/M_veh_licensePlate.uasset",
+      "bytes": 7540
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_light",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/M_veh_light.uasset",
+      "bytes": 6174
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_metal_chrome",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/M_veh_metal_chrome.uasset",
+      "bytes": 6118
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_metal_steel",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/M_veh_metal_steel.uasset",
+      "bytes": 6066
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_mirror",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/M_veh_mirror.uasset",
+      "bytes": 6094
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_plastic_gloss",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/M_veh_plastic_gloss.uasset",
+      "bytes": 5381
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_plastic_matte",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/M_veh_plastic_matte.uasset",
+      "bytes": 5381
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_rim",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/M_veh_rim.uasset",
+      "bytes": 4895
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_rubber_smooth",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/M_veh_rubber_smooth.uasset",
+      "bytes": 5410
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_tire",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/M_veh_tire.uasset",
+      "bytes": 4965
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_undercar",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/M_veh_undercar.uasset",
+      "bytes": 6028
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_window",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/M_veh_window.uasset",
+      "bytes": 5232
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Material/M_veh_windshield",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Material/M_veh_windshield.uasset",
+      "bytes": 5264
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Mesh/SM_vehVan_vehicle01_LOD",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Mesh/SM_vehVan_vehicle01_LOD.uasset",
+      "bytes": 98117028
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Texture/T_vehVan_vehicle01_AORM",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Texture/T_vehVan_vehicle01_AORM.uasset",
+      "bytes": 65316202
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Texture/T_vehVan_vehicle01_C",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Texture/T_vehVan_vehicle01_C.uasset",
+      "bytes": 32154236
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Texture/T_vehVan_vehicle01_Emissive",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Texture/T_vehVan_vehicle01_Emissive.uasset",
+      "bytes": 786328
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Texture/T_vehVan_vehicle01_Grime",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Texture/T_vehVan_vehicle01_Grime.uasset",
+      "bytes": 27793044
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle01_Van/Texture/T_vehVan_vehicle01_N",
+      "file": "Content/CitySampleVehicles/vehicle01_Van/Texture/T_vehVan_vehicle01_N.uasset",
+      "bytes": 23613253
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle02_Car/Texture/T_vehCar_vehicle02_reverseLightMask",
+      "file": "Content/CitySampleVehicles/vehicle02_Car/Texture/T_vehCar_vehicle02_reverseLightMask.uasset",
+      "bytes": 6183
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle03_Car/Texture/T_vehCar_vehicle03_AORM",
+      "file": "Content/CitySampleVehicles/vehicle03_Car/Texture/T_vehCar_vehicle03_AORM.uasset",
+      "bytes": 55806469
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle03_Car/Texture/T_vehCar_vehicle03_C",
+      "file": "Content/CitySampleVehicles/vehicle03_Car/Texture/T_vehCar_vehicle03_C.uasset",
+      "bytes": 31430568
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle03_Car/Texture/T_vehCar_vehicle03_N",
+      "file": "Content/CitySampleVehicles/vehicle03_Car/Texture/T_vehCar_vehicle03_N.uasset",
+      "bytes": 26056932
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_0",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_0.uasset",
+      "bytes": 9677
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_1",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_1.uasset",
+      "bytes": 8282
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_10",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_10.uasset",
+      "bytes": 8547
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_11",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_11.uasset",
+      "bytes": 17444
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_12",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_12.uasset",
+      "bytes": 7520
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_13",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_13.uasset",
+      "bytes": 11115
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_14",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_14.uasset",
+      "bytes": 10453
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_15",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_15.uasset",
+      "bytes": 7361
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_16",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_16.uasset",
+      "bytes": 7373
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_17",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_17.uasset",
+      "bytes": 64048
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_18",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_18.uasset",
+      "bytes": 7365
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_19",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_19.uasset",
+      "bytes": 11177
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_2",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_2.uasset",
+      "bytes": 7151
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_20",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_20.uasset",
+      "bytes": 7767
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_21",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_21.uasset",
+      "bytes": 7064
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_22",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_22.uasset",
+      "bytes": 7377
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_3",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_3.uasset",
+      "bytes": 7590
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_4",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_4.uasset",
+      "bytes": 10358
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_5",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_5.uasset",
+      "bytes": 8012
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_6",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_6.uasset",
+      "bytes": 6970
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_7",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_7.uasset",
+      "bytes": 8152
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_9",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/MI/MI_vehVan_vehicle09_9.uasset",
+      "bytes": 7442
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_carPaint",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/M_veh_carPaint.uasset",
+      "bytes": 5955
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_engine",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/M_veh_engine.uasset",
+      "bytes": 6012
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_glass_amber",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/M_veh_glass_amber.uasset",
+      "bytes": 7621
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_glass_amber_inner",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/M_veh_glass_amber_inner.uasset",
+      "bytes": 8038
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_glass_inner",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/M_veh_glass_inner.uasset",
+      "bytes": 8021
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_glass_red",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/M_veh_glass_red.uasset",
+      "bytes": 7565
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_glass_red_inner",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/M_veh_glass_red_inner.uasset",
+      "bytes": 6474
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_interior",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/M_veh_interior.uasset",
+      "bytes": 5263
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_licensePlate",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/M_veh_licensePlate.uasset",
+      "bytes": 7731
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_light",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/M_veh_light.uasset",
+      "bytes": 6071
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_metal_chrome",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/M_veh_metal_chrome.uasset",
+      "bytes": 6125
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_metal_steel",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/M_veh_metal_steel.uasset",
+      "bytes": 6076
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_mirror",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/M_veh_mirror.uasset",
+      "bytes": 6101
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_plastic_gloss",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/M_veh_plastic_gloss.uasset",
+      "bytes": 5387
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_plastic_matte",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/M_veh_plastic_matte.uasset",
+      "bytes": 5381
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_rim",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/M_veh_rim.uasset",
+      "bytes": 7808
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_rubber_smooth",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/M_veh_rubber_smooth.uasset",
+      "bytes": 5397
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_tire",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/M_veh_tire.uasset",
+      "bytes": 4963
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_undercar",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/M_veh_undercar.uasset",
+      "bytes": 6028
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_window",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/M_veh_window.uasset",
+      "bytes": 5232
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Material/M_veh_windshield",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Material/M_veh_windshield.uasset",
+      "bytes": 62647
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Mesh/SM_vehVan_vehicle09_LOD",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Mesh/SM_vehVan_vehicle09_LOD.uasset",
+      "bytes": 62097585
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Texture/T_vehVan_vehicle09_AORM",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Texture/T_vehVan_vehicle09_AORM.uasset",
+      "bytes": 83402560
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Texture/T_vehVan_vehicle09_C",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Texture/T_vehVan_vehicle09_C.uasset",
+      "bytes": 49467147
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Texture/T_vehVan_vehicle09_Emissive",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Texture/T_vehVan_vehicle09_Emissive.uasset",
+      "bytes": 729666
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Texture/T_vehVan_vehicle09_Graphic",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Texture/T_vehVan_vehicle09_Graphic.uasset",
+      "bytes": 295587
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Texture/T_vehVan_vehicle09_GraphicR",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Texture/T_vehVan_vehicle09_GraphicR.uasset",
+      "bytes": 360573
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Texture/T_vehVan_vehicle09_Grime",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Texture/T_vehVan_vehicle09_Grime.uasset",
+      "bytes": 30182214
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle09_Van/Texture/T_vehVan_vehicle09_N",
+      "file": "Content/CitySampleVehicles/vehicle09_Van/Texture/T_vehVan_vehicle09_N.uasset",
+      "bytes": 16337249
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_0",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_0.uasset",
+      "bytes": 7479
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_1",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_1.uasset",
+      "bytes": 6999
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_10",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_10.uasset",
+      "bytes": 7746
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_11",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_11.uasset",
+      "bytes": 7270
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_12",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_12.uasset",
+      "bytes": 7707
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_13",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_13.uasset",
+      "bytes": 10470
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_14",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_14.uasset",
+      "bytes": 10743
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_15",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_15.uasset",
+      "bytes": 7704
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_16",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_16.uasset",
+      "bytes": 8054
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_17",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_17.uasset",
+      "bytes": 8064
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_18",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_18.uasset",
+      "bytes": 7592
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_19",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_19.uasset",
+      "bytes": 6642
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_2",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_2.uasset",
+      "bytes": 6641
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_20",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_20.uasset",
+      "bytes": 6729
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_21",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_21.uasset",
+      "bytes": 6714
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_22",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_22.uasset",
+      "bytes": 9674
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_23",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_23.uasset",
+      "bytes": 8444
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_3",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_3.uasset",
+      "bytes": 11956
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_5",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_5.uasset",
+      "bytes": 8086
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_6",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_6.uasset",
+      "bytes": 19138
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_7",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_7.uasset",
+      "bytes": 7710
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_8",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_8.uasset",
+      "bytes": 7377
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_9",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/MI/MI_vehCar_vehicle13_9.uasset",
+      "bytes": 7333
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_carPaint",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/M_veh_carPaint.uasset",
+      "bytes": 6299
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_engine",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/M_veh_engine.uasset",
+      "bytes": 6356
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_glass",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/M_veh_glass.uasset",
+      "bytes": 7997
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_glass_amber",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/M_veh_glass_amber.uasset",
+      "bytes": 7621
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_glass_amber_inner",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/M_veh_glass_amber_inner.uasset",
+      "bytes": 8038
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_glass_inner",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/M_veh_glass_inner.uasset",
+      "bytes": 8021
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_glass_red",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/M_veh_glass_red.uasset",
+      "bytes": 7565
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_glass_red_inner",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/M_veh_glass_red_inner.uasset",
+      "bytes": 7489
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_interior",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/M_veh_interior.uasset",
+      "bytes": 10193
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_licensePlate",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/M_veh_licensePlate.uasset",
+      "bytes": 11404
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_light",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/M_veh_light.uasset",
+      "bytes": 13265
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_metal_chrome",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/M_veh_metal_chrome.uasset",
+      "bytes": 6462
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_metal_steel",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/M_veh_metal_steel.uasset",
+      "bytes": 6410
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_mirror",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/M_veh_mirror.uasset",
+      "bytes": 6438
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_plastic_gloss",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/M_veh_plastic_gloss.uasset",
+      "bytes": 5725
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_plastic_matte",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/M_veh_plastic_matte.uasset",
+      "bytes": 5725
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_rim",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/M_veh_rim.uasset",
+      "bytes": 5176
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_rubber_smooth",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/M_veh_rubber_smooth.uasset",
+      "bytes": 5754
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_tire",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/M_veh_tire.uasset",
+      "bytes": 5309
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_undercar",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/M_veh_undercar.uasset",
+      "bytes": 6372
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_window",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/M_veh_window.uasset",
+      "bytes": 7597
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Material/M_veh_windshield",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Material/M_veh_windshield.uasset",
+      "bytes": 7613
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Mesh/SM_vehCar_vehicle13_LOD",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Mesh/SM_vehCar_vehicle13_LOD.uasset",
+      "bytes": 88545213
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Texture/T_vehCar_vehicle13_AORM",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Texture/T_vehCar_vehicle13_AORM.uasset",
+      "bytes": 64793859
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Texture/T_vehCar_vehicle13_C",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Texture/T_vehCar_vehicle13_C.uasset",
+      "bytes": 33339528
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Texture/T_vehCar_vehicle13_Emissive",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Texture/T_vehCar_vehicle13_Emissive.uasset",
+      "bytes": 900355
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Texture/T_vehCar_vehicle13_Graphic",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Texture/T_vehCar_vehicle13_Graphic.uasset",
+      "bytes": 158037
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Texture/T_vehCar_vehicle13_GraphicR",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Texture/T_vehCar_vehicle13_GraphicR.uasset",
+      "bytes": 206175
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Texture/T_vehCar_vehicle13_Grime",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Texture/T_vehCar_vehicle13_Grime.uasset",
+      "bytes": 27718281
+    },
+    {
+      "package": "/Game/CitySampleVehicles/vehicle13_Car/Texture/T_vehCar_vehicle13_N",
+      "file": "Content/CitySampleVehicles/vehicle13_Car/Texture/T_vehCar_vehicle13_N.uasset",
+      "bytes": 26572084
+    },
+    {
+      "package": "/Game/Fab/MaterialFunctions/QMF_AOAdjustments",
+      "file": "Content/Fab/MaterialFunctions/QMF_AOAdjustments.uasset",
+      "bytes": 12013
+    },
+    {
+      "package": "/Game/Fab/MaterialFunctions/QMF_BaseColorAdjustments",
+      "file": "Content/Fab/MaterialFunctions/QMF_BaseColorAdjustments.uasset",
+      "bytes": 14525
+    },
+    {
+      "package": "/Game/Fab/MaterialFunctions/QMF_NormalAdjustments",
+      "file": "Content/Fab/MaterialFunctions/QMF_NormalAdjustments.uasset",
+      "bytes": 13109
+    },
+    {
+      "package": "/Game/Fab/MaterialFunctions/QMF_RoughnessAdjustments",
+      "file": "Content/Fab/MaterialFunctions/QMF_RoughnessAdjustments.uasset",
+      "bytes": 11077
+    },
+    {
+      "package": "/Game/Fab/Materials/Standard/M_MS_Base",
+      "file": "Content/Fab/Materials/Standard/M_MS_Base.uasset",
+      "bytes": 43246
+    },
+    {
+      "package": "/Game/Fab/Megascans/3D/Military_Trenches_Ground_Patch_Rock_S_04_yd0lfcq/Medium/SM_yd0lfcq_tier_2/Materials/MI_yd0lfcq",
+      "file": "Content/Fab/Megascans/3D/Military_Trenches_Ground_Patch_Rock_S_04_yd0lfcq/Medium/SM_yd0lfcq_tier_2/Materials/MI_yd0lfcq.uasset",
+      "bytes": 76107
+    },
+    {
+      "package": "/Game/Fab/Megascans/3D/Military_Trenches_Ground_Patch_Rock_S_04_yd0lfcq/Medium/SM_yd0lfcq_tier_2/StaticMeshes/SM_yd0lfcq_tier_2",
+      "file": "Content/Fab/Megascans/3D/Military_Trenches_Ground_Patch_Rock_S_04_yd0lfcq/Medium/SM_yd0lfcq_tier_2/StaticMeshes/SM_yd0lfcq_tier_2.uasset",
+      "bytes": 277572
+    },
+    {
+      "package": "/Game/Fab/Megascans/3D/Military_Trenches_Ground_Patch_Rock_S_04_yd0lfcq/Medium/SM_yd0lfcq_tier_2/Textures/T_yd0lfcq_2k_B",
+      "file": "Content/Fab/Megascans/3D/Military_Trenches_Ground_Patch_Rock_S_04_yd0lfcq/Medium/SM_yd0lfcq_tier_2/Textures/T_yd0lfcq_2k_B.uasset",
+      "bytes": 7440477
+    },
+    {
+      "package": "/Game/Fab/Megascans/3D/Military_Trenches_Ground_Patch_Rock_S_04_yd0lfcq/Medium/SM_yd0lfcq_tier_2/Textures/T_yd0lfcq_2k_N",
+      "file": "Content/Fab/Megascans/3D/Military_Trenches_Ground_Patch_Rock_S_04_yd0lfcq/Medium/SM_yd0lfcq_tier_2/Textures/T_yd0lfcq_2k_N.uasset",
+      "bytes": 10366339
+    },
+    {
+      "package": "/Game/Fab/Megascans/3D/Military_Trenches_Ground_Patch_Rock_S_04_yd0lfcq/Medium/SM_yd0lfcq_tier_2/Textures/T_yd0lfcq_2k_ORM",
+      "file": "Content/Fab/Megascans/3D/Military_Trenches_Ground_Patch_Rock_S_04_yd0lfcq/Medium/SM_yd0lfcq_tier_2/Textures/T_yd0lfcq_2k_ORM.uasset",
+      "bytes": 5116496
+    },
+    {
+      "package": "/Game/Fab/Megascans/3D/Sandstone_Rocky_Ground_vmjjfiv/Medium/vmjjfiv_tier_2/Materials/MI_vmjjfiv",
+      "file": "Content/Fab/Megascans/3D/Sandstone_Rocky_Ground_vmjjfiv/Medium/vmjjfiv_tier_2/Materials/MI_vmjjfiv.uasset",
+      "bytes": 74656
+    },
+    {
+      "package": "/Game/Fab/Megascans/3D/Sandstone_Rocky_Ground_vmjjfiv/Medium/vmjjfiv_tier_2/StaticMeshes/vmjjfiv_tier_2",
+      "file": "Content/Fab/Megascans/3D/Sandstone_Rocky_Ground_vmjjfiv/Medium/vmjjfiv_tier_2/StaticMeshes/vmjjfiv_tier_2.uasset",
+      "bytes": 367626
+    },
+    {
+      "package": "/Game/Fab/Megascans/3D/Sandstone_Rocky_Ground_vmjjfiv/Medium/vmjjfiv_tier_2/Textures/T_vmjjfiv_2K_B",
+      "file": "Content/Fab/Megascans/3D/Sandstone_Rocky_Ground_vmjjfiv/Medium/vmjjfiv_tier_2/Textures/T_vmjjfiv_2K_B.uasset",
+      "bytes": 6885140
+    },
+    {
+      "package": "/Game/Fab/Megascans/3D/Sandstone_Rocky_Ground_vmjjfiv/Medium/vmjjfiv_tier_2/Textures/T_vmjjfiv_2K_N",
+      "file": "Content/Fab/Megascans/3D/Sandstone_Rocky_Ground_vmjjfiv/Medium/vmjjfiv_tier_2/Textures/T_vmjjfiv_2K_N.uasset",
+      "bytes": 10043118
+    },
+    {
+      "package": "/Game/Fab/Megascans/3D/Sandstone_Rocky_Ground_vmjjfiv/Medium/vmjjfiv_tier_2/Textures/T_vmjjfiv_2K_ORM",
+      "file": "Content/Fab/Megascans/3D/Sandstone_Rocky_Ground_vmjjfiv/Medium/vmjjfiv_tier_2/Textures/T_vmjjfiv_2K_ORM.uasset",
+      "bytes": 6472755
+    },
+    {
+      "package": "/Game/Fab/Textures/Standard/T_DefaultColor",
+      "file": "Content/Fab/Textures/Standard/T_DefaultColor.uasset",
+      "bytes": 3645
+    },
+    {
+      "package": "/Game/Fab/Textures/Standard/T_DefaultDisplacement",
+      "file": "Content/Fab/Textures/Standard/T_DefaultDisplacement.uasset",
+      "bytes": 3881
+    },
+    {
+      "package": "/Game/Fab/Textures/Standard/T_DefaultMasks",
+      "file": "Content/Fab/Textures/Standard/T_DefaultMasks.uasset",
+      "bytes": 3847
+    },
+    {
+      "package": "/Game/Fab/Textures/Standard/T_DefaultNormal",
+      "file": "Content/Fab/Textures/Standard/T_DefaultNormal.uasset",
+      "bytes": 4457
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Ind_Mine_Tool_Shovel_Old_01/Materials/MI_Ind_Mine_Tool_Shovel_Old_01",
+      "file": "Content/MilitaryTrench/Assets/3D/Ind_Mine_Tool_Shovel_Old_01/Materials/MI_Ind_Mine_Tool_Shovel_Old_01.uasset",
+      "bytes": 70143
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Ind_Mine_Tool_Shovel_Old_01/StaticMeshes/SM_Ind_Mine_Tool_Shovel_Old_01",
+      "file": "Content/MilitaryTrench/Assets/3D/Ind_Mine_Tool_Shovel_Old_01/StaticMeshes/SM_Ind_Mine_Tool_Shovel_Old_01.uasset",
+      "bytes": 813097
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Ind_Mine_Tool_Shovel_Old_01/Textures/T_Ind_Mine_Tool_Shovel_Old_01_B",
+      "file": "Content/MilitaryTrench/Assets/3D/Ind_Mine_Tool_Shovel_Old_01/Textures/T_Ind_Mine_Tool_Shovel_Old_01_B.uasset",
+      "bytes": 1789916
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Ind_Mine_Tool_Shovel_Old_01/Textures/T_Ind_Mine_Tool_Shovel_Old_01_H",
+      "file": "Content/MilitaryTrench/Assets/3D/Ind_Mine_Tool_Shovel_Old_01/Textures/T_Ind_Mine_Tool_Shovel_Old_01_H.uasset",
+      "bytes": 257659
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Ind_Mine_Tool_Shovel_Old_01/Textures/T_Ind_Mine_Tool_Shovel_Old_01_N",
+      "file": "Content/MilitaryTrench/Assets/3D/Ind_Mine_Tool_Shovel_Old_01/Textures/T_Ind_Mine_Tool_Shovel_Old_01_N.uasset",
+      "bytes": 1967782
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Ind_Mine_Tool_Shovel_Old_01/Textures/T_Ind_Mine_Tool_Shovel_Old_01_ORM",
+      "file": "Content/MilitaryTrench/Assets/3D/Ind_Mine_Tool_Shovel_Old_01/Textures/T_Ind_Mine_Tool_Shovel_Old_01_ORM.uasset",
+      "bytes": 340536
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_01/Materials/MI_Mil_Trench_Scatter_Rock_S_01",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_01/Materials/MI_Mil_Trench_Scatter_Rock_S_01.uasset",
+      "bytes": 66160
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_01/StaticMeshes/SM_Mil_Trench_Scatter_Rock_S_01",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_01/StaticMeshes/SM_Mil_Trench_Scatter_Rock_S_01.uasset",
+      "bytes": 66451087
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_01/Textures/T_Mil_Trench_Scatter_Rock_S_01_B",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_01/Textures/T_Mil_Trench_Scatter_Rock_S_01_B.uasset",
+      "bytes": 175022
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_01/Textures/T_Mil_Trench_Scatter_Rock_S_01_N",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_01/Textures/T_Mil_Trench_Scatter_Rock_S_01_N.uasset",
+      "bytes": 143236
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_01/Textures/T_Mil_Trench_Scatter_Rock_S_01_ORM",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_01/Textures/T_Mil_Trench_Scatter_Rock_S_01_ORM.uasset",
+      "bytes": 126517
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_02/Materials/MI_Mil_Trench_Scatter_Rock_S_02",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_02/Materials/MI_Mil_Trench_Scatter_Rock_S_02.uasset",
+      "bytes": 66160
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_02/StaticMeshes/SM_Mil_Trench_Scatter_Rock_S_02",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_02/StaticMeshes/SM_Mil_Trench_Scatter_Rock_S_02.uasset",
+      "bytes": 66079623
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_02/Textures/T_Mil_Trench_Scatter_Rock_S_02_B",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_02/Textures/T_Mil_Trench_Scatter_Rock_S_02_B.uasset",
+      "bytes": 194454
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_02/Textures/T_Mil_Trench_Scatter_Rock_S_02_N",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_02/Textures/T_Mil_Trench_Scatter_Rock_S_02_N.uasset",
+      "bytes": 141694
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_02/Textures/T_Mil_Trench_Scatter_Rock_S_02_ORM",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_02/Textures/T_Mil_Trench_Scatter_Rock_S_02_ORM.uasset",
+      "bytes": 135506
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_03/Materials/MI_Mil_Trench_Scatter_Rock_S_03",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_03/Materials/MI_Mil_Trench_Scatter_Rock_S_03.uasset",
+      "bytes": 66160
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_03/StaticMeshes/SM_Mil_Trench_Scatter_Rock_S_03",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_03/StaticMeshes/SM_Mil_Trench_Scatter_Rock_S_03.uasset",
+      "bytes": 65975228
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_03/Textures/T_Mil_Trench_Scatter_Rock_S_03_B",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_03/Textures/T_Mil_Trench_Scatter_Rock_S_03_B.uasset",
+      "bytes": 184509
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_03/Textures/T_Mil_Trench_Scatter_Rock_S_03_N",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_03/Textures/T_Mil_Trench_Scatter_Rock_S_03_N.uasset",
+      "bytes": 159324
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_03/Textures/T_Mil_Trench_Scatter_Rock_S_03_ORM",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_03/Textures/T_Mil_Trench_Scatter_Rock_S_03_ORM.uasset",
+      "bytes": 130669
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_04/Materials/MI_Mil_Trench_Scatter_Rock_S_04",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_04/Materials/MI_Mil_Trench_Scatter_Rock_S_04.uasset",
+      "bytes": 70333
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_04/StaticMeshes/SM_Mil_Trench_Scatter_Rock_S_04",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_04/StaticMeshes/SM_Mil_Trench_Scatter_Rock_S_04.uasset",
+      "bytes": 70354429
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_04/Textures/T_Mil_Trench_Scatter_Rock_S_04_B",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_04/Textures/T_Mil_Trench_Scatter_Rock_S_04_B.uasset",
+      "bytes": 192772
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_04/Textures/T_Mil_Trench_Scatter_Rock_S_04_N",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_04/Textures/T_Mil_Trench_Scatter_Rock_S_04_N.uasset",
+      "bytes": 154438
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_04/Textures/T_Mil_Trench_Scatter_Rock_S_04_ORM",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_04/Textures/T_Mil_Trench_Scatter_Rock_S_04_ORM.uasset",
+      "bytes": 132432
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_05/Materials/MI_Mil_Trench_Scatter_Rock_S_05",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_05/Materials/MI_Mil_Trench_Scatter_Rock_S_05.uasset",
+      "bytes": 69696
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_05/StaticMeshes/SM_Mil_Trench_Scatter_Rock_S_05",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_05/StaticMeshes/SM_Mil_Trench_Scatter_Rock_S_05.uasset",
+      "bytes": 66489371
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_05/Textures/T_Mil_Trench_Scatter_Rock_S_05_B",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_05/Textures/T_Mil_Trench_Scatter_Rock_S_05_B.uasset",
+      "bytes": 182301
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_05/Textures/T_Mil_Trench_Scatter_Rock_S_05_N",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_05/Textures/T_Mil_Trench_Scatter_Rock_S_05_N.uasset",
+      "bytes": 134632
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_05/Textures/T_Mil_Trench_Scatter_Rock_S_05_ORM",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Scatter_Rock_S_05/Textures/T_Mil_Trench_Scatter_Rock_S_05_ORM.uasset",
+      "bytes": 130243
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Metal_S/Materials/MI_Mil_Trench_Storage_Box_Metal_S",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Metal_S/Materials/MI_Mil_Trench_Storage_Box_Metal_S.uasset",
+      "bytes": 67451
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Metal_S/StaticMeshes/SM_Mil_Trench_Storage_Box_Metal_S",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Metal_S/StaticMeshes/SM_Mil_Trench_Storage_Box_Metal_S.uasset",
+      "bytes": 63248685
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Metal_S/Textures/T_Mil_Trench_Storage_Box_Metal_S_B",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Metal_S/Textures/T_Mil_Trench_Storage_Box_Metal_S_B.uasset",
+      "bytes": 361304
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Metal_S/Textures/T_Mil_Trench_Storage_Box_Metal_S_N",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Metal_S/Textures/T_Mil_Trench_Storage_Box_Metal_S_N.uasset",
+      "bytes": 378380
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Metal_S/Textures/T_Mil_Trench_Storage_Box_Metal_S_ORM",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Metal_S/Textures/T_Mil_Trench_Storage_Box_Metal_S_ORM.uasset",
+      "bytes": 266170
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Wood_S/Materials/MI_Mil_Trench_Storage_Box_Wood_S_A",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Wood_S/Materials/MI_Mil_Trench_Storage_Box_Wood_S_A.uasset",
+      "bytes": 68084
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Wood_S/StaticMeshes/SM_Mil_Trench_Storage_Box_Wood_S",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Wood_S/StaticMeshes/SM_Mil_Trench_Storage_Box_Wood_S.uasset",
+      "bytes": 61942509
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Wood_S/Textures/T_Mil_Trench_Storage_Box_Wood_S_B",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Wood_S/Textures/T_Mil_Trench_Storage_Box_Wood_S_B.uasset",
+      "bytes": 1463449
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Wood_S/Textures/T_Mil_Trench_Storage_Box_Wood_S_N",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Wood_S/Textures/T_Mil_Trench_Storage_Box_Wood_S_N.uasset",
+      "bytes": 368737
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Wood_S/Textures/T_Mil_Trench_Storage_Box_Wood_S_ORM",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Box_Wood_S/Textures/T_Mil_Trench_Storage_Box_Wood_S_ORM.uasset",
+      "bytes": 278084
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_01/Materials/MI_Mil_Trench_Storage_Crate_Wood_M_01",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_01/Materials/MI_Mil_Trench_Storage_Crate_Wood_M_01.uasset",
+      "bytes": 68615
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_01/StaticMeshes/SM_Mil_Trench_Storage_Crate_Wood_M_01",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_01/StaticMeshes/SM_Mil_Trench_Storage_Crate_Wood_M_01.uasset",
+      "bytes": 62954267
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_01/Textures/T_Mil_Trench_Storage_Crate_Wood_M_01_B",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_01/Textures/T_Mil_Trench_Storage_Crate_Wood_M_01_B.uasset",
+      "bytes": 1757356
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_01/Textures/T_Mil_Trench_Storage_Crate_Wood_M_01_N",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_01/Textures/T_Mil_Trench_Storage_Crate_Wood_M_01_N.uasset",
+      "bytes": 1690060
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_01/Textures/T_Mil_Trench_Storage_Crate_Wood_M_01_ORM",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_01/Textures/T_Mil_Trench_Storage_Crate_Wood_M_01_ORM.uasset",
+      "bytes": 917803
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_02/Materials/MI_Mil_Trench_Storage_Crate_Wood_M_02",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_02/Materials/MI_Mil_Trench_Storage_Crate_Wood_M_02.uasset",
+      "bytes": 67911
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_02/StaticMeshes/SM_Mil_Trench_Storage_Crate_Wood_M_02_A",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_02/StaticMeshes/SM_Mil_Trench_Storage_Crate_Wood_M_02_A.uasset",
+      "bytes": 44029476
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_02/StaticMeshes/SM_Mil_Trench_Storage_Crate_Wood_M_02_B",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_02/StaticMeshes/SM_Mil_Trench_Storage_Crate_Wood_M_02_B.uasset",
+      "bytes": 19660599
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_02/Textures/T_Mil_Trench_Storage_Crate_Wood_M_02_B",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_02/Textures/T_Mil_Trench_Storage_Crate_Wood_M_02_B.uasset",
+      "bytes": 4976051
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_02/Textures/T_Mil_Trench_Storage_Crate_Wood_M_02_N",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_02/Textures/T_Mil_Trench_Storage_Crate_Wood_M_02_N.uasset",
+      "bytes": 1741369
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_02/Textures/T_Mil_Trench_Storage_Crate_Wood_M_02_ORM",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_M_02/Textures/T_Mil_Trench_Storage_Crate_Wood_M_02_ORM.uasset",
+      "bytes": 1296434
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_01/Materials/MI_Mil_Trench_Storage_Crate_Wood_S_01",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_01/Materials/MI_Mil_Trench_Storage_Crate_Wood_S_01.uasset",
+      "bytes": 69258
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_01/StaticMeshes/SM_Mil_Trench_Storage_Crate_Wood_S_01_A",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_01/StaticMeshes/SM_Mil_Trench_Storage_Crate_Wood_S_01_A.uasset",
+      "bytes": 46751885
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_01/Textures/T_Mil_Trench_Storage_Crate_Wood_S_01_B",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_01/Textures/T_Mil_Trench_Storage_Crate_Wood_S_01_B.uasset",
+      "bytes": 5456304
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_01/Textures/T_Mil_Trench_Storage_Crate_Wood_S_01_N",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_01/Textures/T_Mil_Trench_Storage_Crate_Wood_S_01_N.uasset",
+      "bytes": 1480620
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_01/Textures/T_Mil_Trench_Storage_Crate_Wood_S_01_ORM",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_01/Textures/T_Mil_Trench_Storage_Crate_Wood_S_01_ORM.uasset",
+      "bytes": 1359326
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_02/Materials/MI_Mil_Trench_Storage_Crate_Wood_S_02",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_02/Materials/MI_Mil_Trench_Storage_Crate_Wood_S_02.uasset",
+      "bytes": 69377
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_02/StaticMeshes/SM_Mil_Trench_Storage_Crate_Wood_S_02",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_02/StaticMeshes/SM_Mil_Trench_Storage_Crate_Wood_S_02.uasset",
+      "bytes": 62559102
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_02/Textures/T_Mil_Trench_Storage_Crate_Wood_S_02_B",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_02/Textures/T_Mil_Trench_Storage_Crate_Wood_S_02_B.uasset",
+      "bytes": 1741807
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_02/Textures/T_Mil_Trench_Storage_Crate_Wood_S_02_N",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_02/Textures/T_Mil_Trench_Storage_Crate_Wood_S_02_N.uasset",
+      "bytes": 1620007
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_02/Textures/T_Mil_Trench_Storage_Crate_Wood_S_02_ORM",
+      "file": "Content/MilitaryTrench/Assets/3D/Mil_Trench_Storage_Crate_Wood_S_02/Textures/T_Mil_Trench_Storage_Crate_Wood_S_02_ORM.uasset",
+      "bytes": 1385166
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Plants/Des_West_Grass_Wild_01/Materials/MI_Des_West_Grass_Wild_01",
+      "file": "Content/MilitaryTrench/Assets/3D/Plants/Des_West_Grass_Wild_01/Materials/MI_Des_West_Grass_Wild_01.uasset",
+      "bytes": 71847
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Plants/Des_West_Grass_Wild_01/Materials/MI_Des_West_Grass_Wild_01_Billboard",
+      "file": "Content/MilitaryTrench/Assets/3D/Plants/Des_West_Grass_Wild_01/Materials/MI_Des_West_Grass_Wild_01_Billboard.uasset",
+      "bytes": 64433
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Plants/Des_West_Grass_Wild_01/StaticMeshes/SM_Des_West_Grass_Wild_01_A",
+      "file": "Content/MilitaryTrench/Assets/3D/Plants/Des_West_Grass_Wild_01/StaticMeshes/SM_Des_West_Grass_Wild_01_A.uasset",
+      "bytes": 830365
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Plants/Des_West_Grass_Wild_01/StaticMeshes/SM_Des_West_Grass_Wild_01_B",
+      "file": "Content/MilitaryTrench/Assets/3D/Plants/Des_West_Grass_Wild_01/StaticMeshes/SM_Des_West_Grass_Wild_01_B.uasset",
+      "bytes": 227147
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Plants/Des_West_Grass_Wild_01/Textures/T_Des_West_Grass_Wild_01_B",
+      "file": "Content/MilitaryTrench/Assets/3D/Plants/Des_West_Grass_Wild_01/Textures/T_Des_West_Grass_Wild_01_B.uasset",
+      "bytes": 1415241
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Plants/Des_West_Grass_Wild_01/Textures/T_Des_West_Grass_Wild_01_Billboard_B-O",
+      "file": "Content/MilitaryTrench/Assets/3D/Plants/Des_West_Grass_Wild_01/Textures/T_Des_West_Grass_Wild_01_Billboard_B-O.uasset",
+      "bytes": 1606815
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Plants/Des_West_Grass_Wild_01/Textures/T_Des_West_Grass_Wild_01_Billboard_N-T",
+      "file": "Content/MilitaryTrench/Assets/3D/Plants/Des_West_Grass_Wild_01/Textures/T_Des_West_Grass_Wild_01_Billboard_N-T.uasset",
+      "bytes": 1829019
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Plants/Des_West_Grass_Wild_01/Textures/T_Des_West_Grass_Wild_01_N",
+      "file": "Content/MilitaryTrench/Assets/3D/Plants/Des_West_Grass_Wild_01/Textures/T_Des_West_Grass_Wild_01_N.uasset",
+      "bytes": 1289174
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Plants/Des_West_Grass_Wild_01/Textures/T_Des_West_Grass_Wild_01_ORT",
+      "file": "Content/MilitaryTrench/Assets/3D/Plants/Des_West_Grass_Wild_01/Textures/T_Des_West_Grass_Wild_01_ORT.uasset",
+      "bytes": 1601462
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/Materials/MI_Urb_Street_Grass_Dry_01",
+      "file": "Content/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/Materials/MI_Urb_Street_Grass_Dry_01.uasset",
+      "bytes": 75354
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/Materials/MI_Urb_Street_Grass_Dry_01_Billboard",
+      "file": "Content/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/Materials/MI_Urb_Street_Grass_Dry_01_Billboard.uasset",
+      "bytes": 62524
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/StaticMeshes/SM_Urb_Street_Grass_Dry_01_A",
+      "file": "Content/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/StaticMeshes/SM_Urb_Street_Grass_Dry_01_A.uasset",
+      "bytes": 226838
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/StaticMeshes/SM_Urb_Street_Grass_Dry_01_B",
+      "file": "Content/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/StaticMeshes/SM_Urb_Street_Grass_Dry_01_B.uasset",
+      "bytes": 197574
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/StaticMeshes/SM_Urb_Street_Grass_Dry_01_C",
+      "file": "Content/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/StaticMeshes/SM_Urb_Street_Grass_Dry_01_C.uasset",
+      "bytes": 147892
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/StaticMeshes/SM_Urb_Street_Grass_Dry_01_D",
+      "file": "Content/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/StaticMeshes/SM_Urb_Street_Grass_Dry_01_D.uasset",
+      "bytes": 152291
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/Textures/T_Urb_Street_Grass_Dry_01_B",
+      "file": "Content/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/Textures/T_Urb_Street_Grass_Dry_01_B.uasset",
+      "bytes": 909640
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/Textures/T_Urb_Street_Grass_Dry_01_Billboard_B-O",
+      "file": "Content/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/Textures/T_Urb_Street_Grass_Dry_01_Billboard_B-O.uasset",
+      "bytes": 1022207
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/Textures/T_Urb_Street_Grass_Dry_01_Billboard_N-T",
+      "file": "Content/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/Textures/T_Urb_Street_Grass_Dry_01_Billboard_N-T.uasset",
+      "bytes": 1346416
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/Textures/T_Urb_Street_Grass_Dry_01_N",
+      "file": "Content/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/Textures/T_Urb_Street_Grass_Dry_01_N.uasset",
+      "bytes": 1286231
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/Textures/T_Urb_Street_Grass_Dry_01_ORT",
+      "file": "Content/MilitaryTrench/Assets/3D/Plants/Urb_Street_Grass_Dry_01/Textures/T_Urb_Street_Grass_Dry_01_ORT.uasset",
+      "bytes": 1030254
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/Decals/Ind_Decal_Leak_02/MI_Ind_Decal_Leak_02_A",
+      "file": "Content/MilitaryTrench/Assets/Decals/Ind_Decal_Leak_02/MI_Ind_Decal_Leak_02_A.uasset",
+      "bytes": 61058
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/Decals/Ind_Decal_Leak_02/MI_Ind_Decal_Leak_02_B",
+      "file": "Content/MilitaryTrench/Assets/Decals/Ind_Decal_Leak_02/MI_Ind_Decal_Leak_02_B.uasset",
+      "bytes": 58854
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/Decals/Ind_Decal_Leak_02/T_Ind_Decal_Leak_02_B-O",
+      "file": "Content/MilitaryTrench/Assets/Decals/Ind_Decal_Leak_02/T_Ind_Decal_Leak_02_B-O.uasset",
+      "bytes": 3196129
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/Decals/Ind_Decal_Leak_10/MI_Ind_Decal_Leak_10",
+      "file": "Content/MilitaryTrench/Assets/Decals/Ind_Decal_Leak_10/MI_Ind_Decal_Leak_10.uasset",
+      "bytes": 61098
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/Decals/Ind_Decal_Leak_10/T_Ind_Decal_Leak_10_B-O",
+      "file": "Content/MilitaryTrench/Assets/Decals/Ind_Decal_Leak_10/T_Ind_Decal_Leak_10_B-O.uasset",
+      "bytes": 1321062
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/Surfaces/Mil_Trench_Ground_Dirt_Fine_02/Textures/T_Mil_Trench_Ground_Dirt_Fine_02_B",
+      "file": "Content/MilitaryTrench/Assets/Surfaces/Mil_Trench_Ground_Dirt_Fine_02/Textures/T_Mil_Trench_Ground_Dirt_Fine_02_B.uasset",
+      "bytes": 8134625
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/Surfaces/Mil_Trench_Ground_Dirt_Fine_02/Textures/T_Mil_Trench_Ground_Dirt_Fine_02_N",
+      "file": "Content/MilitaryTrench/Assets/Surfaces/Mil_Trench_Ground_Dirt_Fine_02/Textures/T_Mil_Trench_Ground_Dirt_Fine_02_N.uasset",
+      "bytes": 12803399
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/Surfaces/Mil_Trench_Ground_Dirt_Fine_02/Textures/T_Mil_Trench_Ground_Dirt_Fine_02_ORM",
+      "file": "Content/MilitaryTrench/Assets/Surfaces/Mil_Trench_Ground_Dirt_Fine_02/Textures/T_Mil_Trench_Ground_Dirt_Fine_02_ORM.uasset",
+      "bytes": 1909006
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/Surfaces/Mil_Trench_Ground_Dirt_Rough_02/Textures/T_Mil_Trench_Ground_Dirt_Rough_02_B",
+      "file": "Content/MilitaryTrench/Assets/Surfaces/Mil_Trench_Ground_Dirt_Rough_02/Textures/T_Mil_Trench_Ground_Dirt_Rough_02_B.uasset",
+      "bytes": 8381126
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/Surfaces/Mil_Trench_Ground_Dirt_Rough_02/Textures/T_Mil_Trench_Ground_Dirt_Rough_02_N",
+      "file": "Content/MilitaryTrench/Assets/Surfaces/Mil_Trench_Ground_Dirt_Rough_02/Textures/T_Mil_Trench_Ground_Dirt_Rough_02_N.uasset",
+      "bytes": 11833122
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/Surfaces/Mil_Trench_Ground_Dirt_Rough_02/Textures/T_Mil_Trench_Ground_Dirt_Rough_02_ORM",
+      "file": "Content/MilitaryTrench/Assets/Surfaces/Mil_Trench_Ground_Dirt_Rough_02/Textures/T_Mil_Trench_Ground_Dirt_Rough_02_ORM.uasset",
+      "bytes": 1685632
+    },
+    {
+      "package": "/Game/MilitaryTrench/Assets/Surfaces/Urb_Wall_Plaster_Old_09/T_Urb_Wall_Plaster_Old_09_B",
+      "file": "Content/MilitaryTrench/Assets/Surfaces/Urb_Wall_Plaster_Old_09/T_Urb_Wall_Plaster_Old_09_B.uasset",
+      "bytes": 6893801
+    },
+    {
+      "package": "/Game/MilitaryTrench/Materials/MPC/QMPC_GlobalFoliageActor",
+      "file": "Content/MilitaryTrench/Materials/MPC/QMPC_GlobalFoliageActor.uasset",
+      "bytes": 4452
+    },
+    {
+      "package": "/Game/MilitaryTrench/Materials/MSPresets/MSVTTextures/DefaultDiffuse",
+      "file": "Content/MilitaryTrench/Materials/MSPresets/MSVTTextures/DefaultDiffuse.uasset",
+      "bytes": 1911619
+    },
+    {
+      "package": "/Game/MilitaryTrench/Materials/MSPresets/MSVTTextures/Placeholder_Normal",
+      "file": "Content/MilitaryTrench/Materials/MSPresets/MSVTTextures/Placeholder_Normal.uasset",
+      "bytes": 5181
+    },
+    {
+      "package": "/Game/MilitaryTrench/Materials/MSPresets/MSVTTextures/T_DefaultMasks_VT",
+      "file": "Content/MilitaryTrench/Materials/MSPresets/MSVTTextures/T_DefaultMasks_VT.uasset",
+      "bytes": 5996
+    },
+    {
+      "package": "/Game/MilitaryTrench/Materials/MasterMaterials/M_Decal_Masking",
+      "file": "Content/MilitaryTrench/Materials/MasterMaterials/M_Decal_Masking.uasset",
+      "bytes": 68354
+    },
+    {
+      "package": "/Game/MilitaryTrench/Materials/MasterMaterials/M_MS_Base_VT",
+      "file": "Content/MilitaryTrench/Materials/MasterMaterials/M_MS_Base_VT.uasset",
+      "bytes": 42960
+    },
+    {
+      "package": "/Game/MilitaryTrench/Materials/MasterMaterials/M_MS_Billboard_VT",
+      "file": "Content/MilitaryTrench/Materials/MasterMaterials/M_MS_Billboard_VT.uasset",
+      "bytes": 90310
+    },
+    {
+      "package": "/Game/MilitaryTrench/Materials/MasterMaterials/M_MS_Foliage_VT",
+      "file": "Content/MilitaryTrench/Materials/MasterMaterials/M_MS_Foliage_VT.uasset",
+      "bytes": 68819
+    },
+    {
+      "package": "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_AOAdjustments",
+      "file": "Content/MilitaryTrench/Materials/MaterialFunctions/QMF_AOAdjustments.uasset",
+      "bytes": 12095
+    },
+    {
+      "package": "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_AdjustTwoSidedBaseColor",
+      "file": "Content/MilitaryTrench/Materials/MaterialFunctions/QMF_AdjustTwoSidedBaseColor.uasset",
+      "bytes": 63944
+    },
+    {
+      "package": "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_AdjustTwoSidedNormal",
+      "file": "Content/MilitaryTrench/Materials/MaterialFunctions/QMF_AdjustTwoSidedNormal.uasset",
+      "bytes": 13197
+    },
+    {
+      "package": "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_BaseColorAdjustments",
+      "file": "Content/MilitaryTrench/Materials/MaterialFunctions/QMF_BaseColorAdjustments.uasset",
+      "bytes": 14607
+    },
+    {
+      "package": "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_DistanceBasedGradient",
+      "file": "Content/MilitaryTrench/Materials/MaterialFunctions/QMF_DistanceBasedGradient.uasset",
+      "bytes": 12124
+    },
+    {
+      "package": "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_DistanceBasedOpacity",
+      "file": "Content/MilitaryTrench/Materials/MaterialFunctions/QMF_DistanceBasedOpacity.uasset",
+      "bytes": 17805
+    },
+    {
+      "package": "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_GenerateBranchMask_Plants",
+      "file": "Content/MilitaryTrench/Materials/MaterialFunctions/QMF_GenerateBranchMask_Plants.uasset",
+      "bytes": 18839
+    },
+    {
+      "package": "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_GenerateTranslucency",
+      "file": "Content/MilitaryTrench/Materials/MaterialFunctions/QMF_GenerateTranslucency.uasset",
+      "bytes": 50662
+    },
+    {
+      "package": "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_GenerateTwoSidedSpecular",
+      "file": "Content/MilitaryTrench/Materials/MaterialFunctions/QMF_GenerateTwoSidedSpecular.uasset",
+      "bytes": 20667
+    },
+    {
+      "package": "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_GrowthEffect",
+      "file": "Content/MilitaryTrench/Materials/MaterialFunctions/QMF_GrowthEffect.uasset",
+      "bytes": 40285
+    },
+    {
+      "package": "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_HealthSeason",
+      "file": "Content/MilitaryTrench/Materials/MaterialFunctions/QMF_HealthSeason.uasset",
+      "bytes": 49614
+    },
+    {
+      "package": "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_NormalAdjustments",
+      "file": "Content/MilitaryTrench/Materials/MaterialFunctions/QMF_NormalAdjustments.uasset",
+      "bytes": 13191
+    },
+    {
+      "package": "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_PerInstanceActorRandom",
+      "file": "Content/MilitaryTrench/Materials/MaterialFunctions/QMF_PerInstanceActorRandom.uasset",
+      "bytes": 12926
+    },
+    {
+      "package": "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_RoughnessAdjustments",
+      "file": "Content/MilitaryTrench/Materials/MaterialFunctions/QMF_RoughnessAdjustments.uasset",
+      "bytes": 11159
+    },
+    {
+      "package": "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_TwoSidedRoughness",
+      "file": "Content/MilitaryTrench/Materials/MaterialFunctions/QMF_TwoSidedRoughness.uasset",
+      "bytes": 38004
+    },
+    {
+      "package": "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_WindAnimation",
+      "file": "Content/MilitaryTrench/Materials/MaterialFunctions/QMF_WindAnimation.uasset",
+      "bytes": 59666
+    },
+    {
+      "package": "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_WindGust",
+      "file": "Content/MilitaryTrench/Materials/MaterialFunctions/QMF_WindGust.uasset",
+      "bytes": 24982
+    },
+    {
+      "package": "/Game/MilitaryTrench/Materials/MaterialFunctions/QMF_WorldspaceColorVariation",
+      "file": "Content/MilitaryTrench/Materials/MaterialFunctions/QMF_WorldspaceColorVariation.uasset",
+      "bytes": 30890
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Blue_01/MI_Ind_Aba_Storage_Barrel_Metal_Blue_01",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Blue_01/MI_Ind_Aba_Storage_Barrel_Metal_Blue_01.uasset",
+      "bytes": 16837
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Blue_01/SM_Ind_Aba_Storage_Barrel_Metal_Blue_01",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Blue_01/SM_Ind_Aba_Storage_Barrel_Metal_Blue_01.uasset",
+      "bytes": 67325976
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Blue_01/T_Ind_Aba_Storage_Barrel_Metal_Blue_01_D",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Blue_01/T_Ind_Aba_Storage_Barrel_Metal_Blue_01_D.uasset",
+      "bytes": 4482432
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Blue_01/T_Ind_Aba_Storage_Barrel_Metal_Blue_01_DpR",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Blue_01/T_Ind_Aba_Storage_Barrel_Metal_Blue_01_DpR.uasset",
+      "bytes": 1576371
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Blue_01/T_Ind_Aba_Storage_Barrel_Metal_Blue_01_N",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Blue_01/T_Ind_Aba_Storage_Barrel_Metal_Blue_01_N.uasset",
+      "bytes": 2965117
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Buckled_01/MI_Ind_Aba_Storage_Barrel_Metal_Buckled_01",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Buckled_01/MI_Ind_Aba_Storage_Barrel_Metal_Buckled_01.uasset",
+      "bytes": 15327
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Buckled_01/SM_Ind_Aba_Storage_Barrel_Metal_Buckled_01",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Buckled_01/SM_Ind_Aba_Storage_Barrel_Metal_Buckled_01.uasset",
+      "bytes": 65939196
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Buckled_01/T_Ind_Aba_Storage_Barrel_Metal_Buckled_01_D",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Buckled_01/T_Ind_Aba_Storage_Barrel_Metal_Buckled_01_D.uasset",
+      "bytes": 4460711
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Buckled_01/T_Ind_Aba_Storage_Barrel_Metal_Buckled_01_DpR",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Buckled_01/T_Ind_Aba_Storage_Barrel_Metal_Buckled_01_DpR.uasset",
+      "bytes": 1552727
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Buckled_01/T_Ind_Aba_Storage_Barrel_Metal_Buckled_01_N",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Buckled_01/T_Ind_Aba_Storage_Barrel_Metal_Buckled_01_N.uasset",
+      "bytes": 2839443
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Green_01/MI_Ind_Aba_Storage_Barrel_Metal_Green_01",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Green_01/MI_Ind_Aba_Storage_Barrel_Metal_Green_01.uasset",
+      "bytes": 15558
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Green_01/SM_Ind_Aba_Storage_Barrel_Metal_Green_01",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Green_01/SM_Ind_Aba_Storage_Barrel_Metal_Green_01.uasset",
+      "bytes": 65848120
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Green_01/T_Ind_Aba_Storage_Barrel_Metal_Green_01_D",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Green_01/T_Ind_Aba_Storage_Barrel_Metal_Green_01_D.uasset",
+      "bytes": 4540419
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Green_01/T_Ind_Aba_Storage_Barrel_Metal_Green_01_DpR",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Green_01/T_Ind_Aba_Storage_Barrel_Metal_Green_01_DpR.uasset",
+      "bytes": 1539542
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Green_01/T_Ind_Aba_Storage_Barrel_Metal_Green_01_N",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Aba_Storage_Barrel_Metal_Green_01/T_Ind_Aba_Storage_Barrel_Metal_Green_01_N.uasset",
+      "bytes": 2688904
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Con_Oil_Plastic_Pack_02/MI_Ind_Con_Oil_Plastic_Pack_02",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Con_Oil_Plastic_Pack_02/MI_Ind_Con_Oil_Plastic_Pack_02.uasset",
+      "bytes": 20473
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Con_Oil_Plastic_Pack_02/SM_Ind_Con_Oil_Plastic_Pack_02_A",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Con_Oil_Plastic_Pack_02/SM_Ind_Con_Oil_Plastic_Pack_02_A.uasset",
+      "bytes": 49507995
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Con_Oil_Plastic_Pack_02/T_Ind_Con_Oil_Plastic_Pack_02_D",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Con_Oil_Plastic_Pack_02/T_Ind_Con_Oil_Plastic_Pack_02_D.uasset",
+      "bytes": 1493650
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Con_Oil_Plastic_Pack_02/T_Ind_Con_Oil_Plastic_Pack_02_DpR",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Con_Oil_Plastic_Pack_02/T_Ind_Con_Oil_Plastic_Pack_02_DpR.uasset",
+      "bytes": 500237
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Con_Oil_Plastic_Pack_02/T_Ind_Con_Oil_Plastic_Pack_02_N",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Con_Oil_Plastic_Pack_02/T_Ind_Con_Oil_Plastic_Pack_02_N.uasset",
+      "bytes": 805485
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Cover_Metal_Painted_05/MI_Ind_Jun_Cover_Metal_Painted_05_A",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Cover_Metal_Painted_05/MI_Ind_Jun_Cover_Metal_Painted_05_A.uasset",
+      "bytes": 15407
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Cover_Metal_Painted_05/SM_Ind_Jun_Cover_Metal_Painted_05",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Cover_Metal_Painted_05/SM_Ind_Jun_Cover_Metal_Painted_05.uasset",
+      "bytes": 66270937
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Cover_Metal_Painted_05/T_Ind_Jun_Cover_Metal_Painted_05_D",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Cover_Metal_Painted_05/T_Ind_Jun_Cover_Metal_Painted_05_D.uasset",
+      "bytes": 375840
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Cover_Metal_Painted_05/T_Ind_Jun_Cover_Metal_Painted_05_DpR",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Cover_Metal_Painted_05/T_Ind_Jun_Cover_Metal_Painted_05_DpR.uasset",
+      "bytes": 139081
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Cover_Metal_Painted_05/T_Ind_Jun_Cover_Metal_Painted_05_N",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Cover_Metal_Painted_05/T_Ind_Jun_Cover_Metal_Painted_05_N.uasset",
+      "bytes": 171210
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Car_Metal_Rusty_05/MI_Ind_Jun_Exhaust_Car_Metal_Rusty_05",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Car_Metal_Rusty_05/MI_Ind_Jun_Exhaust_Car_Metal_Rusty_05.uasset",
+      "bytes": 17812
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Car_Metal_Rusty_05/SM_Ind_Jun_Exhaust_Car_Metal_Rusty_05",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Car_Metal_Rusty_05/SM_Ind_Jun_Exhaust_Car_Metal_Rusty_05.uasset",
+      "bytes": 76114552
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Car_Metal_Rusty_05/T_Ind_Jun_Exhaust_Car_Metal_Rusty_05_D",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Car_Metal_Rusty_05/T_Ind_Jun_Exhaust_Car_Metal_Rusty_05_D.uasset",
+      "bytes": 1408942
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Car_Metal_Rusty_05/T_Ind_Jun_Exhaust_Car_Metal_Rusty_05_DpR",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Car_Metal_Rusty_05/T_Ind_Jun_Exhaust_Car_Metal_Rusty_05_DpR.uasset",
+      "bytes": 534255
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Car_Metal_Rusty_05/T_Ind_Jun_Exhaust_Car_Metal_Rusty_05_N",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Car_Metal_Rusty_05/T_Ind_Jun_Exhaust_Car_Metal_Rusty_05_N.uasset",
+      "bytes": 802999
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Metal_Rusty_02/MI_Ind_Jun_Exhaust_Metal_Rusty_02",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Metal_Rusty_02/MI_Ind_Jun_Exhaust_Metal_Rusty_02.uasset",
+      "bytes": 13903
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Metal_Rusty_02/SM_Ind_Jun_Exhaust_Metal_Rusty_02",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Metal_Rusty_02/SM_Ind_Jun_Exhaust_Metal_Rusty_02.uasset",
+      "bytes": 76736189
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Metal_Rusty_02/T_Ind_Jun_Exhaust_Metal_Rusty_02_D",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Metal_Rusty_02/T_Ind_Jun_Exhaust_Metal_Rusty_02_D.uasset",
+      "bytes": 1405537
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Metal_Rusty_02/T_Ind_Jun_Exhaust_Metal_Rusty_02_DpR",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Metal_Rusty_02/T_Ind_Jun_Exhaust_Metal_Rusty_02_DpR.uasset",
+      "bytes": 492295
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Metal_Rusty_02/T_Ind_Jun_Exhaust_Metal_Rusty_02_N",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Exhaust_Metal_Rusty_02/T_Ind_Jun_Exhaust_Metal_Rusty_02_N.uasset",
+      "bytes": 820670
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Fan_Metal_Rusty_01/MI_Ind_Jun_Fan_Metal_Rusty_01",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Fan_Metal_Rusty_01/MI_Ind_Jun_Fan_Metal_Rusty_01.uasset",
+      "bytes": 16158
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Fan_Metal_Rusty_01/SM_Ind_Jun_Fan_Metal_Rusty_01",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Fan_Metal_Rusty_01/SM_Ind_Jun_Fan_Metal_Rusty_01.uasset",
+      "bytes": 57450183
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Fan_Metal_Rusty_01/T_Ind_Jun_Fan_Metal_Rusty_01_D",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Fan_Metal_Rusty_01/T_Ind_Jun_Fan_Metal_Rusty_01_D.uasset",
+      "bytes": 1415990
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Fan_Metal_Rusty_01/T_Ind_Jun_Fan_Metal_Rusty_01_DpR",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Fan_Metal_Rusty_01/T_Ind_Jun_Fan_Metal_Rusty_01_DpR.uasset",
+      "bytes": 562573
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Fan_Metal_Rusty_01/T_Ind_Jun_Fan_Metal_Rusty_01_N",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Fan_Metal_Rusty_01/T_Ind_Jun_Fan_Metal_Rusty_01_N.uasset",
+      "bytes": 856855
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Spring_Metal_Rusty_01/MI_Ind_Jun_Spring_Metal_Rusty_01",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Spring_Metal_Rusty_01/MI_Ind_Jun_Spring_Metal_Rusty_01.uasset",
+      "bytes": 13904
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Spring_Metal_Rusty_01/SM_Ind_Jun_Spring_Metal_Rusty_01",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Spring_Metal_Rusty_01/SM_Ind_Jun_Spring_Metal_Rusty_01.uasset",
+      "bytes": 76043634
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Spring_Metal_Rusty_01/T_Ind_Jun_Spring_Metal_Rusty_01_D",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Spring_Metal_Rusty_01/T_Ind_Jun_Spring_Metal_Rusty_01_D.uasset",
+      "bytes": 354006
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Spring_Metal_Rusty_01/T_Ind_Jun_Spring_Metal_Rusty_01_DpR",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Spring_Metal_Rusty_01/T_Ind_Jun_Spring_Metal_Rusty_01_DpR.uasset",
+      "bytes": 153960
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Spring_Metal_Rusty_01/T_Ind_Jun_Spring_Metal_Rusty_01_N",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Spring_Metal_Rusty_01/T_Ind_Jun_Spring_Metal_Rusty_01_N.uasset",
+      "bytes": 211838
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Crate_Metal_Rusty_01/MI_Ind_Jun_Storage_Crate_Metal_Rusty_01",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Crate_Metal_Rusty_01/MI_Ind_Jun_Storage_Crate_Metal_Rusty_01.uasset",
+      "bytes": 14572
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Crate_Metal_Rusty_01/SM_Ind_Jun_Storage_Crate_Metal_Rusty_01",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Crate_Metal_Rusty_01/SM_Ind_Jun_Storage_Crate_Metal_Rusty_01.uasset",
+      "bytes": 92031261
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Crate_Metal_Rusty_01/T_Ind_Jun_Storage_Crate_Metal_Rusty_01_D",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Crate_Metal_Rusty_01/T_Ind_Jun_Storage_Crate_Metal_Rusty_01_D.uasset",
+      "bytes": 5358084
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Crate_Metal_Rusty_01/T_Ind_Jun_Storage_Crate_Metal_Rusty_01_DpR",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Crate_Metal_Rusty_01/T_Ind_Jun_Storage_Crate_Metal_Rusty_01_DpR.uasset",
+      "bytes": 2181983
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Crate_Metal_Rusty_01/T_Ind_Jun_Storage_Crate_Metal_Rusty_01_N",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Crate_Metal_Rusty_01/T_Ind_Jun_Storage_Crate_Metal_Rusty_01_N.uasset",
+      "bytes": 3646300
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Pallet_Wood_Trap_01/MI_Ind_Jun_Storage_Pallet_Wood_Trap_01",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Pallet_Wood_Trap_01/MI_Ind_Jun_Storage_Pallet_Wood_Trap_01.uasset",
+      "bytes": 16783
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Pallet_Wood_Trap_01/SM_Ind_Jun_Storage_Pallet_Wood_Trap_01",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Pallet_Wood_Trap_01/SM_Ind_Jun_Storage_Pallet_Wood_Trap_01.uasset",
+      "bytes": 67973276
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Pallet_Wood_Trap_01/T_Ind_Jun_Storage_Pallet_Wood_Trap_01_D",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Pallet_Wood_Trap_01/T_Ind_Jun_Storage_Pallet_Wood_Trap_01_D.uasset",
+      "bytes": 20524213
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Pallet_Wood_Trap_01/T_Ind_Jun_Storage_Pallet_Wood_Trap_01_DpR",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Pallet_Wood_Trap_01/T_Ind_Jun_Storage_Pallet_Wood_Trap_01_DpR.uasset",
+      "bytes": 8956085
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Pallet_Wood_Trap_01/T_Ind_Jun_Storage_Pallet_Wood_Trap_01_N",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Storage_Pallet_Wood_Trap_01/T_Ind_Jun_Storage_Pallet_Wood_Trap_01_N.uasset",
+      "bytes": 14292523
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Support_Stand_Metal_Rusty_01/MI_Ind_Jun_Support_Stand_Metal_Rusty_01",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Support_Stand_Metal_Rusty_01/MI_Ind_Jun_Support_Stand_Metal_Rusty_01.uasset",
+      "bytes": 16756
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Support_Stand_Metal_Rusty_01/SM_Ind_Jun_Support_Stand_Metal_Rusty_01",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Support_Stand_Metal_Rusty_01/SM_Ind_Jun_Support_Stand_Metal_Rusty_01.uasset",
+      "bytes": 67026904
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Support_Stand_Metal_Rusty_01/T_Ind_Jun_Support_Stand_Metal_Rusty_01_D",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Support_Stand_Metal_Rusty_01/T_Ind_Jun_Support_Stand_Metal_Rusty_01_D.uasset",
+      "bytes": 5737126
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Support_Stand_Metal_Rusty_01/T_Ind_Jun_Support_Stand_Metal_Rusty_01_DpR",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Support_Stand_Metal_Rusty_01/T_Ind_Jun_Support_Stand_Metal_Rusty_01_DpR.uasset",
+      "bytes": 2395679
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Support_Stand_Metal_Rusty_01/T_Ind_Jun_Support_Stand_Metal_Rusty_01_N",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_Jun_Support_Stand_Metal_Rusty_01/T_Ind_Jun_Support_Stand_Metal_Rusty_01_N.uasset",
+      "bytes": 3508660
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_War_Container_Jerrycan_Metal_Red_03/MI_Ind_War_Container_Jerrycan_Metal_Red_03",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_War_Container_Jerrycan_Metal_Red_03/MI_Ind_War_Container_Jerrycan_Metal_Red_03.uasset",
+      "bytes": 16368
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_War_Container_Jerrycan_Metal_Red_03/SM_Ind_War_Container_Jerrycan_Metal_Red_03",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_War_Container_Jerrycan_Metal_Red_03/SM_Ind_War_Container_Jerrycan_Metal_Red_03.uasset",
+      "bytes": 75769827
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_War_Container_Jerrycan_Metal_Red_03/T_Ind_War_Container_Jerrycan_Metal_Red_03_D",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_War_Container_Jerrycan_Metal_Red_03/T_Ind_War_Container_Jerrycan_Metal_Red_03_D.uasset",
+      "bytes": 1383986
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_War_Container_Jerrycan_Metal_Red_03/T_Ind_War_Container_Jerrycan_Metal_Red_03_DpR",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_War_Container_Jerrycan_Metal_Red_03/T_Ind_War_Container_Jerrycan_Metal_Red_03_DpR.uasset",
+      "bytes": 604716
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_War_Container_Jerrycan_Metal_Red_03/T_Ind_War_Container_Jerrycan_Metal_Red_03_N",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_War_Container_Jerrycan_Metal_Red_03/T_Ind_War_Container_Jerrycan_Metal_Red_03_N.uasset",
+      "bytes": 720257
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_War_Storage_Tray_Plastic_Green_01/MI_Ind_War_Storage_Tray_Plastic_Green_01_A",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_War_Storage_Tray_Plastic_Green_01/MI_Ind_War_Storage_Tray_Plastic_Green_01_A.uasset",
+      "bytes": 18140
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_War_Storage_Tray_Plastic_Green_01/SM_Ind_War_Storage_Tray_Plastic_Green_01",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_War_Storage_Tray_Plastic_Green_01/SM_Ind_War_Storage_Tray_Plastic_Green_01.uasset",
+      "bytes": 79251161
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_War_Storage_Tray_Plastic_Green_01/T_Ind_War_Storage_Tray_Plastic_Green_01_D",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_War_Storage_Tray_Plastic_Green_01/T_Ind_War_Storage_Tray_Plastic_Green_01_D.uasset",
+      "bytes": 1366532
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_War_Storage_Tray_Plastic_Green_01/T_Ind_War_Storage_Tray_Plastic_Green_01_DpR",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_War_Storage_Tray_Plastic_Green_01/T_Ind_War_Storage_Tray_Plastic_Green_01_DpR.uasset",
+      "bytes": 525984
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Ind_War_Storage_Tray_Plastic_Green_01/T_Ind_War_Storage_Tray_Plastic_Green_01_N",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Ind_War_Storage_Tray_Plastic_Green_01/T_Ind_War_Storage_Tray_Plastic_Green_01_N.uasset",
+      "bytes": 818090
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Res_Jun_Wheel_Metal_Weathered_01/MI_Res_Jun_Wheel_Metal_Weathered_01_A",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Res_Jun_Wheel_Metal_Weathered_01/MI_Res_Jun_Wheel_Metal_Weathered_01_A.uasset",
+      "bytes": 17255
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Res_Jun_Wheel_Metal_Weathered_01/SM_Res_Jun_Wheel_Metal_Weathered_01",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Res_Jun_Wheel_Metal_Weathered_01/SM_Res_Jun_Wheel_Metal_Weathered_01.uasset",
+      "bytes": 58602448
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Res_Jun_Wheel_Metal_Weathered_01/T_Res_Jun_Wheel_Metal_Weathered_01_D",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Res_Jun_Wheel_Metal_Weathered_01/T_Res_Jun_Wheel_Metal_Weathered_01_D.uasset",
+      "bytes": 5445924
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Res_Jun_Wheel_Metal_Weathered_01/T_Res_Jun_Wheel_Metal_Weathered_01_DpR",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Res_Jun_Wheel_Metal_Weathered_01/T_Res_Jun_Wheel_Metal_Weathered_01_DpR.uasset",
+      "bytes": 3206280
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/3D/Res_Jun_Wheel_Metal_Weathered_01/T_Res_Jun_Wheel_Metal_Weathered_01_N",
+      "file": "Content/Scene_Junkyard/Assets/MS/3D/Res_Jun_Wheel_Metal_Weathered_01/T_Res_Jun_Wheel_Metal_Weathered_01_N.uasset",
+      "bytes": 3269257
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Dirt_01/MI_Decal_Debris_Dirt_01_A",
+      "file": "Content/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Dirt_01/MI_Decal_Debris_Dirt_01_A.uasset",
+      "bytes": 18755
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Dirt_01/MI_Decal_Debris_Dirt_01_B",
+      "file": "Content/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Dirt_01/MI_Decal_Debris_Dirt_01_B.uasset",
+      "bytes": 16383
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Dirt_01/T_Decal_Debris_Dirt_01_D",
+      "file": "Content/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Dirt_01/T_Decal_Debris_Dirt_01_D.uasset",
+      "bytes": 4123641
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Dirt_01/T_Decal_Debris_Dirt_01_DpRA",
+      "file": "Content/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Dirt_01/T_Decal_Debris_Dirt_01_DpRA.uasset",
+      "bytes": 2512790
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Dirt_01/T_Decal_Debris_Dirt_01_N",
+      "file": "Content/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Dirt_01/T_Decal_Debris_Dirt_01_N.uasset",
+      "bytes": 2933197
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Pile_Rubble_01/MI_Decal_Debris_Pile_Rubble_01",
+      "file": "Content/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Pile_Rubble_01/MI_Decal_Debris_Pile_Rubble_01.uasset",
+      "bytes": 16844
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Pile_Rubble_01/T_Decal_Debris_Pile_Rubble_01_D",
+      "file": "Content/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Pile_Rubble_01/T_Decal_Debris_Pile_Rubble_01_D.uasset",
+      "bytes": 4647894
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Pile_Rubble_01/T_Decal_Debris_Pile_Rubble_01_DpRA",
+      "file": "Content/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Pile_Rubble_01/T_Decal_Debris_Pile_Rubble_01_DpRA.uasset",
+      "bytes": 1950293
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Pile_Rubble_01/T_Decal_Debris_Pile_Rubble_01_N",
+      "file": "Content/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Pile_Rubble_01/T_Decal_Debris_Pile_Rubble_01_N.uasset",
+      "bytes": 3342033
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Pile_Rubble_02/MI_Decal_Debris_Pile_Rubble_02",
+      "file": "Content/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Pile_Rubble_02/MI_Decal_Debris_Pile_Rubble_02.uasset",
+      "bytes": 16245
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Pile_Rubble_02/T_Decal_Debris_Pile_Rubble_02_D",
+      "file": "Content/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Pile_Rubble_02/T_Decal_Debris_Pile_Rubble_02_D.uasset",
+      "bytes": 4917602
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Pile_Rubble_02/T_Decal_Debris_Pile_Rubble_02_DpRA",
+      "file": "Content/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Pile_Rubble_02/T_Decal_Debris_Pile_Rubble_02_DpRA.uasset",
+      "bytes": 2216693
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Pile_Rubble_02/T_Decal_Debris_Pile_Rubble_02_N",
+      "file": "Content/Scene_Junkyard/Assets/MS/Decals/Decal_Debris_Pile_Rubble_02/T_Decal_Debris_Pile_Rubble_02_N.uasset",
+      "bytes": 3815804
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Edge_Garbage_Tiling_01/MI_Decal_Edge_Garbage_Tiling_01_A",
+      "file": "Content/Scene_Junkyard/Assets/MS/Decals/Decal_Edge_Garbage_Tiling_01/MI_Decal_Edge_Garbage_Tiling_01_A.uasset",
+      "bytes": 15418
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Edge_Garbage_Tiling_01/T_Decal_Edge_Garbage_Tiling_01_D",
+      "file": "Content/Scene_Junkyard/Assets/MS/Decals/Decal_Edge_Garbage_Tiling_01/T_Decal_Edge_Garbage_Tiling_01_D.uasset",
+      "bytes": 2151798
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Edge_Garbage_Tiling_01/T_Decal_Edge_Garbage_Tiling_01_DpRA",
+      "file": "Content/Scene_Junkyard/Assets/MS/Decals/Decal_Edge_Garbage_Tiling_01/T_Decal_Edge_Garbage_Tiling_01_DpRA.uasset",
+      "bytes": 886096
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Edge_Garbage_Tiling_01/T_Decal_Edge_Garbage_Tiling_01_N",
+      "file": "Content/Scene_Junkyard/Assets/MS/Decals/Decal_Edge_Garbage_Tiling_01/T_Decal_Edge_Garbage_Tiling_01_N.uasset",
+      "bytes": 1703253
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Leak_Dirt_01/MI_Decal_Leak_Dirt_01_A",
+      "file": "Content/Scene_Junkyard/Assets/MS/Decals/Decal_Leak_Dirt_01/MI_Decal_Leak_Dirt_01_A.uasset",
+      "bytes": 12449
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Leak_Dirt_01/MI_Decal_Leak_Dirt_01_B",
+      "file": "Content/Scene_Junkyard/Assets/MS/Decals/Decal_Leak_Dirt_01/MI_Decal_Leak_Dirt_01_B.uasset",
+      "bytes": 12175
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Leak_Dirt_01/T_Decal_Leak_Dirt_01_D",
+      "file": "Content/Scene_Junkyard/Assets/MS/Decals/Decal_Leak_Dirt_01/T_Decal_Leak_Dirt_01_D.uasset",
+      "bytes": 5001804
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Leak_Dirt_01/T_Decal_Leak_Dirt_01_DpRA",
+      "file": "Content/Scene_Junkyard/Assets/MS/Decals/Decal_Leak_Dirt_01/T_Decal_Leak_Dirt_01_DpRA.uasset",
+      "bytes": 1710477
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Pile_Wood_Splinters_01/MI_Decal_Pile_Wood_Splinters_01",
+      "file": "Content/Scene_Junkyard/Assets/MS/Decals/Decal_Pile_Wood_Splinters_01/MI_Decal_Pile_Wood_Splinters_01.uasset",
+      "bytes": 15381
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Pile_Wood_Splinters_01/T_Decal_Pile_Wood_Splinters_01_D",
+      "file": "Content/Scene_Junkyard/Assets/MS/Decals/Decal_Pile_Wood_Splinters_01/T_Decal_Pile_Wood_Splinters_01_D.uasset",
+      "bytes": 4405466
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Pile_Wood_Splinters_01/T_Decal_Pile_Wood_Splinters_01_DpRA",
+      "file": "Content/Scene_Junkyard/Assets/MS/Decals/Decal_Pile_Wood_Splinters_01/T_Decal_Pile_Wood_Splinters_01_DpRA.uasset",
+      "bytes": 1637470
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Assets/MS/Decals/Decal_Pile_Wood_Splinters_01/T_Decal_Pile_Wood_Splinters_01_N",
+      "file": "Content/Scene_Junkyard/Assets/MS/Decals/Decal_Pile_Wood_Splinters_01/T_Decal_Pile_Wood_Splinters_01_N.uasset",
+      "bytes": 3194956
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Materials/MSPresets/MSVTTextures/BlackPlaceholder",
+      "file": "Content/Scene_Junkyard/Materials/MSPresets/MSVTTextures/BlackPlaceholder.uasset",
+      "bytes": 4299
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Materials/MSPresets/MSVTTextures/DefaultDiffuse",
+      "file": "Content/Scene_Junkyard/Materials/MSPresets/MSVTTextures/DefaultDiffuse.uasset",
+      "bytes": 2131755
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Materials/MSPresets/MSVTTextures/Placeholder_Normal",
+      "file": "Content/Scene_Junkyard/Materials/MSPresets/MSVTTextures/Placeholder_Normal.uasset",
+      "bytes": 4972
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Materials/MSPresets/MSVTTextures/WhitePlaceholder",
+      "file": "Content/Scene_Junkyard/Materials/MSPresets/MSVTTextures/WhitePlaceholder.uasset",
+      "bytes": 4299
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Materials/MSPresets/M_MS_Decal_Material_VT/MF_QuixelDecalPOM",
+      "file": "Content/Scene_Junkyard/Materials/MSPresets/M_MS_Decal_Material_VT/MF_QuixelDecalPOM.uasset",
+      "bytes": 88971
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Materials/MSPresets/M_MS_Decal_Material_VT/M_MS_Decal_Material_VT",
+      "file": "Content/Scene_Junkyard/Materials/MSPresets/M_MS_Decal_Material_VT/M_MS_Decal_Material_VT.uasset",
+      "bytes": 54177
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Materials/MSPresets/M_MS_Default_Material/Functions/MF_ObjAdjustments",
+      "file": "Content/Scene_Junkyard/Materials/MSPresets/M_MS_Default_Material/Functions/MF_ObjAdjustments.uasset",
+      "bytes": 39847
+    },
+    {
+      "package": "/Game/Scene_Junkyard/Materials/MSPresets/M_MS_Default_Material_VT/M_MS_Default_Material_VT",
+      "file": "Content/Scene_Junkyard/Materials/MSPresets/M_MS_Default_Material_VT/M_MS_Default_Material_VT.uasset",
+      "bytes": 24818
+    }
+  ],
+  "missing_required_pack_files": [],
+  "dependency_errors": [],
+  "changes_made": false
+}

@@ -1,0 +1,4 @@
+record_id,listing_name,listing_id,publisher,url,price_state,dimensions_or_scan_area,formats,assigned_role,verification_state,checked_on
+FAB_SUP_001,Military Trenches Decal Metal Rust 01,4320f370-adab-4253-8662-927185e238fd,Quixel Megascans,https://www.fab.com/listings/4320f370-adab-4253-8662-927185e238fd,Free,0.25x0.25 m,"texture set; gltf",Rust grime and utility leaks,Verified live listing,2026-07-26
+FAB_SUP_002,Mud Stain,d943a805-9e06-435c-9691-06890fc8cb12,Quixel Megascans,https://www.fab.com/listings/d943a805-9e06-435c-9691-06890fc8cb12,Free,0.25x0.25 m,"texture set; gltf",Wall and ground grime variation,Verified live listing,2026-07-26
+FAB_SUP_003,Oil Stain,4b57dc17-0bdd-40d2-85b2-84fef6eedd0c,Quixel Megascans,https://www.fab.com/listings/4b57dc17-0bdd-40d2-85b2-84fef6eedd0c,Free,0.5x0.25 m,"texture set; gltf",Motor pool and service stains,Verified current search result,2026-07-26

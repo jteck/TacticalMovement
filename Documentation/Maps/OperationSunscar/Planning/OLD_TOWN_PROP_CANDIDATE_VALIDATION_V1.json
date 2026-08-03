@@ -1,0 +1,40 @@
+{
+  "valid": true,
+  "total": 2350,
+  "expectedTotal": 2350,
+  "siteCount": 20,
+  "bomRoleCount": 49,
+  "byClass": {
+    "architecture": 566,
+    "tactical": 178,
+    "utility": 246,
+    "decal": 338,
+    "ground": 504,
+    "vegetation": 220,
+    "industrial": 180,
+    "furniture": 118
+  },
+  "bySite": {
+    "SS_001": 44,
+    "SS_002": 88,
+    "SS_003": 76,
+    "SS_004": 94,
+    "SS_005": 108,
+    "SS_006": 110,
+    "SS_007": 156,
+    "SS_008": 116,
+    "SS_009": 90,
+    "SS_010": 142,
+    "SS_011": 90,
+    "SS_012": 102,
+    "SS_013": 134,
+    "SS_014": 242,
+    "SS_015": 160,
+    "SS_016": 136,
+    "SS_017": 210,
+    "SS_018": 128,
+    "SS_019": 44,
+    "SS_020": 80
+  },
+  "mismatchedBomRoles": []
+}
