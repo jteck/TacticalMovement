@@ -19,10 +19,12 @@ TAG = unreal.Name("SunscarGroundOverlayConformanceV1")
 TARGET_COUNT = 288
 MAX_TILT_DEG = 6.0
 TARGET_THICKNESS_CM = 0.8
+APPLY_CHANGES = False
 
 config = common.load_config()
-apply_requested = bool(config["execution"].get("apply_changes", False))
-context = common.require_safe_context(config, write_requested=apply_requested)
+apply_requested = APPLY_CHANGES
+context = common.require_safe_context(config, write_requested=False)
+context["write_requested"] = apply_requested
 actor_system = common.actor_subsystem()
 world = common.editor_world()
 actors = list(actor_system.get_all_level_actors())

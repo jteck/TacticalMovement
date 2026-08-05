@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "status": "rg16_heightmap_generated",
+  "source": "/Users/jasonteck/UnrealEngine/_worktrees/map-development/Documentation/Maps/OperationSunscar/Source/Heightmaps/Abiverd_TerrainReliefV1_2017.png",
+  "output": "/Users/jasonteck/UnrealEngine/_worktrees/map-development/Documentation/Maps/OperationSunscar/Source/Heightmaps/Abiverd_TerrainReliefV1_RG16_2017.png",
+  "resolution": [
+    2017,
+    2017
+  ],
+  "source_min": 4369,
+  "source_max": 55923,
+  "round_trip_exact": true,
+  "output_size_bytes": 2778948,
+  "encoding": "R=high byte, G=low byte, B=0, A=255"
+}

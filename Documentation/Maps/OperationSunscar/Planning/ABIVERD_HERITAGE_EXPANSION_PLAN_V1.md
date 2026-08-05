@@ -123,12 +123,12 @@ New definite selections:
 - Historic Desert Ruin Structure Stone S 06 (`0db909ab-188c-427b-a422-f69e49cc5b64`): acquired as High-quality FBX with 4K textures; verified on disk at approximately 81.80 MiB. This is the corrected small-opening asset; it replaces every prior reference to `Historic Desert Ruin Wall Modular Set 06`.
 - Historic Pakistan Street Wall Brick White 01 (`f372a8f7-bc3d-4819-b8e7-5ffb1d270b7e`): acquired as the 4K texture set; verified on disk at approximately 10.73 MiB.
 - Historic Pakistan Street Wall Brick Modular 16 (`9ecd80c7-2511-4b44-bab9-6de92e5200cd`): purchased and acquired as High glTF with 4K textures. UE 5.8 staging verified 200.603 × 30.578 × 350.016 cm bounds, 1,330 staging vertices, one material slot and Nanite enabled. The map-project import verified 1,325 built vertices, a map-owned packed-ORM material, a 2K runtime texture cap and nine non-colliding civic-facade instances across SS_005, SS_010 and SS_012.
-- Historic Pakistan Street Window Brick Modular 04 (`e5026e65-304b-4ec5-a45e-4579e62dd141`): user-confirmed purchased and downloaded. The current filesystem audit did not find its expected Fab Vault directory or source file, so UE bounds/import/placement remain blocked until the High source is visible locally.
+- Historic Pakistan Street Window Brick Modular 04 (`e5026e65-304b-4ec5-a45e-4579e62dd141`): purchased and acquired as High glTF with 4K source textures. The exact Fab source is verified locally. The map import verified 261.819 × 47.663 × 347.620 cm bounds, 1,812 LOD0 vertices, one material slot, a map-owned packed-ORM material, a 2K runtime texture cap, Nanite enabled and 14 non-colliding HISM instances across SS_004, SS_005, SS_010 and SS_012.
 - The earlier verified paid-source subtotal was approximately 448.55 MiB; Historic Pakistan Street Wall Brick Modular 16 was acquired later and is tracked separately because both High and Medium source tiers are cached. Selected heritage sources have now been imported selectively into TacticalMovement and validated per asset rather than copied wholesale.
 
 Skip the paid Dry Soil Ground candidate because the selected free Dry Trampled Soil and already-owned ground materials cover that role.
 
-The original definite paid heritage set was purchased at Personal tier for $11.94 before tax. The later Pakistan Wall Brick Modular 16 and Window Brick Modular 04 purchases expand that set for the civic Old Town facade pass. Window 04 is now confirmed owned by the user; the earlier statement that it was not purchased is superseded by this record.
+The original definite paid heritage set was purchased at Personal tier for $11.94 before tax. The later Pakistan Wall Brick Modular 16 and Window Brick Modular 04 purchases expand that set for the civic Old Town facade pass. Both Pakistan modular assets are now verified in the map; every earlier statement that Window 04 was missing or not purchased is superseded by this record.
 
 ## Source links
 

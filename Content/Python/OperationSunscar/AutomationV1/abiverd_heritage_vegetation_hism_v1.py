@@ -8,7 +8,7 @@ import random
 import unreal
 
 
-APPLY_CHANGES = True
+APPLY_CHANGES = False
 EXPECTED_PROJECT = "TacticalMovement"
 EXPECTED_DIRECTORY_SUFFIX = "/UnrealEngine/_worktrees/map-development"
 EXPECTED_LEVEL = "/Game/Maps/Blockout/Lvl_Blockout_01"

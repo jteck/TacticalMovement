@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "status": "terrain_relief_heightmap_generated",
+  "source": "/Users/jasonteck/Documents/UE FPS Project/MapDesign/Desert_Glory_Inspired/BuildPack_v1/Heightmaps/Sunscar_Height_2017.png",
+  "resolution": [
+    2017,
+    2017
+  ],
+  "meters_per_pixel": 1.25,
+  "relief_delta_m": {
+    "minimum": -1.7433,
+    "maximum": 3.5099,
+    "mean": 0.1397,
+    "standard_deviation": 0.4885
+  },
+  "foundation_count": 12,
+  "maximum_abs_foundation_delta_m": 0.0,
+  "outputs": {
+    "base_backup": "Documentation/Maps/OperationSunscar/Source/Heightmaps/Sunscar_Height_2017_BaseBackup.png",
+    "heightmap": "Documentation/Maps/OperationSunscar/Source/Heightmaps/Abiverd_TerrainReliefV1_2017.png",
+    "preview": "Documentation/Maps/OperationSunscar/Source/Heightmaps/Abiverd_TerrainReliefV1_Preview.png"
+  },
+  "rollback": "Reimport Sunscar_Height_2017_BaseBackup.png into Landscape edit layer index 0."
+}
