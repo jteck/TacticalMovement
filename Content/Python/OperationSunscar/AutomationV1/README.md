@@ -1,10 +1,25 @@
 # Operation Sunscar UE Automation Preparation
 
-Status: prepared offline; not executed
+Status: active map-only automation. Completed Unreal passes are recorded in
+`Documentation/Maps/OperationSunscar/Planning/ABIVERD_VISUAL_CONVERSION_PROGRESS_2026-08-04.md`.
 Target: TacticalMovement `feature/map-development` only
 Required level: `/Game/Maps/Blockout/Lvl_Blockout_01`
 
 ## Safety posture
+
+### UE 5.8 macOS crash guard
+
+- Do not launch interactive Unreal with `-ScriptErrorsAreFatal`. A recoverable
+  Python preflight exception is promoted to a fatal editor crash by that flag.
+- Do not attach map automation to interactive editor startup with
+  `-ExecutePythonScript`. Open the verified project normally, load the required
+  level, wait for asset discovery and shader work to settle, then run one
+  bounded script from the Python console.
+- Do not terminate or automatically close the editor after a script finishes.
+  UE 5.8 on macOS can double-free Slate async-notification text during shutdown
+  while background notifications are still being destroyed.
+- A failed preflight ends that automation pass only. It must never be treated as
+  a reason to terminate Unreal.
 
 Every script verifies the project name, exact worktree suffix and exact level.
 The default configuration is read-only:
@@ -89,8 +104,10 @@ Do not rerun those older placement scripts before the audit.
   candidates already resolve to project paths and 47 remain blocked until
   their accepted final `/Game/...` paths are recorded.
 
-These are offline data and syntax checks. None of the scripts has been run in
-Unreal, and no actor or asset has been changed by this package.
+The checks in this section describe the original Old Town preparation package.
+The later Abiverd conversion scripts have been run in Unreal only as bounded,
+map-only passes; their results and saved changes are recorded in the progress
+document linked above.
 
 ## Intended future run order
 
