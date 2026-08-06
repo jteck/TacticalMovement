@@ -43,6 +43,8 @@
 
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/TextureRenderTarget2D.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetRenderingLibrary.h"
 #include "Engine/Canvas.h"
@@ -66,7 +68,24 @@ namespace TacticalRuntimeAnimInspection
 	static const int64  kMaxSampleBytes = 8LL * 1024 * 1024; // 8 MiB accumulated sample JSON / session
 	static const double kReadinessPressHoldSeconds = 0.1;
 	static const float  kLifecycleTickInterval = 0.05f;
-	static const int32  kMaxSocketNames = 256;              // introspection: max socket names returned per component
+	static const int32  kMaxSocketNames = 256;
+
+	// ---- combined capture + bounded render-liveness pump (Boundary G Phase 1) ----
+	static const int32  kMinPumpHz = 1;
+	static const int32  kMaxPumpHz = 60;
+	static const int32  kMinPumpDim = 64;
+	static const int32  kMaxPumpDim = 256;
+	static const int32  kDefaultPumpDim = 128;
+	// Per-sample cap on serialized scalar READ-ERROR entries (host+layer combined). Unrelated to
+	// socket-name introspection; overflow is reported via readErrorsTruncated, never silently dropped.
+	static const int32  kMaxReadErrorsPerSample = 32;
+	// Object-path bound, enforced BEFORE StaticFindObject/class resolution and before any allocation.
+	static const int32  kMaxObjectPathLen = 512;
+	// Socket-basis validation tolerances. Values are VALIDATED, never normalized/repaired/substituted.
+	static const double kBasisUnitTolerance  = 1.0e-3;  // | |axis| - 1 |
+	static const double kBasisOrthoTolerance = 1.0e-3;  // |dot(a,b)| for distinct axes
+	// Right-handed check for the socket basis: dot(cross(X,Y),Z) must exceed this.
+	static const double kBasisHandednessMin  = 0.5;
 
 	// ---- deferred one-shot string result (same pattern as the authoring toolset) ----
 	static UToolCallAsyncResultString* RunDeferredString(TFunction<bool(FString&, FString&)>&& Action)
@@ -274,6 +293,29 @@ namespace TacticalRuntimeAnimInspection
 		TWeakObjectPtr<USceneComponent> TransformSource;  // socket/world-transform source (weapon comp or the mesh itself)
 		TWeakObjectPtr<USceneComponent> Capsule;          // pawn capsule/root component (world rotation source)
 		FString PawnPath, TransformSourcePath, SocketName, CapsulePath;
+
+		// --- combined mode (Boundary G Phase 1): host/layer scalars AND socket transform/basis emitted
+		// inside ONE finalized-frame callback, so correlation is structural (never a post-hoc join). ---
+		bool bCombinedMode = false;
+		// Exact weapon/static-mesh identity pinned at start; revalidated before EVERY combined sample
+		// and on every lifecycle tick. A same-component asset swap is drift, not a silent empty field.
+		TWeakObjectPtr<UStaticMeshComponent> WeaponComp;
+		TWeakObjectPtr<UStaticMesh> ExpectedStaticMesh;
+		FString WeaponCompPath, StaticMeshPath;
+
+		// --- bounded render-liveness pump. OBSERVES ONLY: it renders the mesh through a separate
+		// transient SceneCapture and never mutates bOwnerNoSee/bOnlyOwnerSee/bVisible/bHiddenInGame/
+		// VisibilityBasedAnimTickOption/bNoSkeletonUpdate/tick settings/cameras/possession. ---
+		bool bPumpOwned = false;   // true only while this session holds the ONE global pump slot
+		FString PumpMode, PumpIsolation;
+		int32 PumpHz = 0, PumpW = 0, PumpH = 0;
+		int64 PumpRequestCount = 0;
+		uint64 PumpFirstFrame = 0, PumpLastFrame = 0;
+		double PumpFirstTime = 0.0, PumpLastTime = 0.0;
+		TStrongObjectPtr<AActor> PumpActor;
+		TStrongObjectPtr<USceneCaptureComponent2D> PumpCapture;
+		TStrongObjectPtr<UTextureRenderTarget2D> PumpRT;
+		FTSTicker::FDelegateHandle PumpHandle;
 	};
 
 	// Active input-drive state (module-owned) so the caller is ALWAYS resolved exactly once and any
@@ -398,6 +440,10 @@ namespace TacticalRuntimeAnimInspection
 	static const int32  kViewMaxEncodedBytes = 12 * 1024 * 1024; // 12 MiB Base64 image DATA string (ASCII: Len()==UTF-8 bytes)
 
 	static TMap<FString, TSharedPtr<FCaptureSession>> GSessions;
+
+	// At most ONE render-pumped session globally (Phase 1 instrument bound). Ordinary A1 view captures
+	// are tracked separately in GViewCaptures, so one remains possible alongside a pumped session.
+	static bool GPumpActive = false;
 	// ---- A2 aim-hold hard bounds ----
 	static const int32  kAimMaxPawnPathLen = 512;
 	static const int32  kAimMaxActionNameLen = 128;
@@ -422,17 +468,53 @@ namespace TacticalRuntimeAnimInspection
 	static FDelegateHandle GEndPIEHandle;
 	static FDelegateHandle GWorldCleanupHandle;
 
+	// Releases the pump ticker, its transient render objects, and the ONE global pump slot.
+	// Idempotent and unconditional, so it is safe on EVERY exit path: start rollback, caller stop,
+	// identity drift, timeout, max samples, result-size cap, EndPIE, world cleanup, module shutdown.
+	static void DestroyPumpTransients(const TSharedPtr<FCaptureSession>& S)
+	{
+		if (!S.IsValid()) { return; }
+		if (S->PumpHandle.IsValid()) { FTSTicker::GetCoreTicker().RemoveTicker(S->PumpHandle); S->PumpHandle.Reset(); }
+		// During EndPIE / world destruction the transients may already be torn down or pending kill,
+		// so every engine call is IsValid-gated. Pointers and the global slot are released regardless.
+		if (USceneCaptureComponent2D* Cap = S->PumpCapture.Get())
+		{
+			if (IsValid(Cap))
+			{
+				Cap->ShowOnlyComponents.Empty();
+				Cap->TextureTarget = nullptr;
+				Cap->DestroyComponent();
+			}
+		}
+		S->PumpCapture.Reset();
+		if (AActor* Actor = S->PumpActor.Get())
+		{
+			if (IsValid(Actor)) { Actor->Destroy(); }
+		}
+		S->PumpActor.Reset();
+		S->PumpRT.Reset(); // sole strong ref released -> eligible for GC
+		if (S->bPumpOwned) { S->bPumpOwned = false; GPumpActive = false; }
+	}
+
+	// Teardown ORDER is load-bearing: the session is marked inactive FIRST, so a finalized-frame
+	// callback or either ticker that fires during destruction returns immediately and cannot sample
+	// a half-destroyed rig. The first stop reason always wins. Idempotent and safe from either
+	// ticker, EndPIE, world cleanup, start rollback, or module shutdown.
 	static void StopSession(const TSharedPtr<FCaptureSession>& S, const FString& Reason)
 	{
 		if (!S.IsValid()) { return; }
-		if (S->bActive)
+		const bool bWasActive = S->bActive;
+		S->bActive = false;                                             // 1. no further sampling
+		if (S->StopReason.IsEmpty() && !Reason.IsEmpty()) { S->StopReason = Reason; }  // 2. first reason wins
+		if (bWasActive)
 		{
-			if (USkeletalMeshComponent* Mesh = S->Mesh.Get()) { Mesh->UnregisterOnBoneTransformsFinalizedDelegate(S->FinalizeHandle); }
-			S->FinalizeHandle.Reset();
-			if (S->LifecycleHandle.IsValid()) { FTSTicker::GetCoreTicker().RemoveTicker(S->LifecycleHandle); S->LifecycleHandle.Reset(); }
-			S->bActive = false;
-			if (S->StopReason.IsEmpty()) { S->StopReason = Reason; }
+			if (USkeletalMeshComponent* Mesh = S->Mesh.Get())           // 3. finalized-frame delegate
+			{ Mesh->UnregisterOnBoneTransformsFinalizedDelegate(S->FinalizeHandle); }
 		}
+		S->FinalizeHandle.Reset();
+		if (S->LifecycleHandle.IsValid())                               // 4. lifecycle ticker
+		{ FTSTicker::GetCoreTicker().RemoveTicker(S->LifecycleHandle); S->LifecycleHandle.Reset(); }
+		DestroyPumpTransients(S);                                       // 5. pump ticker + transients + slot
 	}
 
 	static void StopDriveInjection(const TSharedPtr<FDriveState>& D)
@@ -754,6 +836,237 @@ namespace TacticalRuntimeAnimInspection
 		return true;
 	}
 
+	static bool IsFiniteVec(const FVector& V) { return FMath::IsFinite(V.X) && FMath::IsFinite(V.Y) && FMath::IsFinite(V.Z); }
+	static bool IsFiniteRot(const FRotator& R) { return FMath::IsFinite(R.Pitch) && FMath::IsFinite(R.Yaw) && FMath::IsFinite(R.Roll); }
+	static bool IsFiniteXform(const FTransform& T)
+	{
+		const FQuat Q = T.GetRotation();
+		return IsFiniteVec(T.GetLocation()) && IsFiniteVec(T.GetScale3D())
+			&& FMath::IsFinite(Q.X) && FMath::IsFinite(Q.Y) && FMath::IsFinite(Q.Z) && FMath::IsFinite(Q.W);
+	}
+
+	// Exact weapon/static-mesh identity. Returns false with a SPECIFIC drift reason; a same-component
+	// asset replacement is reported distinctly from an unregistered/reparented/destroyed component.
+	static bool ValidateWeaponIdentity(const TSharedPtr<FCaptureSession>& S, FString& OutReason)
+	{
+		UWorld* World = S->World.Get();
+		APawn* Pawn = S->Pawn.Get();
+		UStaticMeshComponent* WC = S->WeaponComp.Get();
+		if (!IsValid(WC) || WC->IsTemplate()) { OutReason = TEXT("weapon static-mesh component destroyed/invalid"); return false; }
+		if (!WC->IsRegistered()) { OutReason = TEXT("weapon static-mesh component unregistered"); return false; }
+		if (WC->GetWorld() != World) { OutReason = TEXT("weapon static-mesh component moved to a different world"); return false; }
+		if (WC->GetOwner() != Pawn) { OutReason = TEXT("weapon static-mesh component ownership changed"); return false; }
+		if (S->TransformSource.Get() != WC) { OutReason = TEXT("transform source no longer the stored weapon component"); return false; }
+		if (ResolveSceneComponent(S->TransformSourcePath) != WC) { OutReason = TEXT("stored transform-source path resolves to a different component"); return false; }
+		UStaticMesh* Expected = S->ExpectedStaticMesh.Get();
+		if (!IsValid(Expected)) { OutReason = TEXT("expected static-mesh asset became invalid"); return false; }
+		if (WC->GetStaticMesh() != Expected) { OutReason = TEXT("weapon component static-mesh asset was replaced"); return false; }
+		if (!WC->DoesSocketExist(FName(*S->SocketName))) { OutReason = TEXT("explicit socket no longer exists on the weapon component"); return false; }
+		return true;
+	}
+
+	// Single shared core-identity gate for the combined session. Used by BuildCombinedSample, the
+	// combined lifecycle ticker AND ValidatePumpRig, so all three enforce EXACTLY the same contract
+	// regardless of renderPumpMode ("none" and "showOnly" alike). Each drift returns ONE specific
+	// reason; the pump layers only its rig-specific checks on top of this.
+	static bool ValidateCombinedCoreIdentity(const TSharedPtr<FCaptureSession>& S, FString& OutReason)
+	{
+		UWorld* World = S->World.Get();
+		if (!IsPIEWorld(World)) { OutReason = TEXT("stored PIE world is no longer valid"); return false; }
+
+		APawn* Pawn = S->Pawn.Get();
+		if (!IsValid(Pawn) || Pawn->IsTemplate()) { OutReason = TEXT("stored pawn invalid or is a CDO/template"); return false; }
+		if (Pawn->GetWorld() != World) { OutReason = TEXT("stored pawn is no longer in the stored PIE world"); return false; }
+		if (ResolveActor(S->OwnerPath) != Pawn) { OutReason = TEXT("stored pawn path resolves to a different actor"); return false; }
+
+		USkeletalMeshComponent* Mesh = S->Mesh.Get();
+		if (!IsUsableMesh(Mesh)) { OutReason = TEXT("stored skeletal mesh component is not live/registered"); return false; }
+		if (Mesh->GetWorld() != World) { OutReason = TEXT("stored skeletal mesh is no longer in the stored PIE world"); return false; }
+		if (Mesh->GetOwner() != Pawn) { OutReason = TEXT("stored skeletal mesh ownership changed"); return false; }
+		if (ResolveMeshComponent(S->MeshPath) != Mesh) { OutReason = TEXT("stored mesh path resolves to a different component"); return false; }
+
+		UAnimInstance* Host = S->Host.Get();
+		UAnimInstance* Layer = S->Layer.Get();
+		if (!IsUsableAnimInstance(Host)) { OutReason = TEXT("stored host AnimInstance is no longer usable"); return false; }
+		if (Mesh->GetAnimInstance() != Host) { OutReason = TEXT("mesh host AnimInstance changed"); return false; }
+		if (!IsUsableAnimInstance(Layer)) { OutReason = TEXT("stored linked layer AnimInstance is no longer usable"); return false; }
+		if (!LayerStillPresent(Mesh, Layer)) { OutReason = TEXT("linked layer instance removed/replaced"); return false; }
+
+		UClass* ExpHost = S->ExpectedHostClass.Get();
+		UClass* ExpLayer = S->ExpectedLayerClass.Get();
+		if (!ExpHost || !ExpLayer) { OutReason = TEXT("expected host/layer class became invalid"); return false; }
+		if (!Host->GetClass()->IsChildOf(ExpHost)) { OutReason = TEXT("host class no longer matches expected"); return false; }
+		if (!Layer->GetClass()->IsChildOf(ExpLayer)) { OutReason = TEXT("layer class no longer matches expected"); return false; }
+
+		USceneComponent* Capsule = S->Capsule.Get();
+		if (!IsValid(Capsule) || Capsule->IsTemplate()) { OutReason = TEXT("capsule/root component invalid or is a CDO/template"); return false; }
+		if (!Capsule->IsRegistered()) { OutReason = TEXT("capsule/root component unregistered"); return false; }
+		if (Capsule->GetWorld() != World) { OutReason = TEXT("capsule/root component is no longer in the stored PIE world"); return false; }
+		if (Capsule->GetOwner() != Pawn) { OutReason = TEXT("capsule/root component ownership changed"); return false; }
+		if (ResolveSceneComponent(S->CapsulePath) != Capsule) { OutReason = TEXT("stored capsule path resolves to a different component"); return false; }
+
+		return ValidateWeaponIdentity(S, OutReason);
+	}
+
+	// Pump framing derived ONLY from the live mesh bounds; every derived value is finite-checked.
+	static bool ComputePumpFraming(USkeletalMeshComponent* Mesh, FVector& OutCamPos, FVector& OutLookDir, FString& OutReason)
+	{
+		const FBoxSphereBounds Bnd = Mesh->Bounds;
+		if (!IsFiniteVec(Bnd.Origin) || !FMath::IsFinite((double)Bnd.SphereRadius) || Bnd.SphereRadius <= 0.0f)
+		{ OutReason = TEXT("mesh bounds are degenerate or non-finite"); return false; }
+		const double Dist = FMath::Max(200.0, (double)Bnd.SphereRadius * 3.0);
+		if (!FMath::IsFinite(Dist)) { OutReason = TEXT("computed pump distance is non-finite"); return false; }
+		const FVector CamPos = Bnd.Origin + FVector(Dist, Dist, Dist * 0.5);
+		if (!IsFiniteVec(CamPos)) { OutReason = TEXT("computed pump camera position is non-finite"); return false; }
+		const FVector Look = Bnd.Origin - CamPos;
+		if (!IsFiniteVec(Look) || Look.IsNearlyZero()) { OutReason = TEXT("pump look direction is non-finite or degenerate"); return false; }
+		OutCamPos = CamPos; OutLookDir = Look;
+		return true;
+	}
+
+	// Full pump rig + identity revalidation required before EVERY CaptureScene request.
+	static bool ValidatePumpRig(const TSharedPtr<FCaptureSession>& S, FVector& OutCamPos, FVector& OutLookDir, FString& OutReason)
+	{
+		// Shared core-identity contract first; the rig-specific checks below are additive only.
+		if (!ValidateCombinedCoreIdentity(S, OutReason)) { return false; }
+		UWorld* World = S->World.Get();
+		USkeletalMeshComponent* Mesh = S->Mesh.Get();
+
+		AActor* Actor = S->PumpActor.Get();
+		USceneCaptureComponent2D* Cap = S->PumpCapture.Get();
+		UTextureRenderTarget2D* RT = S->PumpRT.Get();
+		if (!IsValid(Actor)) { OutReason = TEXT("pump: transient capture actor invalid"); return false; }
+		if (!Actor->HasAnyFlags(RF_Transient)) { OutReason = TEXT("pump: capture actor lost its transient flag"); return false; }
+		if (Actor->GetWorld() != World) { OutReason = TEXT("pump: capture actor is in a different world"); return false; }
+		if (Actor->GetOwner() != nullptr) { OutReason = TEXT("pump: capture actor acquired an owner (must stay unowned)"); return false; }
+		if (!IsValid(Cap)) { OutReason = TEXT("pump: capture component invalid"); return false; }
+		if (!Cap->IsRegistered()) { OutReason = TEXT("pump: capture component unregistered"); return false; }
+		if (Cap->GetOwner() != Actor) { OutReason = TEXT("pump: capture component no longer owned by the stored capture actor"); return false; }
+		if (Cap->GetWorld() != World) { OutReason = TEXT("pump: capture component is in a different world"); return false; }
+		if (!IsValid(RT)) { OutReason = TEXT("pump: render target invalid"); return false; }
+		if (Cap->TextureTarget != RT) { OutReason = TEXT("pump: capture TextureTarget no longer the stored render target"); return false; }
+		if (Cap->bCaptureEveryFrame || Cap->bCaptureOnMovement) { OutReason = TEXT("pump: capture cadence flags were modified"); return false; }
+		if (Cap->PrimitiveRenderMode != ESceneCapturePrimitiveRenderMode::PRM_UseShowOnlyList)
+		{ OutReason = TEXT("pump: PrimitiveRenderMode is no longer PRM_UseShowOnlyList"); return false; }
+		if (Cap->ShowOnlyComponents.Num() != 1 || Cap->ShowOnlyComponents[0].Get() != Mesh)
+		{ OutReason = TEXT("pump: ShowOnlyComponents is not exactly the target skeletal mesh"); return false; }
+
+		return ComputePumpFraming(Mesh, OutCamPos, OutLookDir, OutReason);
+	}
+
+	// Combined sampler (Boundary G Phase 1). Host/layer scalars AND the socket world transform/basis
+	// are serialized inside ONE finalized-frame callback against ONE GFrameCounter value, so the
+	// correlation is STRUCTURAL: there is no post-hoc frame join anywhere in this path. Identity is
+	// revalidated to the same standard as transform mode BEFORE anything is read.
+	static bool BuildCombinedSample(const TSharedPtr<FCaptureSession>& S, FString& OutSample)
+	{
+		check(IsInGameThread());
+		UWorld* World = S->World.Get();
+		APawn* Pawn = S->Pawn.Get();
+		USceneComponent* TS = S->TransformSource.Get();
+		USceneComponent* Capsule = S->Capsule.Get();
+		UAnimInstance* Host = S->Host.Get();
+		UAnimInstance* Layer = S->Layer.Get();
+
+		// One shared core-identity gate: world, pawn, mesh, host/layer instances and classes, capsule,
+		// and exact weapon/static-mesh identity -- revalidated before EVERY sample.
+		FString IdErr;
+		if (!ValidateCombinedCoreIdentity(S, IdErr)) { StopSession(S, IdErr); return false; }
+		const FName Socket(*S->SocketName);
+
+		// ---- scalars: identical reader/null/error contract to the linked-scalar mode ----
+		TArray<FString> ReadErrors;
+		bool bErrTruncated = false;
+		auto ReadInto = [&ReadErrors, &bErrTruncated](UAnimInstance* Inst, const FString& InstPath, const TArray<FString>& Props) -> FString
+		{
+			FString Fields;
+			for (int32 i = 0; i < Props.Num(); ++i)
+			{
+				FString ValJson, Err;
+				if (ReadScalarJson(Inst, Props[i], ValJson, Err))
+				{
+					Fields += FString::Printf(TEXT("%s%s:%s"), (i ? TEXT(",") : TEXT("")), *JStr(Props[i]), *ValJson);
+				}
+				else
+				{
+					Fields += FString::Printf(TEXT("%s%s:null"), (i ? TEXT(",") : TEXT("")), *JStr(Props[i]));
+					if (ReadErrors.Num() < kMaxReadErrorsPerSample)
+					{
+						ReadErrors.Add(FString::Printf(TEXT("{\"instance\":%s,\"property\":%s,\"error\":%s}"),
+							*JStr(InstPath), *JStr(Props[i]), *JStr(Err)));
+					}
+					else { bErrTruncated = true; }
+				}
+			}
+			return Fields;
+		};
+		const FString HostFields  = ReadInto(Host, S->HostInstPath, S->HostProps);
+		const FString LayerFields = ReadInto(Layer, S->LayerInstPath, S->LayerProps);
+		const bool bSampleOk = (ReadErrors.Num() == 0) && !bErrTruncated;
+		FString ErrArr;
+		for (int32 i = 0; i < ReadErrors.Num(); ++i) { ErrArr += (i ? TEXT(",") : TEXT("")) + ReadErrors[i]; }
+
+		// ---- socket transform + orthonormal basis, raw from Epic APIs (no reconstruction/offsets) ----
+		const FTransform SockW = TS->GetSocketTransform(Socket, RTS_World);
+		const FVector AxX = SockW.GetUnitAxis(EAxis::X);
+		const FVector AxY = SockW.GetUnitAxis(EAxis::Y);
+		const FVector AxZ = SockW.GetUnitAxis(EAxis::Z);
+		const FTransform SrcW = TS->GetComponentTransform();
+		const FTransform ActorW = Pawn->GetActorTransform();
+		const FTransform CapsW = Capsule->GetComponentTransform();
+		const FRotator BaseAim = Pawn->GetBaseAimRotation();
+		const double WorldTime = World->GetTimeSeconds();
+
+		// Values are VALIDATED and never normalized, repaired, wrapped or substituted. Any failure
+		// stops the session BEFORE serialization, so NaN/Inf can never reach the JSON.
+		if (!FMath::IsFinite(WorldTime)) { StopSession(S, TEXT("non-finite world time")); return false; }
+		if (!IsFiniteXform(SockW)) { StopSession(S, TEXT("non-finite socket world transform")); return false; }
+		if (!IsFiniteXform(SrcW))  { StopSession(S, TEXT("non-finite transform-source component transform")); return false; }
+		if (!IsFiniteXform(ActorW)){ StopSession(S, TEXT("non-finite actor transform")); return false; }
+		if (!IsFiniteXform(CapsW)) { StopSession(S, TEXT("non-finite capsule transform")); return false; }
+		if (!IsFiniteRot(BaseAim)) { StopSession(S, TEXT("non-finite base aim rotation")); return false; }
+		if (!IsFiniteVec(AxX) || !IsFiniteVec(AxY) || !IsFiniteVec(AxZ))
+		{ StopSession(S, TEXT("non-finite socket basis vector")); return false; }
+		if (FMath::Abs(AxX.Size() - 1.0) > kBasisUnitTolerance
+			|| FMath::Abs(AxY.Size() - 1.0) > kBasisUnitTolerance
+			|| FMath::Abs(AxZ.Size() - 1.0) > kBasisUnitTolerance)
+		{ StopSession(S, TEXT("socket basis axis is not unit length within tolerance")); return false; }
+		if (FMath::Abs(FVector::DotProduct(AxX, AxY)) > kBasisOrthoTolerance
+			|| FMath::Abs(FVector::DotProduct(AxX, AxZ)) > kBasisOrthoTolerance
+			|| FMath::Abs(FVector::DotProduct(AxY, AxZ)) > kBasisOrthoTolerance)
+		{ StopSession(S, TEXT("socket basis axes are not mutually orthogonal within tolerance")); return false; }
+		if (FVector::DotProduct(FVector::CrossProduct(AxX, AxY), AxZ) <= kBasisHandednessMin)
+		{ StopSession(S, TEXT("socket basis handedness is invalid")); return false; }
+
+		// Guaranteed non-empty: identity validation above proves the stored asset is still in use.
+		const FString StaticMeshPath = S->StaticMeshPath;
+		AController* Ctrl = Pawn->GetController();
+		const FString CtrlPath = Ctrl ? Ctrl->GetPathName() : FString();
+
+		OutSample = FString::Printf(
+			TEXT("{\"sessionId\":%s,\"mode\":\"combined\",\"frameNumber\":%llu,\"worldTimeSeconds\":%.6f,\"world\":%s,\"owner\":%s,")
+			TEXT("\"meshComponent\":%s,\"hostInstance\":%s,\"hostClass\":%s,\"layerInstance\":%s,\"layerClass\":%s,")
+			TEXT("\"host\":{%s},\"layer\":{%s},")
+			TEXT("\"weaponComponent\":{\"path\":%s,\"class\":%s,\"staticMesh\":%s},")
+			TEXT("\"socket\":{\"name\":%s,\"worldLocation\":%s,\"worldRotation\":%s,\"basis\":{\"x\":%s,\"y\":%s,\"z\":%s}},")
+			TEXT("\"transformSourceWorldTransform\":%s,\"actorTransform\":%s,\"capsuleTransform\":%s,")
+			TEXT("\"baseAimRotation\":%s,\"controller\":%s,\"isLocallyControlled\":%s,\"localRole\":\"%s\",\"remoteRole\":\"%s\",")
+			TEXT("\"sampleOk\":%s,\"readErrorsTruncated\":%s,\"readErrors\":[%s]}"),
+			*JStr(S->Id), (unsigned long long)GFrameCounter, WorldTime,
+			*JStr(S->WorldName), *JStr(S->OwnerPath), *JStr(S->MeshPath),
+			*JStr(S->HostInstPath), *JStr(S->HostClass), *JStr(S->LayerInstPath), *JStr(S->LayerClass),
+			*HostFields, *LayerFields,
+			*JStr(S->TransformSourcePath), *JStr(TS->GetClass()->GetPathName()), *JStr(StaticMeshPath),
+			*JStr(S->SocketName), *VecJson(SockW.GetLocation()), *RotJson(SockW.Rotator()),
+			*VecJson(AxX), *VecJson(AxY), *VecJson(AxZ),
+			*XformJson(SrcW), *XformJson(ActorW), *XformJson(CapsW),
+			*RotJson(BaseAim), *JStr(CtrlPath),
+			Pawn->IsLocallyControlled() ? TEXT("true") : TEXT("false"),
+			NetRoleStr(Pawn->GetLocalRole()), NetRoleStr(Pawn->GetRemoteRole()),
+			bSampleOk ? TEXT("true") : TEXT("false"), bErrTruncated ? TEXT("true") : TEXT("false"), *ErrArr);
+		return true;
+	}
+
 	// Per-completed-frame sampler. Runs on the game thread inside FinalizeBoneTransform.
 	static void OnBoneTransformsFinalized(TWeakPtr<FCaptureSession> WeakSession)
 	{
@@ -787,7 +1100,12 @@ namespace TacticalRuntimeAnimInspection
 		}
 
 		FString Sample;
-		if (S->bTransformMode)
+		if (S->bCombinedMode)
+		{
+			// Boundary G Phase 1: scalars + socket evidence in ONE sample; drift stops inside the builder.
+			if (!BuildCombinedSample(S, Sample)) { return; }
+		}
+		else if (S->bTransformMode)
 		{
 			// Boundary G: reuses this session + callback; on any drift BuildTransformSample StopSession's and returns false.
 			if (!BuildTransformSample(S, Sample)) { return; }
@@ -1313,15 +1631,38 @@ UToolCallAsyncResultString* UTacticalRuntimeAnimInspectionToolset::StopLinkedAni
 		FString SamplesArr;
 		for (int32 i = 0; i < S->Samples.Num(); ++i) { SamplesArr += (i ? TEXT(",") : TEXT("")) + S->Samples[i]; }
 
+		// Combined-mode telemetry is APPENDED ONLY for combined sessions; for linked-scalar and
+		// transform sessions this string is empty and the payload is byte-identical to before.
+		FString CombinedExtra;
+		if (S->bCombinedMode)
+		{
+			const double Span = (S->PumpRequestCount > 1) ? (S->PumpLastTime - S->PumpFirstTime) : 0.0;
+			const double EffHz = (Span > 0.0) ? ((double)(S->PumpRequestCount - 1) / Span) : 0.0;
+			CombinedExtra = FString::Printf(
+				TEXT(",\"mode\":\"combined\",\"pump\":{\"mode\":%s,\"isolation\":%s,\"requestedHz\":%d,")
+				TEXT("\"captureRequestCount\":%lld,\"firstRequestFrame\":%llu,\"lastRequestFrame\":%llu,")
+				TEXT("\"firstRequestTime\":%.6f,\"lastRequestTime\":%.6f,\"effectiveRequestHz\":%.6f,")
+				TEXT("\"width\":%d,\"height\":%d,\"resultingSampleCount\":%d},")
+				TEXT("\"instrumentationQualification\":\"Samples are measurements from a mesh whose bone refresh was ")
+				TEXT("induced by rendering through a separate transient SceneCapture. captureRequestCount counts ")
+				TEXT("CaptureScene() INVOCATIONS and does not prove completed rendering; the samples produced by ")
+				TEXT("OnBoneTransformsFinalized are the only evidence of successful bone refresh. SceneCapture may ")
+				TEXT("update the component's recently-rendered state. No visibility, tick, camera, ownership, asset, ")
+				TEXT("config or play-setting was mutated.\""),
+				*JStr(S->PumpMode), *JStr(S->PumpIsolation), S->PumpHz,
+				(long long)S->PumpRequestCount, (unsigned long long)S->PumpFirstFrame, (unsigned long long)S->PumpLastFrame,
+				S->PumpFirstTime, S->PumpLastTime, EffHz, S->PumpW, S->PumpH, S->Samples.Num());
+		}
+
 		OutValue = FString::Printf(
 			TEXT("{\"sessionId\":%s,\"active\":false,\"stopReason\":%s,\"world\":%s,\"owner\":%s,\"meshComponent\":%s,")
 			TEXT("\"hostClass\":%s,\"layerClass\":%s,\"sampleCount\":%d,\"maxSamples\":%d,")
 			TEXT("\"accumulatedSampleBytes\":%lld,\"limits\":{\"maxSamples\":%d,\"maxTimeoutSeconds\":%.0f,")
-			TEXT("\"maxPropertiesPerSide\":%d,\"maxPropertyNameLength\":%d,\"maxSampleBytes\":%lld},\"samples\":[%s]}"),
+			TEXT("\"maxPropertiesPerSide\":%d,\"maxPropertyNameLength\":%d,\"maxSampleBytes\":%lld}%s,\"samples\":[%s]}"),
 			*JStr(S->Id), *JStr(S->StopReason), *JStr(S->WorldName), *JStr(S->OwnerPath), *JStr(S->MeshPath),
 			*JStr(S->HostClass), *JStr(S->LayerClass), S->Samples.Num(), S->MaxSamples,
 			(long long)S->AccumBytes, kMaxSamplesLimit, kMaxTimeoutSeconds,
-			kMaxPropertiesPerSide, kMaxPropertyNameLen, (long long)kMaxSampleBytes, *SamplesArr);
+			kMaxPropertiesPerSide, kMaxPropertyNameLen, (long long)kMaxSampleBytes, *CombinedExtra, *SamplesArr);
 
 		GSessions.Remove(SessionId);
 		return true;
@@ -2283,6 +2624,254 @@ UToolCallAsyncResultString* UTacticalRuntimeAnimInspectionToolset::StartWeaponSo
 			TEXT("\"hostAnimInstance\":%s,\"hostClass\":%s,\"layerInstance\":%s,\"layerClass\":%s,\"capsuleComponent\":%s,\"maxSamples\":%d,\"timeoutSeconds\":%.3f}"),
 			*JStr(S->Id), *JStr(S->WorldName), *JStr(S->OwnerPath), *JStr(S->MeshPath), *JStr(S->TransformSourcePath), *JStr(S->SocketName),
 			*JStr(S->HostInstPath), *JStr(S->HostClass), *JStr(S->LayerInstPath), *JStr(S->LayerClass), *JStr(S->CapsulePath), MaxSamples, TimeoutSeconds);
+		return true;
+	});
+}
+
+// =============================================================================
+// StartCombinedAnimSocketCaptureDeferred (Boundary G Phase 1)
+// =============================================================================
+UToolCallAsyncResultString* UTacticalRuntimeAnimInspectionToolset::StartCombinedAnimSocketCaptureDeferred(
+	const FString& PawnPath, const FString& MeshComponentPath, const FString& TransformSourcePath, const FString& SocketName,
+	const FString& HostClassPath, const TArray<FString>& HostProperties, const FString& LayerClassPath, const TArray<FString>& LayerProperties,
+	int32 MaxSamples, float TimeoutSeconds, const FString& RenderPumpMode, int32 RenderPumpHz, int32 RenderPumpWidth, int32 RenderPumpHeight)
+{
+	return RunDeferredString([=](FString& OutValue, FString& OutError) -> bool
+	{
+		check(IsInGameThread());
+		EnsureHooks();
+
+		// ---- 1. scalar / string / numeric validation: NOTHING is allocated before this passes ----
+		if (MaxSamples < 1 || MaxSamples > kMaxSamplesLimit) { OutError = FString::Printf(TEXT("MaxSamples must be in [1,%d]."), kMaxSamplesLimit); return false; }
+		if (!FMath::IsFinite((double)TimeoutSeconds) || TimeoutSeconds <= 0.f || (double)TimeoutSeconds > kMaxTimeoutSeconds)
+		{ OutError = FString::Printf(TEXT("TimeoutSeconds must be finite and in (0,%.0f]."), kMaxTimeoutSeconds); return false; }
+		if (SocketName.IsEmpty()) { OutError = TEXT("SocketName must be explicit (non-empty)."); return false; }
+		if (SocketName.Len() > kMaxPropertyNameLen) { OutError = FString::Printf(TEXT("SocketName exceeds %d characters."), kMaxPropertyNameLen); return false; }
+
+		if (!ValidatePropertyList(HostProperties, TEXT("HostProperties"), OutError)) { return false; }
+		if (!ValidatePropertyList(LayerProperties, TEXT("LayerProperties"), OutError)) { return false; }
+
+		// Object-path bounds enforced BEFORE StaticFindObject/class resolution and before allocation.
+		auto CheckPath = [](const FString& P, const TCHAR* Which, FString& Err) -> bool
+		{
+			if (P.IsEmpty()) { Err = FString::Printf(TEXT("%s must be non-empty."), Which); return false; }
+			if (P.Len() > kMaxObjectPathLen) { Err = FString::Printf(TEXT("%s is %d characters; the maximum is %d."), Which, P.Len(), kMaxObjectPathLen); return false; }
+			return true;
+		};
+		if (!CheckPath(PawnPath, TEXT("PawnPath"), OutError)) { return false; }
+		if (!CheckPath(MeshComponentPath, TEXT("MeshComponentPath"), OutError)) { return false; }
+		if (!CheckPath(TransformSourcePath, TEXT("TransformSourcePath"), OutError)) { return false; }
+		if (!CheckPath(HostClassPath, TEXT("HostClassPath"), OutError)) { return false; }
+		if (!CheckPath(LayerClassPath, TEXT("LayerClassPath"), OutError)) { return false; }
+
+		const bool bPumpNone = RenderPumpMode.Equals(TEXT("none"), ESearchCase::IgnoreCase);
+		const bool bPumpShowOnly = RenderPumpMode.Equals(TEXT("showOnly"), ESearchCase::IgnoreCase);
+		if (!bPumpNone && !bPumpShowOnly) { OutError = TEXT("RenderPumpMode must be exactly \"none\" or \"showOnly\"."); return false; }
+		int32 PumpW = (RenderPumpWidth  == 0) ? kDefaultPumpDim : RenderPumpWidth;
+		int32 PumpH = (RenderPumpHeight == 0) ? kDefaultPumpDim : RenderPumpHeight;
+		if (bPumpShowOnly)
+		{
+			if (RenderPumpHz < kMinPumpHz || RenderPumpHz > kMaxPumpHz) { OutError = FString::Printf(TEXT("RenderPumpHz must be in [%d,%d]."), kMinPumpHz, kMaxPumpHz); return false; }
+			if (PumpW < kMinPumpDim || PumpW > kMaxPumpDim || PumpH < kMinPumpDim || PumpH > kMaxPumpDim)
+			{ OutError = FString::Printf(TEXT("Render pump dimensions must be in [%d,%d] per axis."), kMinPumpDim, kMaxPumpDim); return false; }
+		}
+
+		// ---- 2. identity resolution/validation ----
+		APawn* Pawn = Cast<APawn>(ResolveActor(PawnPath));
+		if (!IsValid(Pawn) || Pawn->IsTemplate()) { OutError = FString::Printf(TEXT("Pawn not found or is a CDO/template: %s"), *PawnPath); return false; }
+		UWorld* World = Pawn->GetWorld();
+		if (!IsPIEWorld(World)) { OutError = TEXT("Pawn is not in a PIE world (editor/preview rejected)."); return false; }
+
+		USkeletalMeshComponent* Mesh = ResolveMeshComponent(MeshComponentPath);
+		if (!Mesh || !IsUsableMesh(Mesh)) { OutError = FString::Printf(TEXT("Finalization mesh not found/usable: %s"), *MeshComponentPath); return false; }
+		if (Mesh->GetOwner() != Pawn) { OutError = TEXT("Finalization mesh is not owned by the supplied pawn."); return false; }
+		if (Mesh->GetWorld() != World) { OutError = TEXT("Finalization mesh is in a different world than the pawn."); return false; }
+
+		USceneComponent* TS = ResolveSceneComponent(TransformSourcePath);
+		if (!TS || !IsValid(TS) || TS->IsTemplate() || !TS->IsRegistered() || !IsPIEWorld(TS->GetWorld())) { OutError = FString::Printf(TEXT("Transform-source component not found/usable: %s"), *TransformSourcePath); return false; }
+		if (TS->GetOwner() != Pawn) { OutError = TEXT("Transform-source component is not owned by the supplied pawn."); return false; }
+		if (TS->GetWorld() != World) { OutError = TEXT("Transform-source component is in a different world than the pawn."); return false; }
+		// This tool collects weapon/static-mesh evidence, so the transform source MUST be a live,
+		// registered UStaticMeshComponent owned by the exact pawn, carrying a valid UStaticMesh.
+		UStaticMeshComponent* WeaponComp = Cast<UStaticMeshComponent>(TS);
+		if (!WeaponComp) { OutError = FString::Printf(TEXT("Transform-source component is %s; a UStaticMeshComponent is required."), *TS->GetClass()->GetPathName()); return false; }
+		UStaticMesh* ExpectedSM = WeaponComp->GetStaticMesh();
+		if (!IsValid(ExpectedSM)) { OutError = TEXT("Transform-source static-mesh component has no valid UStaticMesh asset."); return false; }
+		if (!TS->DoesSocketExist(FName(*SocketName))) { OutError = FString::Printf(TEXT("Explicit socket '%s' does not exist on the transform-source component."), *SocketName); return false; }
+
+		USceneComponent* Capsule = nullptr;
+		if (ACharacter* Char = Cast<ACharacter>(Pawn)) { Capsule = Char->GetCapsuleComponent(); }
+		if (!Capsule) { Capsule = Pawn->GetRootComponent(); }
+		if (!IsValid(Capsule) || Capsule->IsTemplate() || !Capsule->IsRegistered() || !IsPIEWorld(Capsule->GetWorld())
+			|| Capsule->GetOwner() != Pawn || Capsule->GetWorld() != World)
+		{ OutError = TEXT("Capsule/root component missing or failed live/registered/ownership/world validation."); return false; }
+
+		for (auto& Pair : GSessions)
+		{
+			const TSharedPtr<FCaptureSession>& Existing = Pair.Value;
+			if (Existing.IsValid() && Existing->bActive && Existing->Mesh.Get() == Mesh)
+			{ OutError = FString::Printf(TEXT("A capture session (%s) is already active on this mesh."), *Existing->Id); return false; }
+		}
+
+		UAnimInstance* Host = Mesh->GetAnimInstance();
+		if (!IsUsableAnimInstance(Host)) { OutError = TEXT("Finalization mesh has no usable host AnimInstance."); return false; }
+		UClass* WantHost = ResolveAnimInstanceClass(HostClassPath);
+		if (!WantHost) { OutError = FString::Printf(TEXT("Could not resolve host class: %s"), *HostClassPath); return false; }
+		if (!Host->GetClass()->IsChildOf(WantHost)) { OutError = FString::Printf(TEXT("Host class mismatch: instance is %s, expected %s."), *Host->GetClass()->GetPathName(), *WantHost->GetPathName()); return false; }
+		UClass* WantLayer = ResolveAnimInstanceClass(LayerClassPath);
+		if (!WantLayer) { OutError = FString::Printf(TEXT("Could not resolve layer class: %s"), *LayerClassPath); return false; }
+		UAnimInstance* Layer = nullptr; int32 LayerMatches = 0;
+		for (UAnimInstance* L : GetLinkedInstances(Mesh)) { if (IsUsableAnimInstance(L) && L->GetClass()->IsChildOf(WantLayer)) { ++LayerMatches; Layer = L; } }
+		if (LayerMatches == 0) { OutError = FString::Printf(TEXT("No linked layer instance of class %s on this mesh."), *WantLayer->GetPathName()); return false; }
+		if (LayerMatches > 1) { OutError = FString::Printf(TEXT("Ambiguous: %d linked layer instances of class %s."), LayerMatches, *WantLayer->GetPathName()); return false; }
+
+		// ---- 3. global pumped-session bound, rejected BEFORE any render resource is allocated ----
+		if (bPumpShowOnly && GPumpActive)
+		{ OutError = TEXT("A render-pumped capture session is already active; at most one is permitted globally."); return false; }
+
+		// ---- 4. session object (not yet registered / not yet in GSessions) ----
+		TSharedPtr<FCaptureSession> S = MakeShared<FCaptureSession>();
+		S->Id = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphens);
+		S->World = World;
+		S->Mesh = Mesh; S->Host = Host; S->Layer = Layer;
+		S->ExpectedHostClass = WantHost; S->ExpectedLayerClass = WantLayer;
+		S->WorldName = World->GetPathName();
+		S->OwnerPath = Pawn->GetPathName();
+		S->MeshPath = Mesh->GetPathName();
+		S->HostInstPath = Host->GetPathName();
+		S->HostClass = Host->GetClass()->GetPathName();
+		S->LayerInstPath = Layer->GetPathName();
+		S->LayerClass = Layer->GetClass()->GetPathName();
+		S->HostProps = HostProperties;
+		S->LayerProps = LayerProperties;
+		S->MaxSamples = MaxSamples; S->Timeout = (double)TimeoutSeconds;
+		S->StartTime = FPlatformTime::Seconds();
+		S->bCombinedMode = true;
+		S->Pawn = Pawn;
+		S->TransformSource = TS;
+		S->TransformSourcePath = TS->GetPathName();
+		S->WeaponComp = WeaponComp;
+		S->WeaponCompPath = WeaponComp->GetPathName();
+		S->ExpectedStaticMesh = ExpectedSM;
+		S->StaticMeshPath = ExpectedSM->GetPathName();
+		S->SocketName = SocketName;
+		S->Capsule = Capsule;
+		S->CapsulePath = Capsule->GetPathName();
+		S->PumpMode = bPumpShowOnly ? TEXT("showOnly") : TEXT("none");
+		S->PumpIsolation = bPumpShowOnly ? TEXT("UseShowOnlyList+ShowOnlyComponents{targetSkeletalMesh}") : TEXT("none");
+		S->PumpHz = bPumpShowOnly ? RenderPumpHz : 0;
+		S->PumpW = bPumpShowOnly ? PumpW : 0;
+		S->PumpH = bPumpShowOnly ? PumpH : 0;
+
+		// ---- 5. render-liveness pump. Observes only; on ANY failure everything is rolled back. ----
+		if (bPumpShowOnly)
+		{
+			GPumpActive = true; S->bPumpOwned = true;   // claimed here so every rollback path releases it
+
+			FVector CamPos = FVector::ZeroVector, LookDir = FVector::ZeroVector;
+			FString FrameErr;
+			if (!ComputePumpFraming(Mesh, CamPos, LookDir, FrameErr))
+			{ DestroyPumpTransients(S); OutError = FString::Printf(TEXT("Render pump cannot be created: %s."), *FrameErr); return false; }
+
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.ObjectFlags |= RF_Transient;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+			AActor* Actor = World->SpawnActor<AActor>(AActor::StaticClass(), FTransform(CamPos), SpawnParams);
+			if (!Actor) { DestroyPumpTransients(S); OutError = TEXT("Failed to spawn transient render-pump actor."); return false; }
+			S->PumpActor = TStrongObjectPtr<AActor>(Actor);
+
+			USceneCaptureComponent2D* Cap = NewObject<USceneCaptureComponent2D>(Actor, NAME_None, RF_Transient);
+			if (!Cap) { DestroyPumpTransients(S); OutError = TEXT("Failed to create transient render-pump capture component."); return false; }
+			Actor->SetRootComponent(Cap);
+			Cap->RegisterComponent();
+			S->PumpCapture = TStrongObjectPtr<USceneCaptureComponent2D>(Cap);
+
+			UTextureRenderTarget2D* RT = NewObject<UTextureRenderTarget2D>(Actor, NAME_None, RF_Transient);
+			if (!RT) { DestroyPumpTransients(S); OutError = TEXT("Failed to create transient render-pump render target."); return false; }
+			RT->RenderTargetFormat = RTF_RGBA8;
+			RT->ClearColor = FLinearColor::Black;
+			RT->bAutoGenerateMips = false;
+			RT->InitCustomFormat(PumpW, PumpH, PF_B8G8R8A8, /*bForceLinearGamma=*/false);
+			RT->UpdateResourceImmediate(true);
+			S->PumpRT = TStrongObjectPtr<UTextureRenderTarget2D>(RT);
+
+			Cap->TextureTarget = RT;
+			Cap->CaptureSource = SCS_FinalColorLDR;
+			Cap->bCaptureEveryFrame = false;
+			Cap->bCaptureOnMovement = false;
+			Cap->bAlwaysPersistRenderingState = true;
+			Cap->FOVAngle = 90.f;
+			// Exact-component isolation ONLY. Never silently broadened to ShowOnlyActors/full scene.
+			Cap->PrimitiveRenderMode = ESceneCapturePrimitiveRenderMode::PRM_UseShowOnlyList;
+			Cap->ShowOnlyComponent(Mesh);
+			Cap->SetWorldLocationAndRotation(CamPos, LookDir.Rotation());
+		}
+
+		// ---- 6. registration: after this point StopSession owns every teardown path ----
+		TWeakPtr<FCaptureSession> WeakS = S;
+		S->bActive = true;
+		S->FinalizeHandle = Mesh->RegisterOnBoneTransformsFinalizedDelegate(
+			FOnBoneTransformsFinalizedMultiCast::FDelegate::CreateLambda([WeakS]() { OnBoneTransformsFinalized(WeakS); }));
+
+		S->LifecycleHandle = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda(
+			[WeakS](float) -> bool
+			{
+				TSharedPtr<FCaptureSession> Sp = WeakS.Pin();
+				if (!Sp.IsValid() || !Sp->bActive) { return false; }
+				// Same shared core-identity contract as the sampler and the pump, for BOTH pump modes.
+				FString IdErr;
+				if (!ValidateCombinedCoreIdentity(Sp, IdErr)) { StopSession(Sp, IdErr); return false; }
+				if ((FPlatformTime::Seconds() - Sp->StartTime) >= Sp->Timeout)
+				{ StopSession(Sp, TEXT("timeout")); return false; }
+				return true;
+			}), kLifecycleTickInterval);
+
+		if (bPumpShowOnly)
+		{
+			S->PumpHandle = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda(
+				[WeakS](float) -> bool
+				{
+					TSharedPtr<FCaptureSession> Sp = WeakS.Pin();
+					if (!Sp.IsValid() || !Sp->bActive) { return false; }
+					// Complete rig + identity + framing revalidation before EVERY request. A failure
+					// STOPS the session with a specific structured reason -- never skipped silently
+					// until timeout, and CaptureScene is never called with invalid framing.
+					FVector CamPos = FVector::ZeroVector, LookDir = FVector::ZeroVector;
+					FString PumpErr;
+					if (!ValidatePumpRig(Sp, CamPos, LookDir, PumpErr))
+					{ StopSession(Sp, PumpErr); return false; }
+
+					USceneCaptureComponent2D* Cap = Sp->PumpCapture.Get();
+					Cap->SetWorldLocationAndRotation(CamPos, LookDir.Rotation());
+					Cap->CaptureScene();
+
+					const double Now = FPlatformTime::Seconds();
+					if (Sp->PumpRequestCount == 0) { Sp->PumpFirstFrame = (uint64)GFrameCounter; Sp->PumpFirstTime = Now; }
+					Sp->PumpLastFrame = (uint64)GFrameCounter; Sp->PumpLastTime = Now;
+					++Sp->PumpRequestCount;
+					return true;
+				}), 1.0f / (float)RenderPumpHz);
+		}
+
+		GSessions.Add(S->Id, S);
+
+		OutValue = FString::Printf(
+			TEXT("{\"sessionId\":%s,\"mode\":\"combined\",\"world\":%s,\"owner\":%s,\"meshComponent\":%s,\"transformSource\":%s,\"staticMesh\":%s,\"socket\":%s,")
+			TEXT("\"hostAnimInstance\":%s,\"hostClass\":%s,\"layerInstance\":%s,\"layerClass\":%s,\"capsuleComponent\":%s,")
+			TEXT("\"hostProperties\":%d,\"layerProperties\":%d,\"maxSamples\":%d,\"timeoutSeconds\":%.3f,")
+			TEXT("\"pump\":{\"mode\":%s,\"isolation\":%s,\"requestedHz\":%d,\"width\":%d,\"height\":%d},")
+			TEXT("\"limits\":{\"maxSamples\":%d,\"maxTimeoutSeconds\":%.0f,\"maxPropertiesPerSide\":%d,\"maxPropertyNameLength\":%d,")
+			TEXT("\"maxSampleBytes\":%lld,\"maxObjectPathLength\":%d,\"pumpHz\":[%d,%d],\"pumpDim\":[%d,%d],")
+			TEXT("\"basisUnitTolerance\":%.6f,\"basisOrthoTolerance\":%.6f,\"basisHandednessMinimum\":%.6f,")
+			TEXT("\"maxConcurrentPumpedSessions\":1}}"),
+			*JStr(S->Id), *JStr(S->WorldName), *JStr(S->OwnerPath), *JStr(S->MeshPath), *JStr(S->TransformSourcePath), *JStr(S->StaticMeshPath), *JStr(S->SocketName),
+			*JStr(S->HostInstPath), *JStr(S->HostClass), *JStr(S->LayerInstPath), *JStr(S->LayerClass), *JStr(S->CapsulePath),
+			HostProperties.Num(), LayerProperties.Num(), MaxSamples, TimeoutSeconds,
+			*JStr(S->PumpMode), *JStr(S->PumpIsolation), S->PumpHz, S->PumpW, S->PumpH,
+			kMaxSamplesLimit, kMaxTimeoutSeconds, kMaxPropertiesPerSide, kMaxPropertyNameLen, (long long)kMaxSampleBytes,
+			kMaxObjectPathLen, kMinPumpHz, kMaxPumpHz, kMinPumpDim, kMaxPumpDim,
+			kBasisUnitTolerance, kBasisOrthoTolerance, kBasisHandednessMin);
 		return true;
 	});
 }
