@@ -427,6 +427,63 @@ public:
 	UFUNCTION(meta = (AICallable))
 	static UToolCallAsyncResultString* StartWeaponSocketTransformCapture(const FString& PawnPath, const FString& MeshComponentPath, const FString& TransformSourcePath, const FString& SocketName, const FString& HostClassPath, const FString& LayerClassPath, int32 MaxSamples, float TimeoutSeconds);
 
+	/**
+	 * Combined frame-coherent capture (Boundary G Phase 1). REUSES FCaptureSession, GSessions, the
+	 * OnBoneTransformsFinalized callback, the existing identity checks, sample-byte accounting,
+	 * max-sample/timeout handling, stop lifecycle, EndPIE/world-cleanup/shutdown hooks, and is drained
+	 * with StopLinkedAnimInstanceCapture(sessionId). There is NO second sampling framework and NO
+	 * post-hoc frame join: host scalars, linked-layer scalars, weapon-component and static-mesh
+	 * identity, socket world location/raw rotation/orthonormal XYZ basis, actor and capsule transforms
+	 * are serialized inside ONE finalized-frame callback against ONE frame number.
+	 *
+	 * Optional bounded render-liveness pump: because an owner-hidden mesh set to AlwaysTickPose only
+	 * refreshes bone transforms when rendered, the session may drive a SEPARATE transient unowned
+	 * SceneCapture (bCaptureEveryFrame=false, explicit CaptureScene() requests) restricted to the exact
+	 * target skeletal mesh via PRM_UseShowOnlyList + ShowOnlyComponent. It OBSERVES ONLY and never
+	 * mutates bOwnerNoSee, bOnlyOwnerSee, bVisible, bHiddenInGame, VisibilityBasedAnimTickOption,
+	 * bNoSkeletonUpdate, tick settings, gameplay cameras, possession/ownership, maps, assets, config or
+	 * play settings, and never sets AlwaysTickPoseAndRefreshBones. At most ONE pumped session may exist
+	 * globally, rejected before any render resource is allocated; an ordinary view capture remains
+	 * possible alongside it. captureRequestCount counts CaptureScene() INVOCATIONS and is NOT proof of
+	 * completed rendering -- the samples produced by OnBoneTransformsFinalized are that evidence.
+	 *
+	 * Exact weapon identity: TransformSourcePath MUST resolve to a live, registered UStaticMeshComponent
+	 * owned by the exact pawn and carrying a valid UStaticMesh. That component and its UStaticMesh are
+	 * pinned at start and revalidated before EVERY sample and on every lifecycle tick (same object, same
+	 * resolved path, still registered, same world, same owner, same asset, socket still present); a
+	 * same-component asset replacement stops the session with a distinct drift reason, so the staticMesh
+	 * field is never emitted empty.
+	 *
+	 * Finite/orthonormal evidence: world time, socket world transform, transform-source component
+	 * transform, actor transform, capsule transform, base aim rotation and all three basis vectors are
+	 * validated finite BEFORE JSON construction; each basis axis must be unit length within 1e-3, pairwise
+	 * dot products within 1e-3 of zero, and right-handedness dot(cross(X,Y),Z) > 0.5 (reported as
+	 * basisUnitTolerance / basisOrthoTolerance / basisHandednessMinimum in the start-result limits). Values are never normalized, repaired,
+	 * wrapped or substituted -- failure stops the session before serialization, so NaN/Inf cannot reach the
+	 * JSON. Pump bounds, distance, camera position and look direction are likewise validated finite and
+	 * non-degenerate at creation and before every capture request.
+	 *
+	 * Path bounds: PawnPath, MeshComponentPath, TransformSourcePath, HostClassPath and LayerClassPath must
+	 * be non-empty and <=512 characters; SocketName and every property name <=128. All are enforced before
+	 * object/class resolution and before any render resource is allocated.
+	 * @param PawnPath Object path of the PIE pawn/actor that owns every component below.
+	 * @param MeshComponentPath Object path of the CharacterMesh0 skeletal-mesh component whose finalized frames drive sampling.
+	 * @param TransformSourcePath Object path of the weapon UStaticMeshComponent to read the socket/world transform from.
+	 * @param SocketName Explicit socket name on the transform-source component (never assumed/selected by the tool).
+	 * @param HostClassPath Generated-class or AnimBlueprint path the mesh host AnimInstance must be (or derive from).
+	 * @param HostProperties Host AnimInstance scalar property names to sample (<=64, each <=128 chars, no duplicates).
+	 * @param LayerClassPath Generated-class or AnimBlueprint path selecting the single linked layer instance.
+	 * @param LayerProperties Linked-layer scalar property names to sample (<=64, each <=128 chars, no duplicates).
+	 * @param MaxSamples Maximum completed-frame samples to record (1..kMaxSamplesLimit).
+	 * @param TimeoutSeconds Wall-clock ceiling after which sampling auto-stops (0 < t <= kMaxTimeoutSeconds).
+	 * @param RenderPumpMode Exactly "none" or "showOnly".
+	 * @param RenderPumpHz Requested CaptureScene() request rate in Hz (1..60); ignored when mode is "none".
+	 * @param RenderPumpWidth Pump render-target width 64..256 (0 selects the 128 default); ignored when mode is "none".
+	 * @param RenderPumpHeight Pump render-target height 64..256 (0 selects the 128 default); ignored when mode is "none".
+	 */
+	UFUNCTION(meta = (AICallable))
+	static UToolCallAsyncResultString* StartCombinedAnimSocketCaptureDeferred(const FString& PawnPath, const FString& MeshComponentPath, const FString& TransformSourcePath, const FString& SocketName, const FString& HostClassPath, const TArray<FString>& HostProperties, const FString& LayerClassPath, const TArray<FString>& LayerProperties, int32 MaxSamples, float TimeoutSeconds, const FString& RenderPumpMode, int32 RenderPumpHz, int32 RenderPumpWidth, int32 RenderPumpHeight);
+
 	/** Stops and disposes ALL active capture sessions and any continuous input injection they own.
 	 *  Called from module shutdown (and usable as a hard reset). Safe to call with no active state. */
 	static void ShutdownAllSessions();
