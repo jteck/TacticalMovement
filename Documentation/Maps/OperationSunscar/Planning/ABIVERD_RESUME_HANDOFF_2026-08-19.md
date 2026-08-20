@@ -466,3 +466,241 @@ Captures: `poppyfield_01_across_field_eye.png`, `_02_crouch_height.png`,
 | **Mesh selector lives in a subobject** | `<node>.PCGStaticMeshSpawnerSettings_N.DefaultSelectorInstance`, and **N differs per node**. Read the real path from `GetGraphStructure` — do not hardcode. |
 | **`CaptureViewport` returns** | `returnValue.image.data` (base64) + `image.mimeType`. |
 | **`ProgrammaticToolset` has no `unreal` module** | Only `re/json/copy/math/datetime/time` + `execute_tool`. Cannot do bulk instance work. |
+
+---
+
+## 16. Edge treatment + density variation — 2026-08-20 (second pass)
+
+Addresses the §15 "hard rectangular edge" note. **Partly solved.**
+
+### Final state — four PCG volumes, one shared graph
+
+| Volume | Poppies | Grass | Total |
+|---|---|---|---|
+| `ABV_PCG_PoppyField_South_V1` (main) | 5,914 | 11,867 | 17,781 |
+| `..._LobeS_V1` (yaw +22°) | 717 | 1,200 | 1,917 |
+| `..._LobeSW_V1` (yaw −28°) | 537 | 900 | 1,437 |
+| `..._LobeW_V1` (yaw +15°) | 578 | 960 | 1,538 |
+| **Total** | **7,746** | **14,927** | **22,673** |
+
+Main field density unchanged at **11.0 poppies/m², 22.0 grass/m²** — still on brief.
+Memory stayed flat (UE 1.2–1.7 GB, swap 0.7 GB) throughout.
+
+The three rotated lobes straddle the main volume's south and west edges, so the
+boundary now reads as an irregular organic outline instead of a rectangle.
+Verified in `poppyfield_v3_03_oblique_overview.png`.
+
+### What did NOT work — Spatial Noise does not give spatial patches
+
+Graph now has `Spatial Noise -> Filter Attribute Elements by Range` on both
+branches (samplers raised to 18/m² and 30/m², filter culls back to target).
+**But the noise is effectively per-point random, not spatial.** Measured:
+
+- Output never spans 0–1. Perlin2D/FractionalBrownian2D sit compressed in a
+  narrow band (~0.46–0.70); Voronoi2D returns raw distances in the hundreds.
+- **Larger `transform.scale` = MORE spread**, the opposite of the usual
+  frequency convention. At scale 0.0025 the whole field collapses to a single
+  constant value (0.664 across all 9,856 points → filter culls 0%).
+- At scale 1.0 (the only useful setting) the first 300 *adjacent* points show
+  the same spread as the whole field ⇒ neighbours uncorrelated ⇒ random
+  thinning, not blobs.
+
+So the noise pass maintains density but does **not** change the silhouette;
+compare `poppyfield_v2_*` (thinning only, still rectangular) against
+`poppyfield_v3_*` (lobes added, irregular). The lobes did the work.
+
+Thresholds are **calibrated to the measured distribution**, not guessed —
+`pcg_calibrate.py` samples the real density values and picks the percentile that
+hits the target cull (poppy 0.6241 for 40%, grass 0.1707 for 27%). Re-run it if
+the noise settings change; hardcoded thresholds will silently cull 0% or 100%.
+
+### Still open
+
+- **NE edge** still runs straight along the compound wall. Arguably fine (a wall
+  is a real boundary) — art call.
+- **Coverage.** The brief says "areas *surrounding* the building". Still one
+  field plus three lobes on its south/west. More volumes elsewhere are wanted.
+- `LobeSE` was attempted at (3180, 4820) and generated **0 instances** — its
+  bounds reach X 3500, past the landscape edge. Removed. Keep satellite volumes
+  inside the landscape footprint.
+- For true patchiness, Spatial Noise is a dead end as configured. Options: a
+  texture mask via `Sample Texture`, `Get Landscape Data` layer weights, or
+  simply more hand-placed overlapping volumes.
+
+### More API rules (add to §5)
+
+| Rule | Detail |
+|---|---|
+| **`ExecuteGraphInstance` does not invalidate its cache** | Editing the graph then re-executing returns identical results. To force a real rebuild, delete and respawn the volume (`pcg_respawn.py`), or enable inspection via `GetNodeDataView` first. |
+| **PCG renames ISM components on regeneration** | `ISM_SM_FieldPoppy_VarA_0` became `..._1`. **Never hardcode the `_0` suffix** — enumerate `get_components` and match the `ISM_` prefix, or you will read 0 and think generation failed. |
+| **`GetGraphStructure` misreports selector params** | It showed `valueTarget: None` while the settings object held `"$Density"`. Trust `ObjectTools.get_properties` on `<node>.settingsInterface`, not the structure dump. |
+| **`AddNode`/`UpdateNode` `jsonParams` ignores nested struct scale** | `transform.scale3D` passed to `AddNode` silently stayed `(1,1,1)`. Set nested transforms afterwards via `set_properties` on the settings object, using key `scale` (not `scale3D`). |
+| **`GetNodeDataView` needs two passes** | The first call only enables inspection and returns "produced no data"; re-execute the graph, then read. |
+| **Removing a PCG volume orphans its package** | Same as any WP actor — delete the `__ExternalActors__` file too. |
+
+---
+
+## 17. STOP POINT 2026-08-20 — planning pass, and a major correction
+
+Work stopped mid-**planning**, not mid-build. Nothing is half-written to the level.
+Read this section plus §18 before touching anything.
+
+### 17.1 THE AUTHORITATIVE DESIGN DOCS — read these FIRST, always
+
+Jason has two master planning images in iCloud. **They were not discovered until
+late on 2026-08-20 and they supersede a great deal of guesswork:**
+
+```
+~/Library/Mobile Documents/com~apple~CloudDocs/Coding/UE FPS Game/
+    Operation_Sunscar map UE FPS Game/
+        Operation_Sunscar_Master_Map.jpg      <- whole 3.2 km2 battlefield
+        Operation_Sunscar_Old_Town_Core.jpg   <- the 320 x 250 m phase-1 core
+```
+
+Read them with the Read tool (they are images). Do not plan without them.
+
+### 17.2 The boundary — settled
+
+| Layer | Size |
+|---|---|
+| Terrain envelope | 2,520 x 2,520 m |
+| Playable battlefield | 2,000 x 1,600 m (3.2 km2) |
+| Inner service town | 640 x 500 m |
+| **Old Town core = PHASE 1** | **320 x 250 m** |
+
+"The legacy-style core stays intact; expansion happens around it."
+
+**Phase 1 = Old Town core = 13 sites**, authoritative list from
+`ABIVERD_OLD_TOWN_PAUSE_HANDOFF_2026-08-05.md` (2026-08-14 entry):
+`SS_003 SS_004 SS_005 SS_006 SS_007 SS_010 SS_011 SS_012 SS_013 SS_015 SS_016
+SS_017 SS_018`.
+
+Measured envelope of those 13: **X -11,575..14,624, Y -10,652..11,910 cm
+= 262 x 226 m**, which sits inside the authored 320 x 250 m core. Consistent.
+
+Outer districts (NOT phase 1): North Karakum Expanse, West Abiverd March,
+East Canal Belt, South Kopet Foothills, SE Industrial Works, NW/NE/SW approaches.
+
+### 17.3 CORRECTIONS to earlier analysis in this file — do not reuse the old numbers
+
+- An earlier pass used **11 sites**, missing **SS_006 (Water Tower Compound)** and
+  **SS_013 (Freight Depot)**. Every figure derived from it is void.
+- The claim of a **"0.85 ha empty core"** was **WRONG**. `SS_008 Central Courtyard`
+  (115 actors), `SS_009 Transit Plaza` and `SS_014 Salvage Yard` sit inside the
+  envelope; they are simply outside the 13-site *completion* scope. The middle is
+  the Central Courtyard (~86 x 42 m) and it is an objective.
+- The proposed **18 m tell in the core is wrong** for this design. The core's tall
+  landmark is the **water tower at 12-18 m**, and there is a defined objective
+  triangle. Abiverd-style ruins belong in the **West Abiverd March** per the
+  master map.
+- **Live water in the core is wrong.** Core feature 12 is **DRY CANAL / CULVERTS**
+  - "a low, exposed bypass with culverts, not a safe tunnel". Wet, engineered
+  canal is the **East Canal Belt, outside phase 1**.
+
+### 17.4 Authored specs that the built map currently violates
+
+From `Operation_Sunscar_Old_Town_Core.jpg` (BLOCKOUT METRICS):
+primary street 12-15 m | service lanes 5-8 m | combat alleys 2.5-4 m |
+vehicle gates 6-8 m | central courtyard ~86 x 42 m |
+**hard-cover rhythm every 8-12 m** | **longest intentional sightline 110-140 m**
+
+Verticality tiers: ground | balconies/roofs 3-5 m | hotel & detention roofs
+7-9 m | water tower/mast 12-18 m | limit continuous rooftop chains.
+Routes: ALPHA (north compounds+hotel) / BRAVO (central road+courtyard) /
+CHARLIE (bazaar, yards, dry canal) + cross-links + managed sightlines.
+Objective triangle: Detention Annex, Central Courtyard, Water Tower.
+
+| # | Violation | Measured |
+|---|---|---|
+| 1 | **Authored elevation was never built.** Plan: core 328-365 m, south rim to 430 m, Signal Ridge 428 m, quarry floor 365 m. | Core has **1.85 m** of variation around 348 m (168-point grid). Service town is at correct height; the relief around it does not exist. |
+| 2 | Sightlines exceed the 110-140 m spec | crossings of **155-208 m** |
+| 3 | Hard cover every 8-12 m | effectively **none** between sites |
+| 4 | "Low-density poppies within Old Town; strongest red-field identity belongs outside the dense street core"; heritage plan wants **4-6 irregular belts 12-25 m x 5-10 m** | built a uniform **30 x 18 m rectangle at 11/m2 inside the core** |
+
+### 17.5 TECHNICAL DEBT INTRODUCED — must fix before any build
+
+`ABIVERD_HERITAGE_EXPANSION_PLAN_V1.md` states: *"Use ordinary PCG only as an
+editor-time authoring tool, save the generated instances, and avoid runtime PCG
+generation for this competitive multiplayer map"* and *"Save generated
+static-mesh instances; do not regenerate the meadow at runtime."*
+
+**The four PCG volumes built on 2026-08-20 are live PCG components.** It has NOT
+been verified whether they regenerate at runtime. They likely must be baked to
+static instances or converted to Static Mesh Foliage. Also unverified against the
+same plan: navigation influence, ticking, replication disabled; cull distances
+(`instanceStartCullDistance`/`EndCullDistance` were never set); non-Nanite plant
+meshes. Collision **is** verified `NoCollision`; materials **are** verified
+`BLEND_Masked`.
+
+### 17.6 Systems audit — what exists in the level (2026-08-20)
+
+| System | State |
+|---|---|
+| Spawns | PlayerStart 8, Spawn 31, Insertion 2, Extraction 3 |
+| Objectives | 19 actors |
+| Lighting | DirectionalLight, SkyLight, SkyAtmosphere, ExponentialHeightFog (1 each) |
+| Post process | 1 volume |
+| VFX | Dust 80, Wind 25, Weather 12 |
+| Traversal | Ladder 1, Ramp 10 |
+| Barriers | 29 |
+| **Navigation** | **NONE — no NavMesh bounds/modifiers/links found** |
+| **Audio** | **NONE — no ambient sound, audio or reverb volumes** |
+| Reflection captures | none found |
+
+### 17.7 Plugins — enable these
+
+Not enabled but wanted (895 discovered, 280 enabled):
+- **`LandscapePatch`** — non-destructive landscape height edits via *patch actors*.
+  Actor-based, therefore drivable over the MCP bridge, and removable if a patch
+  breaks a building's grounding. This is the answer to "what landscape toolset".
+- `PCGWaterInterop`, `PCGGeometryScriptInterop`, `WaterAdvanced`, `WaterExtras`.
+Already enabled: `Water`, `GeometryScripting`, `PCGToolset`, `MeshModelingToolset`.
+
+### 17.8 Asset gaps (full list in chat 2026-08-20)
+
+Missing Epic packs named in Jason's own master-map palette: **Urban Prison**
+(objective A art), **African Slate Quarry** (objective B art), **Abandoned
+Factory** (SE Industrial Works), **Megaplants Greasewood**. `Old Mine` only
+partial (6 files).
+Caveat: Megaplants need Procedural Vegetation Editor + Nanite Foliage
+(Experimental), which conflicts with the heritage plan's non-Nanite rule.
+Greasewood: https://www.fab.com/listings/1b8d0a76-276f-406e-9536-330243bb42cf
+
+Also missing entirely: culverts, footbridge, vehicle slab bridge, sluice gate,
+canal channel modules, tyre-rut decals, takir/cracked-clay ground material,
+adobe/pakhsa modular walls, poplar, tamarisk, reeds, and dry/dead grass (without
+which seasons are impossible).
+
+### 17.9 Design principle agreed with Jason
+
+> **Permanent geometry carries the gameplay. Vegetation is a modifier on top.**
+
+Tune the map to play correctly in its barest winter state; poppies and grass then
+*add* concealment without anything collapsing when they go. This matches the
+heritage plan's existing rule that vegetation is "not treated as authoritative
+gameplay cover" and that "no route may depend on flowers or grass for protection
+from a standing sniper".
+
+Seasons: spring (Mar-May) canals full, poppies red, muddy tracks; summer
+(Jun-Sep) 40C+, dry/low channels, dead stalks, dust; winter (Dec-Feb) 0-10C,
+bare fields, still water. Poppy bloom is a few weeks only — the current red field
+pins the map to April-May.
+
+## 18. NEXT ACTIONS (in order)
+
+1. **Ask Jason for any further planning material** before designing anything else.
+2. Enable `LandscapePatch` (+ the PCG interop plugins); restart editor; verify the
+   patch actor classes are reachable over the bridge.
+3. **Resolve the PCG runtime question in §17.5** — bake to static instances if
+   they regenerate at runtime. This is a correctness issue, not cosmetic.
+4. Rework the poppy field to spec: low density inside Old Town, 4-6 irregular
+   belts 12-25 m x 5-10 m, strongest red identity *outside* the core.
+5. Terrain pass: build the authored elevation (core 328-365 m) via LandscapePatch,
+   with a **no-sculpt buffer around each of the 13 sites** (bounds + 5-10 m) so the
+   committed grounding work (plinths, buttresses, foundation skirts) is not broken.
+6. Roads/canal per the core plan's own metrics; dry canal + culverts in core.
+7. Cover pass against the 8-12 m rhythm and 110-140 m sightline spec.
+8. Navigation and audio: both entirely absent.
+
+**Working rules unchanged:** verify every write by readback; exact-save only
+intended packages; no Save All; no commits without Jason's explicit approval.
