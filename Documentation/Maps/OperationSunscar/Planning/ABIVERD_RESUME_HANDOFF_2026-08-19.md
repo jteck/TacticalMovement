@@ -773,3 +773,75 @@ they are cheap now and get more expensive once the map is dressed:
 Helper scripts live in `/tmp` (`mcp.py`, `ue.py`, `audit.py`, `mem.sh`, the
 `pcg_*.py` set) with copies in `Abiverd_SessionArtifacts_2026-08-19/`.
 `/tmp` may not survive a reboot; the repo copies will.
+
+---
+
+## 20. RULES CONSOLIDATED — 2026-08-21
+
+All rule sections across ten planning documents were audited and merged into
+**`ABIVERD_PROJECT_RULES_V1.md`**, which is now **canonical**. The six source
+documents carry a "RULES SUPERSEDED" banner pointing to it.
+
+Read `ABIVERD_PROJECT_RULES_V1.md` §1 for the precedence order. In short:
+Jason > the two master images > the consolidated rules > individual planning
+docs > session handoffs.
+
+**Headline outcome: nothing was retired.** Every audited rule was either sound or
+needed scoping. The rules were in better shape than their scattering implied —
+the problem was that they lived in ten files with no statement of which won.
+
+Fifteen changes are listed in §15 of that document. The four that matter most:
+
+1. **Nanite foliage rule scoped to the competitive core**, not global. Epic's
+   5.8 docs confirm Nanite meshes ignore cull distance and instance fading, and
+   that Nanite Foliage is Experimental — but the historical WPO objection is
+   obsolete, since Nanite Foliage animates by skinning. Outer districts may use
+   it later.
+2. **Cover/concealment fairness promoted to its own section** with its three
+   independent justifications (graphics settings, cull distance, seasons). This
+   is the project's most important principle and it existed only as scattered
+   remarks.
+3. **Protected-asset list promoted out of an audit spec** — `CoreTarget_/
+   CoreVolume_DetentionObjective`, the 288 hidden legacy ground overlays, and all
+   `COL_*` proxies. It was buried and nearly missed.
+4. **A terrain no-sculpt buffer** around the 13 sites (bounds + 5-10 m) so the
+   committed grounding work is not destroyed by an elevation pass.
+
+**§16 of the rules document tracks ten known open violations**, including the
+live PCG components, the missing cull distances, the over-dense poppy rectangle,
+the 155-208 m sightlines, and the entirely absent navigation and audio. Work
+through that list rather than rediscovering them.
+
+---
+
+## 21. THE PLAN — 2026-08-21
+
+**`ABIVERD_BUILD_PLAN_V1.md` is the active plan.** Read it with
+`ABIVERD_PROJECT_RULES_V1.md`. Together they replace ad-hoc decision-making.
+
+Jason's organising principle: **build in order of permanence.**
+
+| Layer | Contents | Carries gameplay? |
+|---|---|---|
+| 0 Terrain | elevation, landforms, waterway *channels*, road *grading*, ruins | Yes, fully |
+| 1 Standing vegetation | trees, living or dead | Yes |
+| 2 Seasonal cover | poppies, grasses, water *state* | No — concealment only |
+| 3 Placed objects | sandbags, barriers, debris | Cover items yes, dressing no |
+
+The acceptance test for layers 0+1: **the map must play correctly with layers 2
+and 3 deleted.** If it does not, Layer 0 is unfinished.
+
+Two distinctions that resolve long-running confusion:
+
+- **A waterway's channel is terrain; its water is seasonal.** The channel, bunds
+  and crossings are permanent Layer 0. Full / dry / frozen is a Layer 2 state.
+- **A tree is permanent even when it looks dead.** Trunks block sight and stop
+  bullets, so trees can be trusted as cover in a way grass never can. Seasonal
+  variants must share identical trunk geometry and transforms.
+
+Sequence: Gate 0 measure the character → pay off PCG debt → Layer 0 → Layer 1 →
+Layer 2 (spring only) → Layer 3 → navigation and audio last.
+
+Navigation and audio are deliberately last: navmesh is built from geometry and
+audio volumes from spaces, so doing them before the terrain pass means building
+them twice. **This corrects earlier advice in this file that put them first.**

@@ -1,5 +1,12 @@
 # Operation Sunscar — Old Town Art Production Plan
 
+> **RULES SUPERSEDED — 2026-08-21.** The rule/policy sections in this document
+> have been audited and consolidated into
+> [`ABIVERD_PROJECT_RULES_V1.md`](ABIVERD_PROJECT_RULES_V1.md), which is
+> canonical. Where the two differ, the consolidated document wins. This file is
+> retained for history and for detail the consolidated rules do not cover.
+
+
 Status: planning only
 Planning date: 2026-07-24
 Target engine: Unreal Engine 5.8

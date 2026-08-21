@@ -1,5 +1,12 @@
 # Operation Sunscar — Old Town UE Execution Packet
 
+> **RULES SUPERSEDED — 2026-08-21.** The rule/policy sections in this document
+> have been audited and consolidated into
+> [`ABIVERD_PROJECT_RULES_V1.md`](ABIVERD_PROJECT_RULES_V1.md), which is
+> canonical. Where the two differ, the consolidated document wins. This file is
+> retained for history and for detail the consolidated rules do not cover.
+
+
 Version: planning draft 1
 Date: 2026-07-24
 Unreal status during preparation: closed

@@ -1,5 +1,12 @@
 # SS_010 Detention Annex — read-only live audit specification — 2026-08-18
 
+> **RULES SUPERSEDED — 2026-08-21.** The rule/policy sections in this document
+> have been audited and consolidated into
+> [`ABIVERD_PROJECT_RULES_V1.md`](ABIVERD_PROJECT_RULES_V1.md), which is
+> canonical. Where the two differ, the consolidated document wins. This file is
+> retained for history and for detail the consolidated rules do not cover.
+
+
 Author: Claude Code. **This document authorises no mutation.** It is the exact
 query plan for step 1 of Jason's approved SS_010 sequence (Appendix D §C).
 
