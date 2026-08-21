@@ -18,7 +18,18 @@ public class TacticalMovement : ModuleRules
 			"StateTreeModule",
 			"GameplayStateTreeModule",
 			"UMG",
-			"Slate"
+			"Slate",
+			// Surface Context Effects (C1): GameplayTags is an ENGINE RUNTIME MODULE
+			// (Engine/Source/Runtime/GameplayTags), not a .uproject plugin - it is declared
+			// here exactly as LyraGame.Build.cs declares it. Niagara is required by the
+			// ported ContextEffects library/subsystem for VFX payloads.
+			"GameplayTags",
+			"Niagara",
+			// PhysicsCore: UPhysicalMaterial + EPhysicalSurface. DeveloperSettings:
+			// UDeveloperSettings for the surface->context mapping config. Both are engine
+			// runtime modules, declared the same way LyraGame.Build.cs declares them.
+			"PhysicsCore",
+			"DeveloperSettings"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
@@ -37,7 +48,9 @@ public class TacticalMovement : ModuleRules
 			"TacticalMovement/Variant_SideScrolling/AI",
 			"TacticalMovement/Variant_SideScrolling/Gameplay",
 			"TacticalMovement/Variant_SideScrolling/Interfaces",
-			"TacticalMovement/Variant_SideScrolling/UI"
+			"TacticalMovement/Variant_SideScrolling/UI",
+			"TacticalMovement/Feedback/ContextEffects",
+			"TacticalMovement/Physics"
 		});
 
 		// Uncomment if you are using Slate UI
