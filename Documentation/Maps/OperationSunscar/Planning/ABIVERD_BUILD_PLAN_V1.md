@@ -492,3 +492,58 @@ The third restart test reported failure because the expected floor was computed
 as `grade − depth`. That is wrong wherever patches overlap: neighbouring circles
 blend and the real floor differs. **Always compare against measured
 pre-restart values, never against intended ones.**
+
+---
+
+## Sightlines — MEASURED, not estimated (2026-08-21)
+
+Previous figures were centre-to-centre distances minus site radii, which assumed
+nothing intervened. They were never tested. A real line-of-sight trace at
+standing eye height (154 cm) between site centres gives:
+
+| Pair | Distance | Line of sight |
+|---|---|---|
+| SS_003 ↔ SS_015 | **236 m** | **CLEAR** |
+| SS_012 ↔ SS_018 | **223 m** | **CLEAR** |
+| SS_004 ↔ SS_012 | **222 m** | **CLEAR** |
+| SS_003 ↔ SS_011 | **217 m** | **CLEAR** |
+| SS_004 ↔ SS_015 | **215 m** | **CLEAR** |
+| SS_011 ↔ SS_018 | **192 m** | **CLEAR** |
+| SS_015 ↔ SS_018 | **187 m** | **CLEAR** |
+| SS_010 ↔ SS_017 | **184 m** | **CLEAR** |
+| SS_006 ↔ SS_015 | 213 m | blocked at 3 m |
+| SS_003 ↔ SS_010 | 200 m | blocked at 67 m |
+
+**8 of 10 long pairs have completely unobstructed standing sightlines, at
+184–236 m, against a spec of 110–140 m.** The buildings do not block them; the
+lines pass over and between the compounds. This is worse than the earlier
+estimate of 155–208 m, and it is now measured rather than inferred.
+
+### Terrain cannot fix this — ruins must
+
+Searching every clear line for a position with enough clearance to place a
+blocker yields only **three** distinct viable spots, with 6.5–12 m of clearance:
+
+| Position | Clearance | Breaks |
+|---|---|---|
+| (−1225, −7781) | 12.0 m | SS_015 ↔ SS_018 |
+| (4448, 3254) | 8.8 m | SS_003 ↔ SS_011 |
+| (2524, −5130) | 7.4 m | SS_003 ↔ SS_015 |
+
+Two pairs (SS_004↔SS_012, SS_011↔SS_018) have **no viable blocker position at
+all** — their whole length runs through built ground or existing features.
+
+**At these footprints terrain is the wrong tool.** A mound must slope, so 7 m of
+clearance buys roughly 2.5 m of height before it reads as a pimple on flat
+ground. A ruin wall in the same footprint can be 5 m tall and vertical, blocking
+far more sightline per square metre — and it is what the setting calls for
+anyway.
+
+**Conclusion: the sightline violation is a ruins problem, not a terrain problem.**
+Terrain work (gullies, pans) delivers covered movement and low-stance defilade,
+which it has. Standing-height blocking now needs hand-placed ruins, per rule
+§8.1 (cover is never scattered).
+
+This also means the two pairs with no viable position may need a different
+answer entirely — a new structure, a compound wall extension, or accepting that
+those two lines stay long.
