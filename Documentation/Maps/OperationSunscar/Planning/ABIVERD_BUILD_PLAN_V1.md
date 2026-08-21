@@ -342,3 +342,105 @@ giving prone concealment.
 
 1. Reconcile jump velocity: C++ constructor and BP both say 500;
    `MovementProfileRow` defaults to 420. Confirm which governs at runtime.
+
+---
+
+## Layer 0 — terrain findings, 2026-08-21
+
+### Landscape specification (measured)
+
+| Property | Value |
+|---|---|
+| Landscape scale | **(125, 125, 29.296875)** |
+| **Quad size** | **125 cm = 1.25 m** |
+| Origin Z | 37,500 cm = 375 m |
+| **Usable height range** | **≈ 300–450 m** (512 m × ZScale/100, centred on 375 m) |
+| Extent | −63,000 .. 63,000 cm = 1.26 × 1.26 km, 16 streaming proxies |
+
+The authored 310–430 m range fits comfortably inside the available 300–450 m, so
+the landscape was configured deliberately for it.
+
+**The 1.25 m quad size dictates a split in how relief gets built:**
+
+| Feature | Built as | Why |
+|---|---|---|
+| Hills, dunes, the tell, takir pans, broad grading | **Landscape (LandscapePatch)** | Wider than ~4 m, so the heightmap can represent them |
+| Canal bunds, field bunds, road berms, ditch lips | **Meshes** | 0.5–3 m wide — finer than the heightmap can express |
+
+This also confirms the earlier conclusion that raised canal bunds are additive
+geometry: they were never going to be sculpted anyway.
+
+### Terrain as actually built vs authored
+
+From a 168-point grid across phase 1, excluding building hits:
+
+| | Measured | Authored |
+|---|---|---|
+| Ground spread across phase 1 | **3.12 m** | core 328–365 m (37 m) |
+| Gradient, north | **+0.26 m per 100 m (rises north)** | drainage *falls* north/north-east |
+| Gradient, east | −0.18 m per 100 m | — |
+
+**The authored drainage was never built, and the residual gradient runs
+backwards.** Band means run 347.9 m in the south to 348.8 m in the north across
+240 m — flat.
+
+### DECISION — the authored core range cannot be built as written
+
+A 37 m fall across a 250 m core is a ~15 % slope. The 13 buildings are grounded
+to flat terrain with committed plinths, buttresses at grade and foundation
+skirts. Introducing that gradient would strand every building on a plinth or in a
+pit and destroy work already paid for twice.
+
+**Therefore:**
+
+- **Old Town core: micro-relief only** — roughly 1–3 m, terraced around each
+  site's existing pad height. This is also what the gameplay actually needs; the
+  sightline problem is solved by local variation plus ruins and trees, not by a
+  regional gradient.
+- **Outer districts: build the full authored range** — south rim 350–430 m,
+  Signal Ridge 428 m, quarry floor 365 m, north 310–338 m. Nothing is grounded
+  out there, so the relief is free.
+- Read "core 328–365 m" as describing the core *region and its transitions*, not
+  the built-up 320 × 250 m.
+
+*Flagged for Jason's review — this diverges from the master plan, deliberately.*
+
+### LandscapePatch — validated 2026-08-21
+
+Proven end to end over the bridge at (20000, 0), outside the phase-1 envelope.
+
+| Distance from centre | Patch enabled | Patch disabled |
+|---|---|---|
+| centre | 34,800.1 | 34,397.7 |
+| 5 m | 34,800.1 | 34,419.0 |
+| 9 m | 34,800.1 | 34,437.1 |
+| 16 m | 34,690.6 | 34,468.5 |
+| **40 m** | **34,539.0** | **34,539.0** |
+
+Findings:
+
+- `LandscapeCircleHeightPatch` sets landscape height to **the host actor's own
+  world Z** within `radius`, blending outward over `falloff`.
+- **Strictly bounded** — 40 m out is byte-identical either way.
+- **Fully reversible** — toggling `bIsEnabled`, or deleting the host actor,
+  restores the original heights exactly.
+- Memory never moved (1.81–1.86 GB).
+
+**How to drive it:**
+1. Spawn any actor (a `StaticMeshActor` works) at the target X/Y and **the Z you
+   want the terrain to become**.
+2. `ActorTools.add_component` with
+   `/Script/LandscapePatch.LandscapeCircleHeightPatch`.
+3. Set `radius` and `falloff` via `ObjectTools.set_properties`.
+4. Verify with `SceneTools.trace_world` before and after.
+
+**Requires a landscape edit layer.** UE prompts to create one on first use; it
+appears as a layer named **"Patches"**. This is what makes patches
+non-destructive: the base heightmap is untouched and patches stack above it.
+
+**Caution:** edit layers duplicate heightmap storage per layer across 16 proxies
+on a 1.26 km landscape. Memory held fine for one test patch; watch it during the
+real pass. This is the most likely reason to move to the 32 GB machine.
+
+**State: the edit layer exists in memory only and has not been saved.** Nothing
+is on disk; git is clean.
