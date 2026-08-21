@@ -704,3 +704,72 @@ pins the map to April-May.
 
 **Working rules unchanged:** verify every write by readback; exact-save only
 intended packages; no Save All; no commits without Jason's explicit approval.
+
+---
+
+## 19. RESUME PROMPT — paste this into the fresh chat
+
+> Continuing Abiverd / Operation Sunscar map work in the UE5.8 worktree at
+> `/Users/jasonteck/UnrealEngine/_worktrees/map-development` (branch
+> `feature/map-development`, HEAD `edb4dc9`, working tree clean, nothing pushed).
+>
+> **Read these first, in this order, before proposing anything:**
+> 1. My two master planning images — use the Read tool, they are images:
+>    `~/Library/Mobile Documents/com~apple~CloudDocs/Coding/UE FPS Game/Operation_Sunscar map UE FPS Game/Operation_Sunscar_Master_Map.jpg`
+>    and `Operation_Sunscar_Old_Town_Core.jpg`
+> 2. `Documentation/Maps/OperationSunscar/Planning/ABIVERD_RESUME_HANDOFF_2026-08-19.md`
+>    — go to **§17, §18 and §19**. Sections 1-16 are older and partly superseded;
+>    §17.3 lists numbers that are now void, do not reuse them.
+> 3. `ABIVERD_HERITAGE_EXPANSION_PLAN_V1.md` — the foliage/ruins rules and the
+>    seven validation gates.
+>
+> We stopped during **planning**, not building. Nothing is half-written to the
+> level. UE is closed and everything is saved.
+>
+> Ask me for any further planning material before designing anything — last
+> session a lot of work was wasted re-deriving decisions I had already made in
+> those two images.
+>
+> Working rules: verify every write by reading geometry back; exact-save only
+> the packages you intended; never Save All; no commits without my explicit
+> approval.
+
+### 19.1 Open questions Jason still owes an answer on
+
+1. Any further planning material beyond the two master images?
+2. The tell — wanted at all, and if so in the **West Abiverd March**, not the core?
+3. Which asset gaps to pursue (§17.8) so Fab purchases can be made.
+4. Whether to enable `LandscapePatch` + PCG interop plugins (§17.7).
+
+### 19.2 Highest-value next actions, cheapest first
+
+Ranked at the end of 2026-08-20 as better value than the terrain pass, because
+they are cheap now and get more expensive once the map is dressed:
+
+1. **Audio and navigation** — both entirely absent from the level (§17.6).
+   Audio is gameplay in a tactical shooter, not polish.
+2. **Roof access** — the core plan specifies three verticality tiers but the
+   level has **1 ladder and 10 ramps**, so a whole designed tier is unreachable.
+3. **Player-metrics validation** (heritage gate 2) — place the TacticalMovement
+   character beside cover, capture standing/crouched/prone. Cheap, and it
+   retroactively validates or invalidates every cover decision made so far,
+   including the poppy scaling.
+4. **Streaming + cull distance setup** — 3.2 km2 with uncapped foliage will not
+   hold frame rate. The PCG foliage currently has **no cull distances set**.
+5. Then the bigger passes: PCG runtime bake (§17.5), poppy rework to belts,
+   terrain elevation via LandscapePatch, roads/canal, cover rhythm.
+
+### 19.3 State at pause — 2026-08-20
+
+| | |
+|---|---|
+| Branch | `feature/map-development` |
+| HEAD | `edb4dc9` |
+| Working tree | clean, 0 changes |
+| Unpushed commits | 2 (`c090ff9`, `edb4dc9`) — local only, by design |
+| Unreal | closed cleanly on SIGTERM, no save prompt, nothing dirty |
+| Field in level | 4 PCG volumes, 22,673 instances (7,746 poppy / 14,927 grass) |
+
+Helper scripts live in `/tmp` (`mcp.py`, `ue.py`, `audit.py`, `mem.sh`, the
+`pcg_*.py` set) with copies in `Abiverd_SessionArtifacts_2026-08-19/`.
+`/tmp` may not survive a reboot; the repo copies will.
