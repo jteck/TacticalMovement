@@ -236,3 +236,109 @@ audio volumes from spaces. Doing them earlier means building them twice.
 
 Everything else — trees, poppies, sandbags, culverts, bridges — waits for its
 layer. Nothing gets bought or built out of order.
+
+---
+
+## Gate 0 RESULT — character metrics, measured 2026-08-21
+
+Measured by spawning `BP_ThirdPersonCharacter` and reading live component
+properties. **The Blueprint overrides the C++ constructor** — BP values below are
+authoritative (C++ sets 42/96; the BP uses 35/90).
+
+### Measured
+
+| Property | Value | Source |
+|---|---|---|
+| Capsule radius | **35 cm** | `CollisionCylinder` |
+| Capsule half-height | **90 cm** → **180 cm tall standing** | `CollisionCylinder` |
+| Crouched half-height | **40 cm** → 80 cm tall crouched | `CharMoveComp` |
+| Base eye height | 64 cm (above capsule centre) | actor |
+| Crouched eye height | 32 cm (above crouched centre) | actor |
+| Max step height | **45 cm** | `CharMoveComp` (matches `MovementProfileRow.StepHeight`) |
+| Walkable floor angle | **44.77°** (walkableFloorZ 0.71) | `CharMoveComp` |
+| Jump Z velocity | **500 cm/s** | `CharMoveComp` |
+| Max walk speed | 500 / crouched 300 | `CharMoveComp` |
+| Nav agent | radius 35, height 180 | `navAgentProps` |
+
+### Derived eye heights above ground
+
+| Stance | Capsule centre | Eye height | Status |
+|---|---|---|---|
+| Standing | 90 cm | **154 cm** | works |
+| Crouched | 40 cm | **72 cm** | **DISABLED** |
+| Prone | — | — | **NOT IMPLEMENTED** |
+
+### THREE BLOCKING FINDINGS
+
+**1. Crouch is disabled.** `navAgentProps.bCanCrouch = false`. The character
+cannot crouch, despite `ECombatStance` defining Standing/Crouched/Prone and
+`MovementProfileRow` carrying `CrouchSpeedMultiplier = 0.45`.
+
+**2. Prone does not exist.** No prone half-height, no prone eye height, no
+capsule resize. `ProneSpeedMultiplier = 0.20` exists but nothing implements the
+stance.
+
+**3. Crouched eye at 72 cm is very low** even once enabled — that is UE's stock
+default (40 + 32), not a tuned tactical value. Most tactical shooters sit around
+110–120 cm. This needs a deliberate decision, because **it sets the height of
+every piece of crouch cover on the map.**
+
+### Why this blocks Layer 0
+
+Cover heights are meaningless without stance heights. Right now only standing
+exists, so the only sightline that can be designed against is **154 cm**. If
+cover is built to that and crouch is later enabled at a tuned height, **every
+cover object on the map is the wrong height** and the terrain pass is redone.
+
+### Cover height table — provisional
+
+Usable now for standing. Crouch and prone rows are **projections**, valid only
+once those stances are implemented and their heights confirmed.
+
+| Cover type | Blocks | Height | Confidence |
+|---|---|---|---|
+| Full cover | standing eye 154 cm | **≥ 165 cm** | **Confirmed** |
+| Crouch cover | crouched eye, exposes standing | 80–100 cm at stock 72 cm eye; **120–135 cm if tuned to ~110** | **Projection — depends on decision** |
+| Prone cover | prone eye | 40–55 cm | **Projection — stance not implemented** |
+| Vaultable / step-over | step height 45 cm | ≤ 45 cm | **Confirmed** |
+| Blocks movement, not sight | above step, below crouch | 46–79 cm | **Confirmed** |
+| Max walkable slope | — | **44.77°** | **Confirmed** |
+
+### DECISION — approved by Jason 2026-08-21
+
+Crouch and prone **will** exist; they are simply not implemented yet (movement
+work is in progress). Rather than wait, the stance heights were agreed as a
+**design target**, so the map and the character are built to the same numbers.
+
+| Stance | Capsule half-height | Total | Eye height |
+|---|---|---|---|
+| Standing | 90 (existing) | 180 cm | **154 cm** |
+| Crouched | **60** | 120 cm | **~100 cm** |
+| Prone | **34** | 68 cm | **~35 cm** |
+
+**Character work must implement to these numbers.** `bCanCrouch` must be enabled
+and `crouchedHalfHeight` raised from UE's stock 40 to 60. Prone needs
+implementing at half-height 34.
+
+Reasoning: UE's stock crouch (72 cm eye) is a deep squat, and cover built for it
+lands at 80–90 cm, which matches no real architectural form. At a 100 cm eye,
+crouch cover sits at 110–120 cm — a waist-high wall, parapet, canal bund or field
+wall. Prone cover then lands at 45–55 cm, the same band as irrigation bunds, and
+just above the 45 cm step height, so a bund is nearly step-over-able while still
+giving prone concealment.
+
+### FINAL COVER TABLE — build to this
+
+| Cover type | Height | Blocks | Exposes |
+|---|---|---|---|
+| **Full cover** | **≥ 165 cm** | standing (eye 154) | nobody |
+| **Crouch cover** | **110–120 cm** | crouched (eye 100) | standing |
+| **Prone cover** | **45–55 cm** | prone (eye 35) | crouched |
+| **Step-over** | **≤ 45 cm** | nothing | — |
+| Blocks movement, not sight | 46–79 cm | — | — |
+| Max walkable slope | **44.77°** | — | — |
+
+### Remaining code decisions (not blocking Layer 0)
+
+1. Reconcile jump velocity: C++ constructor and BP both say 500;
+   `MovementProfileRow` defaults to 420. Confirm which governs at runtime.
