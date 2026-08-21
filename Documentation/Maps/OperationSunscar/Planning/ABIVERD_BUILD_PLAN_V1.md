@@ -444,3 +444,51 @@ real pass. This is the most likely reason to move to the 32 GB machine.
 
 **State: the edit layer exists in memory only and has not been saved.** Nothing
 is on disk; git is clean.
+
+---
+
+## LandscapePatch persistence — the rule that took three restart tests
+
+**Symptom:** terrain built with LandscapePatch vanishes after an editor restart,
+even though the patch actors and their components survive intact.
+
+**Cause:** UE **does not mark the landscape dirty** when a LandscapePatch changes
+it. `AssetTools.save_assets` on the landscape therefore finds it clean and writes
+nothing — every save after the first reports success and writes zero bytes. Patch
+heights are computed live in-session and never reach disk.
+
+This masks itself twice over:
+- An in-session **level reload** appears to work, because the patch re-applies
+  from the still-loaded components.
+- The **first** batch of patches appears to persist, because the landscape was
+  genuinely dirty when the edit layer was created, so that one save baked them.
+
+### THE RULE — after any patch change
+
+1. Apply the patches.
+2. **Force every landscape actor dirty** — read a property and write the same
+   value straight back (`streamingDistanceMultiplier` works).
+3. `AssetTools.save_assets` on all 17 landscape actors.
+4. **Confirm files actually changed on disk.** A save that writes 0 packages
+   means nothing baked. This is the check that catches it.
+5. Save the patch actors too — they carry the shape.
+
+Verified: after doing this, seven sample points matched to **0.0 cm** across a
+full editor restart.
+
+### Things that were NOT the cause
+
+- **One patch per actor vs many on one host.** The gully was rebuilt from 21
+  components on one actor into 21 separate actors on the theory that offset
+  components fail to re-register. It made no difference — the dirty flag was the
+  real problem. Whether the multi-component form also survives is **untested**;
+  it is more efficient and worth retesting if actor count becomes a concern.
+- **Toggling `bIsEnabled`.** Forces an in-session re-render, useful for
+  verifying, but does nothing for persistence.
+
+### Testing lesson
+
+The third restart test reported failure because the expected floor was computed
+as `grade − depth`. That is wrong wherever patches overlap: neighbouring circles
+blend and the real floor differs. **Always compare against measured
+pre-restart values, never against intended ones.**
