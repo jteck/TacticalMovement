@@ -514,8 +514,12 @@ standing eye height (154 cm) between site centres gives:
 | SS_006 ↔ SS_015 | 213 m | blocked at 3 m |
 | SS_003 ↔ SS_010 | 200 m | blocked at 67 m |
 
-**8 of 10 long pairs have completely unobstructed standing sightlines, at
-184–236 m, against a spec of 110–140 m.** The buildings do not block them; the
+**CORRECTED 2026-08-21 — see 'Sightlines, corrected' below. That test traced
+from site centres, which hit ROOFTOPS, so it measured roof-to-roof sightlines,
+not ground-level ones. The figures below are roof-to-roof and should not be read
+as the ground-level problem.**
+
+8 of 10 long pairs have unobstructed ROOF-TO-ROOF sightlines at 184–236 m. The buildings do not block them; the
 lines pass over and between the compounds. This is worse than the earlier
 estimate of 155–208 m, and it is now measured rather than inferred.
 
@@ -547,3 +551,49 @@ which it has. Standing-height blocking now needs hand-placed ruins, per rule
 This also means the two pairs with no viable position may need a different
 answer entirely — a new structure, a compound wall extension, or accepting that
 those two lines stay long.
+
+---
+
+## Sightlines, CORRECTED — ground level, 2026-08-21
+
+The earlier measurement traced from site centres. Those traces hit **rooftops**,
+so it was measuring roof-to-roof sightlines and reporting them as the standing
+problem. Re-measured properly, from open ground 15 m outside each site's bounds
+at 154 cm eye height:
+
+| Baseline (nothing added) | |
+|---|---|
+| Clear lines | **5 of 10** |
+| Longest clear | **178 m** |
+| Clear pairs | SS_003↔SS_015 178 m · SS_004↔SS_012 162 m · SS_003↔SS_011 160 m · SS_011↔SS_018 131 m · SS_010↔SS_017 101 m |
+
+So the real violation was **178 m against a 110–140 m spec** — a genuine problem,
+but far milder than the 236 m figure I reported from the flawed test.
+
+### Blockout result
+
+Five placeholder walls (9–16 m long, 2.6–4.5 m tall, `ZZBLOCK_Ruin_00..04`)
+placed at the mid-line of the worst pairs:
+
+| | Clear lines | Longest clear |
+|---|---|---|
+| Before | 5 of 10 | 178 m |
+| **After** | **2 of 10** | **131 m** |
+
+**The core now meets its own longest-sightline spec at ground level.** The two
+remaining clear lines are 131 m and 101 m, both within or below 110–140 m, and
+are reasonable candidates for the plan's "managed sightline opportunities".
+
+### Roof-to-roof is a separate question
+
+Roof-to-roof lines remain open at 184–236 m. That may be intended — the plan
+defines verticality tiers with roofs at 3–5 m and 7–9 m and says "limit
+continuous rooftop chains" — but it means **rooftop control is currently
+map-wide.** Worth a deliberate decision rather than an accident. Options: taller
+ruin masses, parapets that block outward lines, or restricting roof access.
+
+### Testing lesson
+
+**Never trace from a site centre to get ground height** — it hits the building.
+Sample in open ground outside the site's bounds. Two separate wrong conclusions
+this session came from that one mistake.
