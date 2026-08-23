@@ -13,6 +13,8 @@
 #include "Net/UnrealNetwork.h"
 #include "Movement/TacticalCharacterMovementComponent.h"
 #include "TacticalMovement.h"
+#include "Components/TimelineComponent.h"
+#include "Weapons/TacticalWeaponADSConfig.h"
 
 ATacticalMovementCharacter::ATacticalMovementCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UTacticalCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
@@ -82,6 +84,67 @@ void ATacticalMovementCharacter::BeginPlay()
 	}
 
 	UpdateMovementOrientationBehavior();
+
+	ApplyWeaponADSDuration();
+}
+
+float ATacticalMovementCharacter::GetADSDurationSeconds() const
+{
+	// No weapon config -> the project-wide accepted timing.
+	if (WeaponADSConfig && WeaponADSConfig->ADSDurationSeconds > 0.f)
+	{
+		return WeaponADSConfig->ADSDurationSeconds;
+	}
+	return DefaultADSDurationSeconds;
+}
+
+void ATacticalMovementCharacter::ApplyWeaponADSDuration()
+{
+	// Resolve the BP-owned ADS FOV timeline once. Matching by name keeps this decoupled from the
+	// Blueprint graph: no node, pin, or variable in BP_ThirdPersonCharacter is touched.
+	if (!ADSFOVTimeline)
+	{
+		TArray<UTimelineComponent*> Timelines;
+		GetComponents<UTimelineComponent>(Timelines);
+		for (UTimelineComponent* Timeline : Timelines)
+		{
+			if (Timeline && Timeline->GetName().Contains(TEXT("TL_ADS_FOV")))
+			{
+				ADSFOVTimeline = Timeline;
+				break;
+			}
+		}
+	}
+
+	if (!ADSFOVTimeline)
+	{
+		// Nothing to scale (e.g. a derived Blueprint without the FOV timeline). Not an error.
+		return;
+	}
+
+	if (AuthoredADSTimelineLength <= 0.f)
+	{
+		AuthoredADSTimelineLength = ADSFOVTimeline->GetTimelineLength();
+	}
+
+	const float Desired = GetADSDurationSeconds();
+	if (AuthoredADSTimelineLength <= 0.f || Desired <= 0.f)
+	{
+		return;
+	}
+
+	// Play rate scales duration while preserving the authored curve shape.
+	// Desired == authored -> rate 1.0, i.e. exactly the accepted timing.
+	const float NewRate = AuthoredADSTimelineLength / Desired;
+	if (!FMath::IsNearlyEqual(ADSFOVTimeline->GetPlayRate(), NewRate, KINDA_SMALL_NUMBER))
+	{
+		ADSFOVTimeline->SetPlayRate(NewRate);
+	}
+
+	UE_LOG(LogTacticalMovement, Log,
+		TEXT("[ADS] TL_ADS_FOV authored=%.4fs desired=%.4fs playRate=%.4f (config=%s)"),
+		AuthoredADSTimelineLength, Desired, NewRate,
+		WeaponADSConfig ? *WeaponADSConfig->GetName() : TEXT("<none, using default>"));
 }
 
 void ATacticalMovementCharacter::OnRep_CombatReadinessState()

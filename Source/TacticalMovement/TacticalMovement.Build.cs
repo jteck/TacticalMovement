@@ -36,6 +36,8 @@ public class TacticalMovement : ModuleRules
 
 		PublicIncludePaths.AddRange(new string[] {
 			"TacticalMovement",
+			// Per-weapon ADS configuration (D).
+			"TacticalMovement/Weapons",
 			"TacticalMovement/Variant_Platforming",
 			"TacticalMovement/Variant_Platforming/Animation",
 			"TacticalMovement/Variant_Combat",

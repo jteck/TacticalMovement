@@ -167,7 +167,47 @@ protected:
 		/** Central internal function that cancels active sprint and restores default movement */
 	void CancelSprintInternal();
 
+	// --- Per-weapon ADS duration (D) ---------------------------------------------------------
+	//
+	// The accepted ADS presentation is the BP_ThirdPersonCharacter `TL_ADS_FOV` timeline plus a
+	// fixed AnimBP pose blend. This applies a per-weapon duration to the FOV timeline as a PLAY
+	// RATE, so the authored curve shape is preserved and only its duration scales. Nothing here
+	// touches movement, readiness, replication, first-person rendering, or any asset.
+
+	/** Scales `TL_ADS_FOV` to the configured duration. No-op when it already matches. */
+	void ApplyWeaponADSDuration();
+
+	/** The BP-owned ADS FOV timeline, resolved once at BeginPlay. Transient; never serialized. */
+	UPROPERTY(Transient)
+	TObjectPtr<class UTimelineComponent> ADSFOVTimeline;
+
+	/** Authored length of `TL_ADS_FOV`, captured before any play-rate change is applied. */
+	float AuthoredADSTimelineLength = 0.f;
+
 public:
+
+	/**
+	 * Project-wide accepted ADS camera-FOV duration, in seconds.
+	 *
+	 * This is the default for every weapon and reproduces the currently accepted timing exactly.
+	 * It is the fallback whenever no weapon config is assigned.
+	 */
+	// 0.36 s is the MEASURED authored length of the BP `TL_ADS_FOV` timeline. Keeping the default
+	// equal to it makes the play rate exactly 1.0, i.e. the accepted timing byte-for-byte.
+	// (The separate ~0.100 s AnimBP ADS pose blend is a different mechanism and is NOT touched.)
+	static constexpr float DefaultADSDurationSeconds = 0.36f;
+
+	/**
+	 * Optional per-weapon ADS configuration. When unset, DefaultADSDurationSeconds is used and the
+	 * ADS timeline runs exactly as authored.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|ADS")
+	TObjectPtr<class UTacticalWeaponADSConfig> WeaponADSConfig;
+
+	/** Effective ADS camera-FOV duration for the equipped weapon, in seconds. */
+	UFUNCTION(BlueprintPure, Category = "Weapon|ADS")
+	float GetADSDurationSeconds() const;
+
 
 	/** Constructor — installs the custom UTacticalCharacterMovementComponent. */
 	ATacticalMovementCharacter(const FObjectInitializer& ObjectInitializer);
