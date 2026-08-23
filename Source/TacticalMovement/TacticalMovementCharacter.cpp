@@ -88,53 +88,70 @@ void ATacticalMovementCharacter::BeginPlay()
 	ApplyWeaponADSDuration();
 }
 
-float ATacticalMovementCharacter::GetADSDurationSeconds() const
+void ATacticalMovementCharacter::ResolveADSFOVTimeline()
 {
-	// No weapon config -> the project-wide accepted timing.
-	if (WeaponADSConfig && WeaponADSConfig->ADSDurationSeconds > 0.f)
+	if (ADSFOVTimeline)
 	{
-		return WeaponADSConfig->ADSDurationSeconds;
+		return;
 	}
-	return DefaultADSDurationSeconds;
+
+	// Match by component name so this stays decoupled from the Blueprint graph: no node, pin or
+	// variable in BP_ThirdPersonCharacter is referenced or edited.
+	TArray<UTimelineComponent*> Timelines;
+	GetComponents<UTimelineComponent>(Timelines);
+	for (UTimelineComponent* Timeline : Timelines)
+	{
+		if (Timeline && Timeline->GetName().Contains(TEXT("TL_ADS_FOV")))
+		{
+			ADSFOVTimeline = Timeline;
+			break;
+		}
+	}
+
+	if (ADSFOVTimeline && AuthoredADSTimelineLength <= 0.f)
+	{
+		// Captured before any play-rate change, so it always represents the authored duration.
+		AuthoredADSTimelineLength = ADSFOVTimeline->GetTimelineLength();
+	}
+}
+
+float ATacticalMovementCharacter::GetADSCameraFOVDurationSeconds() const
+{
+	if (WeaponADSConfig && WeaponADSConfig->ADSCameraFOVDurationSeconds > 0.f)
+	{
+		return WeaponADSConfig->ADSCameraFOVDurationSeconds;
+	}
+
+	// No config: the authored duration stands. Deliberately no hard-coded fallback.
+	return AuthoredADSTimelineLength;
+}
+
+void ATacticalMovementCharacter::SetWeaponADSConfig(UTacticalWeaponADSConfig* NewConfig)
+{
+	WeaponADSConfig = NewConfig;
+
+	// Reapply immediately so an equipped-weapon change takes effect without a respawn.
+	ApplyWeaponADSDuration();
 }
 
 void ATacticalMovementCharacter::ApplyWeaponADSDuration()
 {
-	// Resolve the BP-owned ADS FOV timeline once. Matching by name keeps this decoupled from the
-	// Blueprint graph: no node, pin, or variable in BP_ThirdPersonCharacter is touched.
-	if (!ADSFOVTimeline)
-	{
-		TArray<UTimelineComponent*> Timelines;
-		GetComponents<UTimelineComponent>(Timelines);
-		for (UTimelineComponent* Timeline : Timelines)
-		{
-			if (Timeline && Timeline->GetName().Contains(TEXT("TL_ADS_FOV")))
-			{
-				ADSFOVTimeline = Timeline;
-				break;
-			}
-		}
-	}
+	ResolveADSFOVTimeline();
 
-	if (!ADSFOVTimeline)
+	if (!ADSFOVTimeline || AuthoredADSTimelineLength <= 0.f)
 	{
-		// Nothing to scale (e.g. a derived Blueprint without the FOV timeline). Not an error.
+		// No FOV timeline on this pawn (e.g. a derived Blueprint without one). Not an error.
 		return;
 	}
 
-	if (AuthoredADSTimelineLength <= 0.f)
-	{
-		AuthoredADSTimelineLength = ADSFOVTimeline->GetTimelineLength();
-	}
-
-	const float Desired = GetADSDurationSeconds();
-	if (AuthoredADSTimelineLength <= 0.f || Desired <= 0.f)
+	const float Desired = GetADSCameraFOVDurationSeconds();
+	if (Desired <= 0.f)
 	{
 		return;
 	}
 
 	// Play rate scales duration while preserving the authored curve shape.
-	// Desired == authored -> rate 1.0, i.e. exactly the accepted timing.
+	// No config -> Desired == authored -> rate 1.0 -> the authored timing is left untouched.
 	const float NewRate = AuthoredADSTimelineLength / Desired;
 	if (!FMath::IsNearlyEqual(ADSFOVTimeline->GetPlayRate(), NewRate, KINDA_SMALL_NUMBER))
 	{
@@ -144,7 +161,7 @@ void ATacticalMovementCharacter::ApplyWeaponADSDuration()
 	UE_LOG(LogTacticalMovement, Log,
 		TEXT("[ADS] TL_ADS_FOV authored=%.4fs desired=%.4fs playRate=%.4f (config=%s)"),
 		AuthoredADSTimelineLength, Desired, NewRate,
-		WeaponADSConfig ? *WeaponADSConfig->GetName() : TEXT("<none, using default>"));
+		WeaponADSConfig ? *WeaponADSConfig->GetName() : TEXT("<none, authored duration>"));
 }
 
 void ATacticalMovementCharacter::OnRep_CombatReadinessState()

@@ -7,15 +7,12 @@
 #include "TacticalWeaponADSConfig.generated.h"
 
 /**
- * Minimal per-weapon ADS configuration.
+ * Per-weapon ADS configuration.
  *
- * Scope is deliberately one field. The project's accepted ADS presentation is the
- * BP_ThirdPersonCharacter `TL_ADS_FOV` timeline (camera FOV) plus a fixed AnimBP pose blend;
- * this asset lets a weapon state how long the FOV portion should take without editing that
- * timeline, any animation asset, or any Blueprint graph.
- *
- * The value is applied as a timeline PLAY RATE, so the authored curve shape is preserved
- * exactly - only its duration scales.
+ * SCOPE: this asset currently carries exactly one value - the duration of the ADS **camera FOV**
+ * transition. It does NOT describe total ADS presentation. The AnimBP ADS pose blend is a separate
+ * mechanism on a separate timeline and is unaffected by anything here. Weapon weight, fatigue,
+ * stamina and injury are not modelled by this asset.
  */
 UCLASS(BlueprintType)
 class TACTICALMOVEMENT_API UTacticalWeaponADSConfig : public UPrimaryDataAsset
@@ -24,16 +21,15 @@ class TACTICALMOVEMENT_API UTacticalWeaponADSConfig : public UPrimaryDataAsset
 
 public:
 	/**
-	 * Seconds for the ADS camera-FOV transition for this weapon.
+	 * Seconds for this weapon's ADS **camera-FOV** transition.
 	 *
-	 * Defaults to ATacticalMovementCharacter::DefaultADSDurationSeconds, which is the project's
-	 * currently accepted timing. Leaving it at the default is a no-op: the timeline runs at play
-	 * rate 1.0 exactly as authored.
+	 * Applied as a play rate on the character's ADS FOV timeline, so the authored curve shape is
+	 * preserved and only its duration scales. Setting this equal to the timeline's authored length
+	 * reproduces the accepted timing exactly (play rate 1.0).
 	 *
-	 * Heavier weapons are expected to raise this. A per-weapon weight modifier, if it is ever
-	 * added, multiplies into this value - it does not replace it.
+	 * A value <= 0 is treated as "unset": the timeline's authored duration is used unchanged.
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ADS",
-		meta = (ClampMin = "0.01", UIMin = "0.05", UIMax = "1.0", ForceUnits = "s"))
-	float ADSDurationSeconds = 0.36f;
+		meta = (ClampMin = "0.0", UIMin = "0.05", UIMax = "1.0", ForceUnits = "s"))
+	float ADSCameraFOVDurationSeconds = 0.f;
 };
