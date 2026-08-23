@@ -61,6 +61,13 @@ struct FTacticalContextEffectAnimNotifyTraceSettings
 	// Ignore this Actor when getting trace result
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Trace)
 	bool bIgnoreActor = true;
+
+	// ADAPTATION vs Lyra: trace against complex (per-poly) collision. Simple collision
+	// reports the BodySetup's physical material, so a physical material assigned to a
+	// RENDER material is only returned by a complex trace. Required for surface
+	// identification when several surfaces share one static mesh.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Trace)
+	bool bTraceComplex = true;
 };
 
 /**

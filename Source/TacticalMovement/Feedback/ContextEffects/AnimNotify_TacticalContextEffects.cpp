@@ -63,6 +63,7 @@ void UAnimNotify_TacticalContextEffects::Notify(USkeletalMeshComponent* MeshComp
 			}
 
 			QueryParams.bReturnPhysicalMaterial = true;
+			QueryParams.bTraceComplex = TraceProperties.bTraceComplex;
 
 			if (bPerformTrace)
 			{
