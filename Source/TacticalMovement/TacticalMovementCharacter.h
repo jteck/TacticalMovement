@@ -167,7 +167,65 @@ protected:
 		/** Central internal function that cancels active sprint and restores default movement */
 	void CancelSprintInternal();
 
+	// --- Per-weapon ADS camera-FOV duration (D) ----------------------------------------------
+	//
+	// Scales the BP-owned `TL_ADS_FOV` camera-FOV timeline to a per-weapon duration by setting its
+	// PLAY RATE, so the authored curve shape is preserved and only its duration changes.
+	//
+	// SCOPE: camera FOV only. The AnimBP ADS pose blend is a separate mechanism and is NOT scaled
+	// here, so this does not control total ADS presentation. Nothing here touches movement,
+	// readiness, replication, first-person rendering, or any asset. Presentation-only and local:
+	// this is deliberately not replicated.
+
+	/** The BP-owned ADS FOV timeline, resolved once by component name. Transient. */
+	UPROPERTY(Transient)
+	TObjectPtr<class UTimelineComponent> ADSFOVTimeline;
+
+	/** Authored length of `TL_ADS_FOV`, captured before any play-rate change. 0 until resolved. */
+	float AuthoredADSTimelineLength = 0.f;
+
+	/** Resolves `ADSFOVTimeline` and `AuthoredADSTimelineLength` once. Safe to call repeatedly. */
+	void ResolveADSFOVTimeline();
+
 public:
+
+	/**
+	 * Per-weapon ADS camera-FOV configuration for the equipped weapon.
+	 *
+	 * When null (or its duration <= 0) the ADS FOV timeline runs at its AUTHORED duration and play
+	 * rate 1.0 - i.e. no behavioural change whatsoever. There is no hard-coded duration fallback.
+	 *
+	 * Change this at runtime through SetWeaponADSConfig(), never by assigning directly, so the new
+	 * duration is applied immediately.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|ADS")
+	TObjectPtr<class UTacticalWeaponADSConfig> WeaponADSConfig;
+
+	/**
+	 * Authoritative entry point for equipped-weapon changes: swaps the config and immediately
+	 * reapplies the resulting ADS camera-FOV duration, with no respawn and no BeginPlay dependency.
+	 * Passing nullptr restores the timeline's authored duration.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Weapon|ADS")
+	void SetWeaponADSConfig(class UTacticalWeaponADSConfig* NewConfig);
+
+	/**
+	 * Applies the current config's duration to `TL_ADS_FOV`. Single application funnel - BeginPlay
+	 * and SetWeaponADSConfig() both route through here. Idempotent.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Weapon|ADS")
+	void ApplyWeaponADSDuration();
+
+	/**
+	 * Effective ADS camera-FOV duration in seconds: the configured value when one is set, otherwise
+	 * the timeline's authored length (0 if the timeline has not been resolved yet).
+	 */
+	UFUNCTION(BlueprintPure, Category = "Weapon|ADS")
+	float GetADSCameraFOVDurationSeconds() const;
+
+	/** The resolved ADS FOV timeline, or null. Exposed for validation/tests. */
+	const class UTimelineComponent* GetADSFOVTimeline() const { return ADSFOVTimeline; }
+
 
 	/** Constructor — installs the custom UTacticalCharacterMovementComponent. */
 	ATacticalMovementCharacter(const FObjectInitializer& ObjectInitializer);
