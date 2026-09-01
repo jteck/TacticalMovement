@@ -3,6 +3,11 @@
 // Test-only actor used by the grenade automation tests to observe radial damage.
 // AActor::OnTakeAnyDamage is a dynamic delegate and cannot take a lambda, so the witness
 // records damage by overriding TakeDamage directly. Nothing in the game references this class.
+//
+// It lives in the editor-only TacticalEditorAutomation module rather than the TacticalMovement
+// game module because a UCLASS cannot be excluded with #if WITH_AUTOMATION_TESTS (UHT rejects
+// UCLASS inside preprocessor blocks other than WITH_EDITORONLY_DATA). Owning it here is what
+// actually keeps it out of packaged game targets.
 
 #pragma once
 
