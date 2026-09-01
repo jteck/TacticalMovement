@@ -33,6 +33,7 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/PlayerController.h"
 
+#include "EngineUtils.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputSubsystemInterface.h"
 #include "InputAction.h"
@@ -387,6 +388,23 @@ namespace TacticalRuntimeAnimInspection
 		double YawProbeDelta = 0.0, PitchProbeDelta = 0.0;
 		bool bAimLocallyControlled = false;
 		FString AimLocalRole = TEXT("None"), AimRemoteRole = TEXT("None");
+
+		// ---- generic input-action trigger extension (TriggerInputActionDeferred) ----
+		// Drives ANY UInputAction asset through the real Enhanced Input path. Unlike the readiness
+		// and move actions above, the action is resolved from an ASSET PATH rather than from a
+		// UPROPERTY on the pawn, so actions referenced only by Blueprint (which own no C++ property)
+		// are reachable. Nothing here is specific to any one action.
+		bool bActionTrigger = false;
+		TWeakObjectPtr<UInputAction> GenericAction;
+		FString GenericActionPath;
+		FVector2D GenericValue = FVector2D::ZeroVector;
+		int32 GenericValueDim = 0;              // 0 = Boolean, 1 = Axis1D, 2 = Axis2D
+		bool bGenericInjecting = false;
+		bool bGenericInjectionStarted = false;
+		bool bGenericInjectionStopped = false;
+		int32 RepeatCount = 1;
+		int32 PressesDone = 0;
+		double HoldSecs = 0.0, IntervalSecs = 0.0, NextEdgeAt = 0.0, PreDelaySecs = 0.0;
 	};
 
 	// Non-owner pawn-view capture session (module-owned; separate transient capture actor/component/RT).
@@ -524,9 +542,11 @@ namespace TacticalRuntimeAnimInspection
 		{
 			if (D->bReadinessInjecting) { if (UInputAction* A = D->ReadinessAction.Get()) { Sub->StopContinuousInputInjectionForAction(A); } D->bReadinessInjectionStopped = true; }
 			if (D->bMoveInjecting) { if (UInputAction* A = D->MoveAction.Get()) { Sub->StopContinuousInputInjectionForAction(A); D->bMoveStopCalled = true; } D->bMoveInjectionStopped = true; }
+			if (D->bGenericInjecting) { if (UInputAction* A = D->GenericAction.Get()) { Sub->StopContinuousInputInjectionForAction(A); } D->bGenericInjectionStopped = true; }
 		}
 		D->bReadinessInjecting = false;
 		D->bMoveInjecting = false;
+		D->bGenericInjecting = false;
 		if (D->TickHandle.IsValid()) { FTSTicker::GetCoreTicker().RemoveTicker(D->TickHandle); D->TickHandle.Reset(); }
 	}
 
@@ -537,6 +557,42 @@ namespace TacticalRuntimeAnimInspection
 		D->bResolved = true;
 
 		StopDriveInjection(D);
+
+		if (D->bActionTrigger)
+		{
+			// Never dereferences the pawn: this can run after EndPIE or world cleanup.
+			FString StepsArr;
+			for (int32 i = 0; i < D->Steps.Num(); ++i) { StepsArr += (i ? TEXT(",") : TEXT("")) + D->Steps[i]; }
+
+			const bool bInjectionProven = (!D->bGenericInjectionStarted) || D->bGenericInjectionStopped;
+			const FString Evidence = FString::Printf(
+				TEXT("{\"pawn\":%s,\"inputAction\":%s,\"valueDim\":%d,\"value\":[%.4f,%.4f],")
+				TEXT("\"requestedPresses\":%d,\"completedPresses\":%d,\"holdSeconds\":%.3f,\"intervalSeconds\":%.3f,")
+				TEXT("\"injectionStarted\":%s,\"injectionStopped\":%s,\"stopReason\":%s,\"steps\":[%s]}"),
+				*JStr(D->PawnPath), *JStr(D->GenericActionPath), D->GenericValueDim,
+				D->GenericValue.X, D->GenericValue.Y,
+				D->RepeatCount, D->PressesDone, D->HoldSecs, D->IntervalSecs,
+				D->bGenericInjectionStarted ? TEXT("true") : TEXT("false"),
+				bInjectionProven ? TEXT("true") : TEXT("false"),
+				*JStr(StopReason), *StepsArr);
+
+			FString FailReason;
+			if (StopReason != TEXT("completed"))
+			{ FailReason = FString::Printf(TEXT("input-action trigger did not complete normally: %s"), *StopReason); }
+			else if (D->PressesDone < D->RepeatCount)
+			{ FailReason = FString::Printf(TEXT("only %d of %d presses completed"), D->PressesDone, D->RepeatCount); }
+			else if (!bInjectionProven)
+			{ FailReason = TEXT("input injection was not proven stopped"); }
+
+			if (D->Result.IsValid())
+			{
+				if (FailReason.IsEmpty()) { D->Result->SetValue(Evidence); }
+				else { D->Result->SetError(FString::Printf(TEXT("%s | evidence=%s"), *FailReason, *Evidence)); }
+				D->Result.Reset();
+			}
+			GDrives.Remove(D);
+			return;
+		}
 
 		if (D->bAimHold)
 		{
@@ -1667,6 +1723,419 @@ UToolCallAsyncResultString* UTacticalRuntimeAnimInspectionToolset::StopLinkedAni
 		GSessions.Remove(SessionId);
 		return true;
 	});
+}
+
+static FString PIEWorldLabel(const FWorldContext& Ctx, UWorld* W)
+{
+	const FString NetMode =
+		W->GetNetMode() == NM_DedicatedServer ? TEXT("DedicatedServer") :
+		W->GetNetMode() == NM_ListenServer    ? TEXT("ListenServer")    :
+		W->GetNetMode() == NM_Client          ? TEXT("Client")          : TEXT("Standalone");
+	return FString::Printf(TEXT("%s|PIEInstance=%d|%s"), *W->GetName(), Ctx.PIEInstance, *NetMode);
+}
+
+// =============================================================================
+// CallPIEActorFunction
+//
+// Generic, diagnostic: invokes a NO-PARAMETER UFunction on a live PIE actor, reporting the actor's
+// net identity and the values of named properties immediately before and after. This exercises a
+// Blueprint event in isolation from input, animation and timers, which is how a chain that "runs"
+// but produces nothing gets split into its individual steps.
+// =============================================================================
+UToolCallAsyncResultString* UTacticalRuntimeAnimInspectionToolset::CallPIEActorFunction(
+	const FString& ActorPath, const FString& FunctionName, const TArray<FString>& WatchProperties)
+{
+	return RunDeferredString([ActorPath, FunctionName, WatchProperties](FString& OutValue, FString& OutError) -> bool
+	{
+		check(IsInGameThread());
+		AActor* A = ResolveActor(ActorPath);
+		if (!A) { OutError = FString::Printf(TEXT("Actor not found: %s"), *ActorPath); return false; }
+		if (!IsPIEWorld(A->GetWorld())) { OutError = TEXT("Actor is not in a PIE world."); return false; }
+
+		UFunction* Fn = A->FindFunction(FName(*FunctionName));
+		if (!Fn) { OutError = FString::Printf(TEXT("Function '%s' not found on %s"), *FunctionName, *A->GetName()); return false; }
+		if (Fn->NumParms > 0)
+		{
+			OutError = FString::Printf(TEXT("Function '%s' takes %d parameter(s); only no-parameter functions are supported."),
+				*FunctionName, (int32)Fn->NumParms);
+			return false;
+		}
+
+		auto Snapshot = [&A, &WatchProperties]() -> FString
+		{
+			FString Out; int32 i = 0;
+			for (const FString& P : WatchProperties)
+			{
+				const FString V = ReadPropertyAsText(A, *P);
+				Out += FString::Printf(TEXT("%s%s:%s"), i++ ? TEXT(",") : TEXT(""), *JStr(P), *JStr(V));
+			}
+			return Out;
+		};
+
+		const FString Before = Snapshot();
+		const int32 CountBefore = [&A]() { int32 N = 0; for (TActorIterator<AActor> It(A->GetWorld()); It; ++It) { ++N; } return N; }();
+
+		A->ProcessEvent(Fn, nullptr);
+
+		const FString After = Snapshot();
+		const int32 CountAfter = [&A]() { int32 N = 0; for (TActorIterator<AActor> It(A->GetWorld()); It; ++It) { ++N; } return N; }();
+
+		OutValue = FString::Printf(
+			TEXT("{\"actor\":%s,\"world\":%s,\"localRole\":%s,\"hasAuthority\":%s,\"function\":%s,")
+			TEXT("\"before\":{%s},\"after\":{%s},\"worldActorsBefore\":%d,\"worldActorsAfter\":%d}"),
+			*JStr(A->GetName()), *JStr(A->GetWorld()->GetName()),
+			*JStr(NetRoleStr(A->GetLocalRole())), A->HasAuthority() ? TEXT("true") : TEXT("false"),
+			*JStr(FunctionName), *Before, *After, CountBefore, CountAfter);
+		return true;
+	});
+}
+
+// =============================================================================
+// SpawnActorInPIEWorld
+//
+// Generic, diagnostic: spawns a class directly into a chosen PIE world, bypassing gameplay entirely.
+// Reports whether the spawn returned an actor and, when it did not, that the spawn itself is the
+// failing step rather than anything upstream of it.
+// =============================================================================
+UToolCallAsyncResultString* UTacticalRuntimeAnimInspectionToolset::SpawnActorInPIEWorld(
+	const FString& ClassPath, const FString& WorldNetMode, float X, float Y, float Z, float Yaw,
+	const FString& CollisionHandling)
+{
+	return RunDeferredString([ClassPath, WorldNetMode, X, Y, Z, Yaw, CollisionHandling](FString& OutValue, FString& OutError) -> bool
+	{
+		check(IsInGameThread());
+		if (!GEngine) { OutError = TEXT("No GEngine."); return false; }
+
+		UClass* Target = LoadClass<AActor>(nullptr, *ClassPath);
+		if (!Target) { OutError = FString::Printf(TEXT("Class not found: %s"), *ClassPath); return false; }
+
+		UWorld* Chosen = nullptr; FString ChosenLabel;
+		for (const FWorldContext& Ctx : GEngine->GetWorldContexts())
+		{
+			UWorld* W = Ctx.World();
+			if (!IsPIEWorld(W)) { continue; }
+			const FString Label = PIEWorldLabel(Ctx, W);
+			if (WorldNetMode.IsEmpty() || Label.Contains(WorldNetMode)) { Chosen = W; ChosenLabel = Label; break; }
+		}
+		if (!Chosen) { OutError = FString::Printf(TEXT("No PIE world matching '%s'."), *WorldNetMode); return false; }
+
+		int32 Before = 0;
+		for (TActorIterator<AActor> It(Chosen); It; ++It) { if (It->IsA(Target)) { ++Before; } }
+
+		FActorSpawnParameters Params;
+		Params.SpawnCollisionHandlingOverride =
+			CollisionHandling.Equals(TEXT("AlwaysSpawn"), ESearchCase::IgnoreCase) ? ESpawnActorCollisionHandlingMethod::AlwaysSpawn :
+			CollisionHandling.Equals(TEXT("AdjustIfPossibleButAlwaysSpawn"), ESearchCase::IgnoreCase) ? ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn :
+			ESpawnActorCollisionHandlingMethod::Undefined;
+
+		const FTransform Xform(FRotator(0.f, Yaw, 0.f), FVector(X, Y, Z));
+		AActor* Spawned = Chosen->SpawnActor<AActor>(Target, Xform, Params);
+
+		int32 After = 0;
+		for (TActorIterator<AActor> It(Chosen); It; ++It) { if (It->IsA(Target)) { ++After; } }
+
+		OutValue = FString::Printf(
+			TEXT("{\"world\":%s,\"class\":%s,\"spawned\":%s,\"name\":%s,\"localRole\":%s,\"hasAuthority\":%s,")
+			TEXT("\"location\":[%.2f,%.2f,%.2f],\"countBefore\":%d,\"countAfter\":%d}"),
+			*JStr(ChosenLabel), *JStr(ClassPath), Spawned ? TEXT("true") : TEXT("false"),
+			*JStr(Spawned ? Spawned->GetName() : FString()),
+			*JStr(Spawned ? NetRoleStr(Spawned->GetLocalRole()) : FString()),
+			(Spawned && Spawned->HasAuthority()) ? TEXT("true") : TEXT("false"),
+			X, Y, Z, Before, After);
+		return true;
+	});
+}
+
+// =============================================================================
+// InspectPIEActorsOfClass
+//
+// Generic, read-only: enumerates every actor of a class across ALL PIE worlds at once, with the
+// net identity that distinguishes an authoritative actor from its replicated copies. This is the
+// evidence source for "spawned exactly once and replicated", ownership, and per-world position.
+// =============================================================================
+UToolCallAsyncResultString* UTacticalRuntimeAnimInspectionToolset::InspectPIEActorsOfClass(const FString& ClassPath)
+{
+	return RunDeferredString([ClassPath](FString& OutValue, FString& OutError) -> bool
+	{
+		check(IsInGameThread());
+		if (!GEngine) { OutError = TEXT("No GEngine."); return false; }
+
+		UClass* Target = LoadClass<AActor>(nullptr, *ClassPath);
+		if (!Target) { OutError = FString::Printf(TEXT("Class not found: %s"), *ClassPath); return false; }
+
+		FString WorldsJson; int32 WorldCount = 0, TotalActors = 0;
+		for (const FWorldContext& Ctx : GEngine->GetWorldContexts())
+		{
+			UWorld* W = Ctx.World();
+			if (!IsPIEWorld(W)) { continue; }
+
+			FString ActorsJson; int32 Count = 0;
+			for (TActorIterator<AActor> It(W); It; ++It)
+			{
+				AActor* A = *It;
+				if (!IsValid(A) || !A->IsA(Target)) { continue; }
+
+				const FVector Loc = A->GetActorLocation();
+				const FVector Vel = A->GetVelocity();
+				ActorsJson += FString::Printf(
+					TEXT("%s{\"name\":%s,\"localRole\":%s,\"remoteRole\":%s,\"hasAuthority\":%s,\"replicates\":%s,")
+					TEXT("\"owner\":%s,\"instigator\":%s,\"hidden\":%s,\"location\":[%.2f,%.2f,%.2f],")
+					TEXT("\"speed\":%.2f,\"lifeSeconds\":%.3f}"),
+					Count ? TEXT(",") : TEXT(""),
+					*JStr(A->GetName()),
+					*JStr(NetRoleStr(A->GetLocalRole())),
+					*JStr(NetRoleStr(A->GetRemoteRole())),
+					A->HasAuthority() ? TEXT("true") : TEXT("false"),
+					A->GetIsReplicated() ? TEXT("true") : TEXT("false"),
+					*JStr(A->GetOwner() ? A->GetOwner()->GetName() : FString()),
+					*JStr(A->GetInstigator() ? A->GetInstigator()->GetName() : FString()),
+					A->IsHidden() ? TEXT("true") : TEXT("false"),
+					Loc.X, Loc.Y, Loc.Z, Vel.Size(),
+					W->GetTimeSeconds() - A->CreationTime);
+				++Count; ++TotalActors;
+			}
+
+			WorldsJson += FString::Printf(TEXT("%s{\"world\":%s,\"count\":%d,\"actors\":[%s]}"),
+				WorldCount ? TEXT(",") : TEXT(""), *JStr(PIEWorldLabel(Ctx, W)), Count, *ActorsJson);
+			++WorldCount;
+		}
+
+		if (WorldCount == 0) { OutError = TEXT("No PIE worlds are running."); return false; }
+
+		OutValue = FString::Printf(TEXT("{\"class\":%s,\"worldCount\":%d,\"totalActors\":%d,\"worlds\":[%s]}"),
+			*JStr(ClassPath), WorldCount, TotalActors, *WorldsJson);
+		return true;
+	});
+}
+
+// =============================================================================
+// InspectPIEMontageStates
+//
+// Generic, read-only: reports the montage playing on a named skeletal-mesh component of every
+// pawn of a class, in every PIE world. Because it reports the SAME pawn as seen by the server,
+// its owning client and remote simulated proxies, it is the evidence source for whether a
+// montage actually reached non-owning machines rather than only playing where it was started.
+// =============================================================================
+UToolCallAsyncResultString* UTacticalRuntimeAnimInspectionToolset::InspectPIEMontageStates(
+	const FString& PawnClassPath, const FString& MeshComponentName)
+{
+	return RunDeferredString([PawnClassPath, MeshComponentName](FString& OutValue, FString& OutError) -> bool
+	{
+		check(IsInGameThread());
+		if (!GEngine) { OutError = TEXT("No GEngine."); return false; }
+
+		UClass* Target = LoadClass<AActor>(nullptr, *PawnClassPath);
+		if (!Target) { OutError = FString::Printf(TEXT("Class not found: %s"), *PawnClassPath); return false; }
+
+		FString WorldsJson; int32 WorldCount = 0;
+		for (const FWorldContext& Ctx : GEngine->GetWorldContexts())
+		{
+			UWorld* W = Ctx.World();
+			if (!IsPIEWorld(W)) { continue; }
+
+			FString PawnsJson; int32 Count = 0;
+			for (TActorIterator<AActor> It(W); It; ++It)
+			{
+				AActor* A = *It;
+				if (!IsValid(A) || !A->IsA(Target)) { continue; }
+
+				USkeletalMeshComponent* Mesh = nullptr;
+				TArray<USkeletalMeshComponent*> Meshes;
+				A->GetComponents(Meshes);
+				for (USkeletalMeshComponent* M : Meshes)
+				{
+					if (M && (MeshComponentName.IsEmpty() || M->GetName() == MeshComponentName)) { Mesh = M; break; }
+				}
+
+				FString MontageName = TEXT("");
+				bool bPlaying = false; float Position = -1.f; float Weight = -1.f; float PlayLength = -1.f;
+				if (Mesh)
+				{
+					if (UAnimInstance* Anim = Mesh->GetAnimInstance())
+					{
+						if (UAnimMontage* Active = Anim->GetCurrentActiveMontage())
+						{
+							MontageName = Active->GetName();
+							bPlaying = Anim->Montage_IsPlaying(Active);
+							Position = Anim->Montage_GetPosition(Active);
+							Weight = Anim->Montage_GetBlendTime(Active);
+							PlayLength = Active->GetPlayLength();
+						}
+					}
+				}
+
+				const APawn* AsPawn = Cast<APawn>(A);
+				PawnsJson += FString::Printf(
+					TEXT("%s{\"pawn\":%s,\"mesh\":%s,\"localRole\":%s,\"remoteRole\":%s,\"locallyControlled\":%s,")
+					TEXT("\"hasAuthority\":%s,\"montage\":%s,\"isPlaying\":%s,\"position\":%.4f,\"playLength\":%.4f,\"blendTime\":%.4f}"),
+					Count ? TEXT(",") : TEXT(""),
+					*JStr(A->GetName()), *JStr(Mesh ? Mesh->GetName() : FString()),
+					*JStr(NetRoleStr(A->GetLocalRole())), *JStr(NetRoleStr(A->GetRemoteRole())),
+					(AsPawn && AsPawn->IsLocallyControlled()) ? TEXT("true") : TEXT("false"),
+					A->HasAuthority() ? TEXT("true") : TEXT("false"),
+					*JStr(MontageName), bPlaying ? TEXT("true") : TEXT("false"),
+					Position, PlayLength, Weight);
+				++Count;
+			}
+
+			WorldsJson += FString::Printf(TEXT("%s{\"world\":%s,\"pawnCount\":%d,\"pawns\":[%s]}"),
+				WorldCount ? TEXT(",") : TEXT(""), *JStr(PIEWorldLabel(Ctx, W)), Count, *PawnsJson);
+			++WorldCount;
+		}
+
+		if (WorldCount == 0) { OutError = TEXT("No PIE worlds are running."); return false; }
+
+		OutValue = FString::Printf(TEXT("{\"pawnClass\":%s,\"meshFilter\":%s,\"worldCount\":%d,\"worlds\":[%s]}"),
+			*JStr(PawnClassPath), *JStr(MeshComponentName), WorldCount, *WorldsJson);
+		return true;
+	});
+}
+
+// =============================================================================
+// TriggerInputActionDeferred
+//
+// Generic: drives ANY UInputAction asset through the real Enhanced Input path for a pawn in
+// PIE, optionally repeating. The action is resolved from an asset path, so actions referenced
+// only from Blueprint (which expose no C++ UPROPERTY on the pawn) are reachable -- the existing
+// DrivePIEInputSequenceDeferred can only reach actions stored in a pawn property.
+//
+// Deliberately carries no gameplay semantics: it presses an action and reports what it pressed.
+// Verification of the resulting behaviour belongs to the caller.
+// =============================================================================
+UToolCallAsyncResultString* UTacticalRuntimeAnimInspectionToolset::TriggerInputActionDeferred(
+	const FString& PawnPath, const FString& InputActionPath, float ValueX, float ValueY,
+	float PreDelaySeconds, float HoldSeconds, int32 RepeatCount, float RepeatIntervalSeconds,
+	float TimeoutSeconds)
+{
+	UToolCallAsyncResultString* Result = NewObject<UToolCallAsyncResultString>();
+	TStrongObjectPtr<UToolCallAsyncResultString> StrongResult(Result);
+
+	FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda(
+		[=](float) mutable -> bool
+	{
+		check(IsInGameThread());
+		EnsureHooks();
+		auto Fail = [&StrongResult](const FString& Err) { StrongResult->SetError(Err); StrongResult.Reset(); };
+
+		if (TimeoutSeconds <= 0.f || (double)TimeoutSeconds > kMaxTimeoutSeconds)
+		{ Fail(FString::Printf(TEXT("TimeoutSeconds must be in (0,%.0f]."), kMaxTimeoutSeconds)); return false; }
+		if (RepeatCount < 1 || RepeatCount > 50) { Fail(TEXT("RepeatCount must be in [1,50].")); return false; }
+		if (HoldSeconds <= 0.f) { Fail(TEXT("HoldSeconds must be > 0.")); return false; }
+		if (PreDelaySeconds < 0.f || RepeatIntervalSeconds < 0.f) { Fail(TEXT("Delays must be >= 0.")); return false; }
+
+		// The whole schedule must fit inside the timeout, or the tool would always report a timeout.
+		const double Needed = (double)PreDelaySeconds
+			+ (double)RepeatCount * (double)HoldSeconds
+			+ (double)FMath::Max(0, RepeatCount - 1) * (double)RepeatIntervalSeconds;
+		if (Needed >= (double)TimeoutSeconds)
+		{ Fail(FString::Printf(TEXT("Schedule needs %.2fs but TimeoutSeconds is %.2f."), Needed, TimeoutSeconds)); return false; }
+
+		APawn* Pawn = Cast<APawn>(ResolveActor(PawnPath));
+		if (!Pawn) { Fail(FString::Printf(TEXT("Pawn not found: %s"), *PawnPath)); return false; }
+		if (!IsPIEWorld(Pawn->GetWorld())) { Fail(TEXT("Pawn is not in a PIE world.")); return false; }
+
+		for (const TSharedPtr<FDriveState>& Existing : GDrives)
+		{
+			if (Existing.IsValid() && !Existing->bResolved && Existing->Pawn.Get() == Pawn)
+			{ Fail(TEXT("A drive sequence is already active on this pawn.")); return false; }
+		}
+
+		APlayerController* PC = Cast<APlayerController>(Pawn->GetController());
+		ULocalPlayer* LP = PC ? PC->GetLocalPlayer() : nullptr;
+		UEnhancedInputLocalPlayerSubsystem* Sub = LP ? ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LP) : nullptr;
+		if (!Sub) { Fail(TEXT("No EnhancedInput local-player subsystem on the pawn's controller (real input path unavailable).")); return false; }
+
+		UInputAction* Action = LoadObject<UInputAction>(nullptr, *InputActionPath);
+		if (!Action) { Fail(FString::Printf(TEXT("InputAction not found: %s"), *InputActionPath)); return false; }
+
+		int32 Dim = 0;
+		switch (Action->ValueType)
+		{
+		case EInputActionValueType::Boolean: Dim = 0; break;
+		case EInputActionValueType::Axis1D:  Dim = 1; break;
+		case EInputActionValueType::Axis2D:  Dim = 2; break;
+		default:
+			Fail(FString::Printf(TEXT("Unsupported input-action value type %d (Boolean, Axis1D and Axis2D are supported)."), (int32)Action->ValueType));
+			return false;
+		}
+
+		TSharedPtr<FDriveState> D = MakeShared<FDriveState>();
+		D->Result = MoveTemp(StrongResult);
+		D->bActionTrigger = true;
+		D->Pawn = Pawn; D->Subsystem = Sub; D->PawnPath = PawnPath;
+		D->GenericAction = Action; D->GenericActionPath = InputActionPath;
+		D->GenericValue = FVector2D(ValueX, ValueY); D->GenericValueDim = Dim;
+		D->RepeatCount = RepeatCount;
+		D->HoldSecs = (double)HoldSeconds;
+		D->IntervalSecs = (double)RepeatIntervalSeconds;
+		D->PreDelaySecs = (double)FMath::Max(0.f, PreDelaySeconds);
+		D->TimeoutSeconds = (double)TimeoutSeconds;
+		D->T0 = FPlatformTime::Seconds();
+		GDrives.Add(D);
+
+		TWeakPtr<FDriveState> WeakD = D;
+		D->TickHandle = FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda(
+			[WeakD](float) -> bool
+		{
+			check(IsInGameThread());
+			TSharedPtr<FDriveState> DS = WeakD.Pin();
+			if (!DS.IsValid() || DS->bResolved) { return false; }
+
+			APawn* P = DS->Pawn.Get();
+			UEnhancedInputLocalPlayerSubsystem* SubNow = DS->Subsystem.Get();
+			if (!IsValid(P) || !IsPIEWorld(P->GetWorld()) || !SubNow)
+			{ FinalizeDrive(DS, TEXT("pawn or input subsystem became invalid")); return false; }
+
+			const double Elapsed = FPlatformTime::Seconds() - DS->T0;
+			if (Elapsed > DS->TimeoutSeconds) { FinalizeDrive(DS, TEXT("timeout")); return false; }
+
+			auto AddStep = [](const TSharedPtr<FDriveState>& S, const TCHAR* Phase, double At, int32 Index)
+			{
+				S->Steps.Add(FString::Printf(TEXT("{\"phase\":%s,\"atSeconds\":%.3f,\"press\":%d}"),
+					*JStr(Phase), At, Index));
+			};
+
+			// Edge times are ABSOLUTE (press i at PreDelay + i*(Hold+Interval)). Advancing them from
+			// the time an edge was actually processed accumulated drift on a loaded game thread, which
+			// silently stretched a burst well past its intended span.
+			const double PlannedPress   = DS->PreDelaySecs + DS->PressesDone * (DS->HoldSecs + DS->IntervalSecs);
+			const double PlannedRelease = PlannedPress + DS->HoldSecs;
+
+			if (!DS->bGenericInjecting && DS->PressesDone < DS->RepeatCount && Elapsed >= PlannedPress)
+			{
+				UInputAction* A = DS->GenericAction.Get();
+				if (!A) { FinalizeDrive(DS, TEXT("input action became invalid")); return false; }
+
+				FInputActionValue Value =
+					(DS->GenericValueDim == 2) ? FInputActionValue(DS->GenericValue) :
+					(DS->GenericValueDim == 1) ? FInputActionValue((float)DS->GenericValue.X) :
+												 FInputActionValue(true);
+
+				SubNow->StartContinuousInputInjectionForAction(A, Value, TArray<UInputModifier*>{}, TArray<UInputTrigger*>{});
+				DS->bGenericInjecting = true;
+				DS->bGenericInjectionStarted = true;
+				AddStep(DS, TEXT("press"), Elapsed, DS->PressesDone + 1);
+				return true;
+			}
+
+			if (DS->bGenericInjecting && Elapsed >= PlannedRelease)
+			{
+				if (UInputAction* A = DS->GenericAction.Get()) { SubNow->StopContinuousInputInjectionForAction(A); }
+				DS->bGenericInjecting = false;
+				DS->bGenericInjectionStopped = true;
+				++DS->PressesDone;
+				AddStep(DS, TEXT("release"), Elapsed, DS->PressesDone);
+
+				if (DS->PressesDone >= DS->RepeatCount) { FinalizeDrive(DS, TEXT("completed")); return false; }
+			}
+
+			return true;
+		}));
+
+		return false;
+	}));
+
+	return Result;
 }
 
 // =============================================================================

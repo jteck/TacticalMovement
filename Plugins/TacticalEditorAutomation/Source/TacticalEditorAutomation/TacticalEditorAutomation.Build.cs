@@ -34,6 +34,11 @@ public class TacticalEditorAutomation : ModuleRules
 				"BlueprintGraph",
 				"Kismet",
 				"EnhancedInput",
+				// Grenade automation tests live in this editor-only module so that their
+				// test-only UCLASS (AGrenadeTestWitness) is never compiled into game targets.
+				// The edge is one-way: TacticalMovement does not reference this plugin, so
+				// depending on it here introduces no circular dependency.
+				"TacticalMovement",
 			}
 			);
 	}

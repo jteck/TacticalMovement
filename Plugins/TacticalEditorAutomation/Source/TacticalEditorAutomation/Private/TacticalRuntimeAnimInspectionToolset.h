@@ -134,6 +134,55 @@ public:
 	 * @param TimeoutSeconds Overall wall-clock ceiling for the whole sequence (>0).
 	 * @return JSON: { pawn, readinessAction, moveAction, readinessBefore, readinessAfter, readinessChanged, speedBefore, speedAfter, speedIncreased, injectionStopped, steps:[...] }.
 	 */
+	/**
+	 * Presses ANY Enhanced Input action on a PIE pawn, resolved from an INPUT ACTION ASSET PATH
+	 * rather than from a UPROPERTY on the pawn, so actions referenced only by Blueprint are
+	 * reachable. Generic and gameplay-agnostic: it presses and reports; it verifies nothing.
+	 *
+	 * Drives the game's real Enhanced Input path (continuous injection, started and stopped like a
+	 * held key). Supports Boolean, Axis1D (ValueX) and Axis2D (ValueX, ValueY) actions.
+	 * RepeatCount presses the action repeatedly with RepeatIntervalSeconds between releases, which
+	 * is how input-rate behaviour such as a server-side cooldown is exercised.
+	 *
+	 * The whole schedule must fit inside TimeoutSeconds or the call is rejected up front.
+	 * Injection is force-stopped on every exit path (completion, timeout, PIE end, module shutdown).
+	 */
+	/**
+	 * Diagnostic: invokes a NO-PARAMETER UFunction on a live PIE actor and reports named property
+	 * values immediately before and after, with the actor's world and net identity. Exercises a
+	 * Blueprint event in isolation from input, animation and timers. Generic.
+	 */
+	UFUNCTION(meta = (AICallable))
+	static UToolCallAsyncResultString* CallPIEActorFunction(const FString& ActorPath, const FString& FunctionName, const TArray<FString>& WatchProperties);
+
+	/**
+	 * Diagnostic: spawns a class directly into a chosen PIE world (match by net mode substring, e.g.
+	 * "ListenServer"), bypassing gameplay, and reports whether the spawn actually produced an actor.
+	 * Generic.
+	 */
+	UFUNCTION(meta = (AICallable))
+	static UToolCallAsyncResultString* SpawnActorInPIEWorld(const FString& ClassPath, const FString& WorldNetMode, float X, float Y, float Z, float Yaw, const FString& CollisionHandling);
+
+	/**
+	 * Read-only: enumerates every actor of a class across ALL PIE worlds, with the net identity
+	 * (local/remote role, authority, owner, instigator) that separates an authoritative actor from
+	 * its replicated copies, plus location, speed and age. Generic: the class is a parameter.
+	 */
+	UFUNCTION(meta = (AICallable))
+	static UToolCallAsyncResultString* InspectPIEActorsOfClass(const FString& ClassPath);
+
+	/**
+	 * Read-only: reports the montage playing on a named skeletal-mesh component of every pawn of a
+	 * class, in every PIE world. Reporting the same pawn as the server, its owning client and any
+	 * remote simulated proxy see it is what proves a montage actually reached other machines.
+	 * Pass an empty MeshComponentName to take the pawn's first skeletal mesh.
+	 */
+	UFUNCTION(meta = (AICallable))
+	static UToolCallAsyncResultString* InspectPIEMontageStates(const FString& PawnClassPath, const FString& MeshComponentName);
+
+	UFUNCTION(meta = (AICallable))
+	static UToolCallAsyncResultString* TriggerInputActionDeferred(const FString& PawnPath, const FString& InputActionPath, float ValueX, float ValueY, float PreDelaySeconds, float HoldSeconds, int32 RepeatCount, float RepeatIntervalSeconds, float TimeoutSeconds);
+
 	UFUNCTION(meta = (AICallable))
 	static UToolCallAsyncResultString* DrivePIEInputSequenceDeferred(const FString& PawnPath, const FString& ReadinessActionProperty, const FString& MoveActionProperty, float MoveX, float MoveY, float PreMoveIdleSeconds, float MoveSeconds, float TimeoutSeconds);
 
