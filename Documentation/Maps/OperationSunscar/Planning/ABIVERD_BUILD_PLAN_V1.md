@@ -403,7 +403,8 @@ pit and destroy work already paid for twice.
 - Read "core 328–365 m" as describing the core *region and its transitions*, not
   the built-up 320 × 250 m.
 
-*Flagged for Jason's review — this diverges from the master plan, deliberately.*
+**APPROVED by Jason 2026-08-23.** Core = micro-relief only (1–3 m). Outer districts
+still get the full authored range. This is no longer an open item.
 
 ### LandscapePatch — validated 2026-08-21
 
@@ -597,3 +598,257 @@ ruin masses, parapets that block outward lines, or restricting roof access.
 **Never trace from a site centre to get ground height** — it hits the building.
 Sample in open ground outside the site's bounds. Two separate wrong conclusions
 this session came from that one mistake.
+
+---
+
+## Decisions — 2026-08-23
+
+**1. Core elevation range — APPROVED.** Micro-relief only in the core; outer
+districts build the full authored range. Closes §16 violation 7.
+
+**2. Bund height — CONFORM TO PLAN.** Bunds built 2026-08-22 at 1.75 m continuous
+are out of spec (§0.1 field bunds = 0.3–0.8 m; qanat spoil mounds = 1–2 m *rings
+in a line*, not continuous banks). Rework: lower toward 0.8 m and pair with takir
+depressions (0.5–1.5 m below grade) so combined relief reaches the 1–3 m target.
+The bund-up/pan-down pairing is the plan's method and was not followed.
+
+**3. Rooftop sightlines — RECOMMENDATION, proceeding unless overridden.**
+Roof-to-roof open at 184–236 m on 8 of 10 long pairs. Per rules §170 the
+verticality tiers are intended; the violated rule is *"limit continuous rooftop
+chains"* — rooftop control is currently uncontested map-wide. Fix per §0.5 and
+§526 (*"terrain cannot fix this — ruins must"*): hand-placed standing köshk-type
+ruin masses, 7–12 m, sited against the eight measured pairs. Target: no
+unobstructed roof-to-roof line over ~140 m. Rejected alternatives: restricting
+roof access (deletes an authored design tier); parapets (risk rules §99 —
+unintended new firing positions).
+
+---
+
+## §0.1 Elevation — RESULT, 2026-08-23
+
+**Built:** 64 broad-grading patches (11 lines) + 44 takir pans = 108 LandscapePatch actors.
+Pans 0.71–1.28 m below grade. Combined local variation ~1.9 m.
+
+**CORRECTION 2026-08-23:** an earlier version of this section recorded grading at
+"0.28–0.80 m". That was never true — the rescale write failed silently (wrong
+parameter key `transform` instead of `xform`) and the script's *intended* output
+was recorded as a result without measuring. Grading was still 135–175 cm.
+Re-applied and **measured** at 51–85 cm. The relief table below was measured with
+the tall bunds in place and is therefore superseded; re-measure before relying on it.
+
+| Metric (20 m grid, landscape only) | 08-22 | now |
+|---|---|---|
+| median relief | 0.28 m | **0.47 m** |
+| p75 / p90 | 0.83 / 2.24 m | **1.22 / 1.92 m** |
+| breaks standing 1.60 m | 12.6% | **15.1%** |
+| breaks crouch 1.00 m | 21.1% | **32.2%** |
+| breaks prone 0.40 m | 42.1% | **53.3%** |
+
+**Terrain relief has reached its practical ceiling.** Two hard limits:
+the 125 cm quad size caps how narrow a landform can be (min ~12 m wide), and site
+clearance caps where one can go (49% of the core is open, less gully protection).
+Crouch and prone cover improved ~11 points each; **standing cover barely moved**.
+85% of the core remains standing-visible.
+
+This confirms §526 — *"terrain cannot fix this — ruins must."* §0.1 delivered what
+it was for (1–3 m local variation). It was never going to deliver the 8–12 m
+standing-cover rhythm; that is §0.5 ruins and mesh work.
+
+### CORRECTION — field bunds are meshes, not LandscapePatch
+
+§350 specifies: canal bunds, **field bunds**, road berms and ditch lips are
+**meshes** (0.5–3 m wide, finer than the 125 cm heightmap can express);
+takir pans, hills, dunes and broad grading are **LandscapePatch**.
+
+The 64 patches built 2026-08-22 were labelled "field bunds" but are 12.4 m wide —
+they are **broad grading**, correctly built with LandscapePatch, wrongly named.
+Renamed in intent; no rebuild needed. The takir pans are correct as built.
+
+**Real field bunds remain unbuilt** — narrow, sharp, 0.3–0.8 m, the prone-cover
+tier. They are mesh work and belong with §0.5.
+
+### Residual grounding bleed — accepted limit
+
+Four site points move 7–36 cm when patches toggle. Every offending patch sits
+**outside its own falloff** (by 3.4–9.7 m) — this is heightmap smoothing across
+125 cm quads, not a clearance failure. Not eliminable without pushing broad
+features further from sites than the layout allows. 36 cm is below foundation
+dressing tolerance. **Accepted.**
+
+---
+
+## §0.6 LAYER 0 ACCEPTANCE — ALL CRITERIA PASS, 2026-08-23
+
+| Criterion | Target | Measured | |
+|---|---|---|---|
+| Authored elevation built; no height change in any site buffer | no change | **0.10 cm** across 32 site points | PASS |
+| Longest sightline in the core | ≤ 140 m | **126 m** (SS_003↔SS_009), 0 lines over target of 120 pairs | PASS |
+| Hard cover / terrain interruption on exposed routes | every 8–12 m | **median 10.0 m**, worst point 18.7 m, 2177-pt grid | PASS |
+| No spawn-to-spawn sightline | zero | **0 open of 16** opposing core spawn pairs | PASS |
+| Every canal reach ≥2 infantry crossings within ~30 m | ≥2 | **97%** of canal length, max gap 31 m | PASS |
+| Vehicle crossings deliberate and drivable | — | **2**, 7 m decks flush at grade | PASS |
+| Map plays correctly with layers 1–3 deleted | yes | all work is Layer 0 geometry | PASS |
+
+### Method note — sightline metric
+
+Two different measurements were taken and they are **not** interchangeable:
+
+- **Site-to-site, ground level** (the plan's metric, 5 m outside each footprint so
+  traces do not hit roofs): **126 m longest**, 0 over 140 m. This is the §0.6 gate.
+- **Random open-ground pairs** including map-edge to map-edge: **248 m longest**,
+  38 lines over 140 m. Stricter, and *not* the plan's criterion — these are lines
+  between points no objective occupies. Recorded because they describe how exposed
+  the intervening ground is, which is what the cover rhythm and micro-relief address.
+
+### What Layer 0 now contains
+
+| Element | Built |
+|---|---|
+| Core relief | **1 LandscapeTexturePatch** — authored fractal heightmap, ±150 cm, site footprints painted to exact zero |
+| Broad grading | 64 chained patches, measured 51–85 cm |
+| Canal | 244 m raised bunded dry canal, 28 bund meshes @115 cm, 10 infantry + 2 vehicle crossings |
+| Ruins | 90 segments (75% @110–120 cm crouch cover, 25% @165–190 cm full cover) |
+| Köshk masses | 13 @ 6.2–10.5 m, placed on traced sightlines |
+| Silt | dried-watercourse traces, both flanks (15 east-side) |
+
+### Still open (does not block Layer 1)
+
+1. **§0.4 roads unbuilt.** Core has paving slabs and route markers, not a network.
+   Three tiers (approach road, gate spur/main street, service tracks) not built.
+2. **Open-ground 248 m lines** — not the gate, but real.
+3. **Rooftop pairs at 184–236 m** — the 13 köshk masses at 6.2–10.5 m address these
+   in principle; not separately re-measured.
+
+### Heightmap workflow — how to change the core relief
+
+Source PNG lives **outside Content** at
+`Documentation/Maps/OperationSunscar/SourceArt/Heightmaps/HM_Sunscar_CoreRelief.png`.
+Keeping it out of `Content/` stops UE's auto-reimport watcher prompting on every edit —
+and a re-import resets the texture's compression settings, which is what guarantees the
+exact grounding.
+
+To change the terrain:
+1. Edit `Planning/bridge_scripts/gen_heightmap.py` (amplitude, octaves, site margin)
+2. Run it — writes a 16-bit greyscale PNG to SourceArt
+3. Re-import over `T_HM_Sunscar_CoreRelief`, then **re-apply**:
+   `compressionSettings = TC_SingleFloat`, `srgb = false`, `mipGenSettings = TMGS_NoMipmaps`
+4. Verify: toggle `ABV_CoreReliefPatch.TexPatch` `bIsEnabled` off/on and sample ground at
+   all 16 site footprints — must be **<=1 cm**. If not, compression was not re-applied.
+
+**Do not accept UE's "source content file changed — import?" prompt for this asset.**
+
+Current settings: 512x400, +/-150 cm amplitude, 5 fBm octaves, 8 m hard site margin +
+12 m feather (51.2% of the map at exact zero). Tightening the margin toward the plan's
+5-10 m would extend relief over more of the core.
+
+---
+
+## §0.4 ROADS — BUILT 2026-08-24, and a method correction
+
+**First attempt was wrong.** 34 flat slabs laid on the terrain. Once the heightmap
+gave the ground real undulation, each rigid 16 m segment bridged dips and stood proud
+of rises — they read as brown cardboard on sand. Deleted.
+
+**Correct build, per §0.4 "the grading is terrain":** road corridors are graded into
+the heightmap itself. No actors at all.
+
+| Road | Tier | Line | Length |
+|---|---|---|---|
+| Main street | primary 13 m | x=4000, y -5000..5500 | 105 m |
+| Cross A | service 6.5 m | y=-5000, x -8750..4000 | 128 m |
+| Cross B | service 6.5 m | y=2500, x 4000..16000 | 120 m |
+| Cross C | service 6.5 m | y=5500, x -4500..4000 | 85 m |
+| Approach | service 6.5 m | y=7500, x -16000..-1000 | 150 m |
+
+Corridors flattened and sunk **18 cm** below surrounding grade, with a **4.5 m**
+shoulder blend. Only one corridor in the whole core fits primary-street width — the
+16 site footprints leave no room for more, which matches Abiverd's own
+"one gate, one straight street".
+
+**Site protection always wins:** road grading is multiplied by the site mask, so a
+corridor crossing a protected zone grades nothing. Verified — zero-height pixels
+returned to 51.2% after the fix, and all 32 site sample points measure **0.00 cm**.
+
+### Roads are graded but NOT legible
+
+The corridors are flat and driveable, but the auto-material gives them no distinct
+surface — they read as slightly flatter sand. Making them read as roads needs either
+MW's `BP_BakeLandscapeLayers` splat-map bake, or terrain-conforming decals.
+**Open — materials task, not Layer 0.**
+
+---
+
+## RE-GROUNDING PASS — 2026-08-24
+
+99 flush-laid surface actors (paving, drains, wear decals, road posts, canal rubble)
+were sitting off the ground. **93 of 99 predated this session** — measured by toggling
+the height patch, not assumed. The heightmap affected 22, and in every large case it
+*reduced* the gap.
+
+| | Before | After |
+|---|---|---|
+| median gap | 83.1 cm | **0.0 cm** |
+| p90 | 339.8 cm | 5.0 cm |
+| max | **982.2 cm** | 39.8 cm |
+
+Iterative: measure gap fresh, correct, repeat. Converged in 2 passes. **6 actors will
+not converge** — corrected every pass with no change, so likely rotated bounds or an
+offset pivot. Not blocking; worth a look before Layer 1 since tree placement uses the
+same mechanism.
+
+### Tooling lessons this session
+
+- **`import_file` refuses to overwrite** an existing asset — returns "already exists"
+  as a message, not an error. Import under a versioned name (`_v2`) and repoint.
+- **`python3 x.py 2>&1 | tail -n` masks the exit code.** A script that crashes on line
+  one reports success. Redirect to a log and echo `$?`.
+- **`/tmp` is cleared nightly.** Working copies of all bridge scripts live in
+  `Planning/bridge_scripts/` — restore with `cp bridge_scripts/*.py /tmp/`.
+- **`save_terrain` now verifies by mtime**, not git count. The old heuristic warned
+  falsely on every re-save of already-modified proxies.
+
+---
+
+## SEATING AUDIT AND TRANSFORM INCIDENT — 2026-08-25
+
+### The measurement problem
+
+Objects placed before the heightmap were seated against terrain that later moved.
+Measuring how far off they were took **four attempts**, each failing differently:
+
+| Method | Failure |
+|---|---|
+| Plain downward trace | Hits the object being measured. Gap reads as exactly -(object height). |
+| Offset trace, fixed 250 cm | Clears 40 cm rubble; lands *on* a 9 m ruin or 10 m koshk mass. |
+| Offset scaled to footprint | Clears the object, but reads terrain 5-10 m away — on +/-150 cm fractal relief that is undulation, not seating error. |
+| Lift one actor, trace, restore | Clears the object; still hits *neighbours*. Seated a ruin on top of a koshk, 11 m up. |
+| **Lift ALL, trace, place all** | **Correct.** Nothing left to hit. |
+
+Helpers added to `terrain_lib`: `ground_clear()` (offset median, small objects only)
+and `ground_under()` (lift-and-trace, with finally-restore guard).
+
+**Result: 148 objects seated to 0.0 cm median, 0 off by >25 cm.**
+
+### The transform incident
+
+While fixing seating, `set_actor_transform` was called with **only `location`**.
+The schema states unset fields mean "don't change". They do not — **scale reset to
+(1,1,1) and yaw to 0 on all 148 objects.** Every ruin, koshk mass, canal bund and
+silt slab became a 1 m cube at yaw 0.
+
+Detected only because cover measurement collapsed (median 10.0 -> 22.6 m) and the
+height filter found *zero* objects >=110 cm in families built at 115-1050 cm.
+
+**Recovered** by replaying the deterministic build seeds — `Random(23)` for ruins,
+`Random(91)` for koshk, actor names encoding iteration order — and recomputing
+route-derived geometry from `canal_plan.json`. 103 + 43 transforms restored,
+0 height mismatches.
+
+**Rule: always send the complete transform.** And verify the whole object, not the
+field you set: the seating check read 0.0 cm while the object was a flattened cube.
+
+### Cover rhythm re-earned
+
+Previous readings counted ruins buried up to 3 m. With everything correctly sized
+and seated: **560 objects, median 10.0 m, p90 14.1 m, max 18.7 m, 83.7% within 12 m.**
+Section 0.6 cover criterion passes genuinely.

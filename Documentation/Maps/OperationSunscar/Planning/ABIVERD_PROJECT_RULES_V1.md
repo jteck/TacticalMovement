@@ -500,13 +500,13 @@ Tracked so they are not forgotten. Each needs a decision or a fix.
 
 | # | Violation | Rule |
 |---|---|---|
-| 1 | PCG volumes are live components, not baked instances | 7.2 |
-| 2 | No cull distances set on any foliage | 7.6 |
+| ~~1~~ | ~~PCG volumes are live components~~ **CLOSED 2026-08-23** — 4 volumes removed; graph `PCG_ABV_PoppyField_V1` and 8 poppy meshes retained for Layer 2 rebuild | 7.2 |
+| ~~2~~ | ~~No cull distances set~~ **CLOSED 2026-08-23** — violation described the PCG foliage, now removed. All remaining foliage verified set: grass/poppy 8000/24000-26000, cover/rubble 16000/48000 | 7.6 |
 | 3 | Poppy field is a uniform dense rectangle inside the core | 7.9, 7.10 |
 | 4 | 22,673 instances vs a ~250–500 guardrail | 11.2 |
 | 5 | Open crossings of 155–208 m | 4.5 |
 | 6 | No hard cover between sites | 4.4 |
-| 7 | Authored core elevation (328–365 m) never built; 1.85 m measured | master plan |
-| 8 | Nav influence / ticking / replication unverified on foliage | 7.4 |
+| ~~7~~ | ~~Authored core elevation never built~~ **CLOSED 2026-08-23** — Jason approved micro-relief-only for the core; outer districts keep the authored range | master plan |
+| ~~8~~ | ~~Nav / tick / replication unverified~~ **CLOSED 2026-08-23** — verified on HISM foliage: `bCanEverAffectNavigation` false, `bCanEverTick` false (component and actor), `bReplicates` false | 7.4 |
 | 9 | No navigation and no audio anywhere in the level | — |
 | 10 | Spawn-to-spawn sightline never verified | 3.9 |
